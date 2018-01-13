@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 help = '画像を読み込んでデータセットを作成する'
 
+import os
 import cv2
 import argparse
 import numpy as np
 
-from itertools import chain
+from func import argsPrint
 
 
 def command():
@@ -18,10 +19,12 @@ def command():
                         help='乱数シード（default: 2）')
     parser.add_argument('--img_rate', '-r', type=int, default=4,
                         help='画像サイズの倍率（default: 4）')
+    parser.add_argument('-o', '--out_path', default='./result/',
+                        help='・ (default: ./result/)')
     return parser.parse_args()
 
 
-def main(args):
+wdef main(args):
     np_arr = np.load(args.npz)
     comp = np_arr['comp']
     raw = np_arr['raw']
@@ -35,9 +38,14 @@ def main(args):
                      cv2.INTER_NEAREST)
     cv2.imshow('test', img)
     cv2.waitKey(0)
-    cv2.imwrite('npz2jpg.jpg', img)
+
+    if not os.path.isdir(args.out_path):
+        os.makedirs(args.out_path)
+
+    cv2.imwrite(os.path.join(args.out_path, 'npz2jpg.jpg'), img)
 
 
 if __name__ == '__main__':
     args = command()
+    argsPrint(args)
     main(args)

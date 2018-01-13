@@ -1,31 +1,51 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+help = 'jpegcompのネットワーク部分'
+#
 
-from __future__ import print_function
-
-
-import chainer
+from chainer import Chain
+import chainer.functions as F
 import chainer.links as L
 
-import chainer.functions as F
 
-# Network definition
-
-
-class MLP(chainer.Chain):
-
-    def __init__(self, n_units, n_out):
-        super(MLP, self).__init__()
+class JC(Chain):
+    def __init__(self, n_in=1, n_size=128, n_out=1):
+        """
+        [in] n_in:    入力チャンネル
+        [in] n_size:  中間チャンネルサイズ
+        [in] n_out:   出力チャンネル
+        """
+        super(JC, self).__init__()
         with self.init_scope():
-            # the size of the inputs to each layer will be inferred
-            self.l1 = L.Linear(None, n_units)  # n_in -> n_units
-            self.l2 = L.Linear(None, n_units)  # n_units -> n_units
-            self.l3 = L.Linear(None, n_out)  # n_units -> n_out
+            self.conv1 = L.Convolution2D(n_in, n_size, 9,  pad=4)
+            self.bn1 = L.BatchNormalization(n_size)
+            self.conv2 = L.Convolution2D(None, n_size, 1)
+            self.bn2 = L.BatchNormalization(n_size)
+            self.convN = L.Convolution2D(None, 4, 5,  pad=2)
+            self.bnN = L.BatchNormalization(1)
+
+        self.i = n_in
+        self.u = n_size
+        print('in_ch:{0} / size:{1} / out_c:{2}'.format(n_in, n_size, n_out))
 
     def __call__(self, x):
-        h1 = F.relu(self.l1(x))
-        h2 = F.relu(self.l2(h1))
-        return self.l3(h2)
+        h = F.relu(self.bn1(self.conv1(x)))
+        h = F.relu(self.bn2(self.conv2(h)))
+        y = F.sigmoid(self.bnN(self.PS(self.convN(h))))
+        return y
 
+    def PS(self, h, r=2):
+        """
+        "P"ixcel"S"huffler
+        Deconvolutionの高速版
+        """
 
-if __name__ == '__main__':
-    pass
+        batchsize, in_ch, in_h, in_w = h.shape
+        out_ch = int(in_ch / (r ** 2))
+        out_h = in_h * r
+        out_w = in_w * r
+        out = F.reshape(h, (batchsize, r, r, out_ch, in_h, in_w))
+        out = F.transpose(out, (0, 3, 4, 1, 5, 2))
+        out = F.reshape(out, (batchsize, out_ch, out_h, out_w))
+        return out

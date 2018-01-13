@@ -1,56 +1,40 @@
 #!/usr/bin/env python3
 help = '画像を読み込んでデータセットを作成する'
 
+import os
 import cv2
 import argparse
 import numpy as np
+
+from func import argsPrint, getCh, imgEncodeDecode, imgSplit
 
 
 def command():
     parser = argparse.ArgumentParser(description=help)
     parser.add_argument('jpeg', nargs='+',
                         help='使用する画像のパス')
+    parser.add_argument('--channel', '-c', type=int, default=1,
+                        help='画像のチャンネル数（default: 1 channel）')
     parser.add_argument('--img_size', '-s', type=int, default=32,
                         help='生成される画像サイズ（default: 32 pixel）')
+    parser.add_argument('--round', '-r', type=int, default=1000,
+                        help='切り捨てる数（default: 1000）')
+    parser.add_argument('--quality', '-q', type=int, default=5,
+                        help='画像の圧縮率（default: 5）')
     parser.add_argument('--train_per_all', '-t', type=float, default=0.85,
-                        help='画像数に対する学習用画像の割合ズ（default: 0.85）')
+                        help='画像数に対する学習用画像の割合（default: 0.85）')
+    parser.add_argument('-o', '--out_path', default='./result/',
+                        help='・ (default: ./result/)')
     return parser.parse_args()
 
 
-def imgEncodeDecode(in_imgs, quality=5):
-    encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
-    out_imgs = []
-
-    for img in in_imgs:
-        result, encimg = cv2.imencode('.jpg', img, encode_param)
-        if False == result:
-            print('could not encode image!')
-            exit()
-
-        decimg = cv2.imdecode(encimg, 1)
-        out_imgs.append(decimg)
-
-    return out_imgs
-
-
-def imgSplit(imgs, size):
-    v_size = imgs[0].shape[0] // size * size
-    h_size = imgs[0].shape[1] // size * size
-    imgs = [i[:v_size, :h_size] for i in imgs]
-    v_split = imgs[0].shape[0] // size
-    h_split = imgs[0].shape[1] // size
-    out_imgs = []
-    [[out_imgs.extend(np.vsplit(h_img, v_split))
-      for h_img in np.hsplit(img, h_split)] for img in imgs]
-    return np.array(out_imgs)
-
-
 def main(args):
-    print(args.jpeg)
-    imgs = [cv2.imread(name) for name in args.jpeg]
+    ch = getCh(args.channel)
+    imgs = [cv2.imread(name, ch) for name in args.jpeg]
 
-    comp = imgSplit(imgEncodeDecode(imgs), args.img_size)
-    raw = imgSplit(imgs, args.img_size)
+    comp = imgSplit(imgEncodeDecode(imgs, ch, args.quality),
+                    args.img_size, args.round)
+    raw = imgSplit(imgs, args.img_size, args.round)
 
     shuffle = np.random.permutation(range(len(comp)))
     train_size = int(len(comp) * args.train_per_all)
@@ -63,10 +47,16 @@ def main(args):
     print('test comp: ', test_comp.shape)
     print('     raw:  ', test_raw.shape)
 
-    np.savez('train', comp=train_comp, raw=train_raw)
-    np.savez('test', comp=test_comp, raw=test_raw)
+    if not os.path.isdir(args.out_path):
+        os.makedirs(args.out_path)
+
+    np.savez(os.path.join(args.out_path, 'train'),
+             comp=train_comp, raw=train_raw)
+    np.savez(os.path.join(args.out_path, 'test'),
+             comp=test_comp, raw=test_raw)
 
 
 if __name__ == '__main__':
     args = command()
+    argsPrint(args)
     main(args)

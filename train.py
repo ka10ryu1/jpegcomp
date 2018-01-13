@@ -1,48 +1,100 @@
 #!/usr/bin/env python3
+# -*-coding: utf-8 -*-
+#
+help = '学習メイン部'
+#
 
-from __future__ import print_function
-
+import os
+import cv2
 import argparse
+import numpy as np
 
 import chainer
 import chainer.links as L
+import chainer.functions as F
 from chainer import training
 from chainer.training import extensions
+from chainer.datasets import tuple_dataset
 
 
-from network import MLP
+from network import JC
+from func import argsPrint, imgs2x, img2arr
 
 
-def main():
-    parser = argparse.ArgumentParser(description='Chainer example: MNIST')
+def command():
+    parser = argparse.ArgumentParser(description=help)
+    parser.add_argument('-i', '--in_path', default='./result/',
+                        help='入力データセットのフォルダ (default: ./result/)')
+    parser.add_argument('-l', '--lossfun', default='mse',
+                        help='損失関数 (default: MSE)')
     parser.add_argument('--batchsize', '-b', type=int, default=100,
-                        help='Number of images in each mini-batch')
+                        help='ミニバッチサイズ (default: 100)')
     parser.add_argument('--epoch', '-e', type=int, default=20,
-                        help='Number of sweeps over the dataset to train')
+                        help='エポック数 (default 20)')
     parser.add_argument('--frequency', '-f', type=int, default=-1,
-                        help='Frequency of taking a snapshot')
+                        help='スナップショット周期 (default: -1)')
     parser.add_argument('--gpu', '-g', type=int, default=-1,
-                        help='GPU ID (negative value indicates CPU)')
-    parser.add_argument('--out', '-o', default='result',
-                        help='Directory to output the result')
+                        help='GPU ID (default -1)')
+    parser.add_argument('--out', '-o', default='./result/',
+                        help='生成物の保存先(default: ./result/)')
     parser.add_argument('--resume', '-r', default='',
                         help='Resume the training from snapshot')
     parser.add_argument('--unit', '-u', type=int, default=1000,
                         help='Number of units')
     parser.add_argument('--noplot', dest='plot', action='store_false',
                         help='Disable PlotReport extension')
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    print('GPU: {}'.format(args.gpu))
-    print('# unit: {}'.format(args.unit))
-    print('# Minibatch-size: {}'.format(args.batchsize))
-    print('# epoch: {}'.format(args.epoch))
-    print('')
+
+def getImgData(folder):
+    for l in os.listdir(folder):
+        if 'train' in l:
+            np_arr = np.load(os.path.join(folder, l))
+            train = tuple_dataset.TupleDataset(
+                img2arr(np_arr['comp']),
+                img2arr(imgs2x(np_arr['raw']))
+            )
+        elif 'test' in l:
+            np_arr = np.load(os.path.join(folder, l))
+            test = tuple_dataset.TupleDataset(
+                img2arr(np_arr['comp']),
+                img2arr(imgs2x(np_arr['raw']))
+            )
+
+    return train, test
+
+
+def getLossfun(lossfun_str):
+    if(lossfun_str.lower() == 'mse'):
+        lossfun = F.mean_squared_error
+
+    elif(lossfun_str.lower() == 'mae'):
+        lossfun = F.mean_absolute_error
+
+    elif(lossfun_str.lower() == 'abs'):
+        lossfun = F.absolute_error
+
+    elif(lossfun_str.lower() == 'se'):
+        lossfun = F.squared_error
+
+    elif(lossfun_str.lower() == 'softmax'):
+        lossfun = F.softmax_cross_entropy
+
+    else:
+        lossfun = F.softmax_cross_entropy
+
+    print('lossfun:', lossfun.__name__)
+    return lossfun
+
+
+def main(args):
 
     # Set up a neural network to train
     # Classifier reports softmax cross entropy loss and accuracy at every
     # iteration, which will be used by the PrintReport extension below.
-    model = L.Classifier(MLP(args.unit, 10))
+    model = L.Classifier(JC(), lossfun=getLossfun(args.lossfun))
+    model.compute_accuracy = False
+
     if args.gpu >= 0:
         # Make a specified GPU current
         chainer.cuda.get_device_from_id(args.gpu).use()
@@ -52,8 +104,8 @@ def main():
     optimizer = chainer.optimizers.Adam()
     optimizer.setup(model)
 
-    # Load the MNIST dataset
-    train, test = chainer.datasets.get_mnist()
+    # Load dataset
+    train, test = getImgData(args.in_path)
 
     train_iter = chainer.iterators.SerialIterator(train, args.batchsize)
     test_iter = chainer.iterators.SerialIterator(test, args.batchsize,
@@ -82,19 +134,18 @@ def main():
         trainer.extend(
             extensions.PlotReport(['main/loss', 'validation/main/loss'],
                                   'epoch', file_name='loss.png'))
-        trainer.extend(
-            extensions.PlotReport(
-                ['main/accuracy', 'validation/main/accuracy'],
-                'epoch', file_name='accuracy.png'))
 
     # Print selected entries of the log to stdout
     # Here "main" refers to the target link of the "main" optimizer again, and
     # "validation" refers to the default name of the Evaluator extension.
     # Entries other than 'epoch' are reported by the Classifier link, called by
     # either the updater or the evaluator.
-    trainer.extend(extensions.PrintReport(
-        ['epoch', 'main/loss', 'validation/main/loss',
-         'main/accuracy', 'validation/main/accuracy', 'elapsed_time']))
+    trainer.extend(extensions.PrintReport([
+        'epoch',
+        'main/loss',
+        'validation/main/loss',
+        'elapsed_time'
+    ]))
 
     # Print a progress bar to stdout
     trainer.extend(extensions.ProgressBar())
@@ -108,4 +159,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    args = command()
+    argsPrint(args)
+
+    main(args)
