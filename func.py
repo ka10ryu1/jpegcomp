@@ -3,7 +3,11 @@ help = '便利機能'
 
 import cv2
 import numpy as np
-import cupy as xp
+
+try:
+    import cupy as xp
+except ImportError:
+    print('not import cupy')
 
 
 def argsPrint(p, bar=30):
@@ -86,6 +90,7 @@ def imgSplit(imgs, size, round_num=-1):
     if(round_num > 0):
         round_len = len(out_imgs) // round_num * round_num
         return np.array(out_imgs[:round_len]), (v_split, h_split)
+        # return np.array(out_imgs), (v_split, h_split)
     else:
         return np.array(out_imgs), (v_split, h_split)
 

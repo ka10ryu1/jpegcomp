@@ -35,12 +35,12 @@ def command():
                         help='スナップショット周期 (default: -1)')
     parser.add_argument('--gpu', '-g', type=int, default=-1,
                         help='GPU ID (default -1)')
-    parser.add_argument('--out', '-o', default='./result/',
+    parser.add_argument('--out_path', '-o', default='./result/',
                         help='生成物の保存先(default: ./result/)')
     parser.add_argument('--resume', '-r', default='',
                         help='Resume the training from snapshot')
-    parser.add_argument('--unit', '-u', type=int, default=1000,
-                        help='Number of units')
+    parser.add_argument('--unit', '-u', type=int, default=128,
+                        help='Number of units(default: 128)')
     parser.add_argument('--noplot', dest='plot', action='store_false',
                         help='Disable PlotReport extension')
     return parser.parse_args()
@@ -92,7 +92,7 @@ def main(args):
     # Set up a neural network to train
     # Classifier reports softmax cross entropy loss and accuracy at every
     # iteration, which will be used by the PrintReport extension below.
-    model = L.Classifier(JC(), lossfun=getLossfun(args.lossfun))
+    model = L.Classifier(JC(n_size=args.unit), lossfun=getLossfun(args.lossfun))
     model.compute_accuracy = False
 
     if args.gpu >= 0:
@@ -113,7 +113,7 @@ def main(args):
 
     # Set up a trainer
     updater = training.StandardUpdater(train_iter, optimizer, device=args.gpu)
-    trainer = training.Trainer(updater, (args.epoch, 'epoch'), out=args.out)
+    trainer = training.Trainer(updater, (args.epoch, 'epoch'), out=args.out_path)
 
     # Evaluate the model with the test dataset for each epoch
     trainer.extend(extensions.Evaluator(test_iter, model, device=args.gpu))

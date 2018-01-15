@@ -18,16 +18,12 @@ class JC(Chain):
         """
         super(JC, self).__init__()
         with self.init_scope():
-            self.conv1 = L.Convolution2D(n_in, n_size, 9,  pad=4)
+            self.conv1 = L.Convolution2D(None, n_size, 9,  pad=4)
             self.bn1 = L.BatchNormalization(n_size)
             self.conv2 = L.Convolution2D(None, n_size, 1)
             self.bn2 = L.BatchNormalization(n_size)
             self.convN = L.Convolution2D(None, 4, 5,  pad=2)
             self.bnN = L.BatchNormalization(1)
-
-        self.i = n_in
-        self.u = n_size
-        print('in_ch:{0} / size:{1} / out_c:{2}'.format(n_in, n_size, n_out))
 
     def __call__(self, x):
         h = F.relu(self.bn1(self.conv1(x)))

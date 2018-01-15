@@ -32,9 +32,9 @@ def main(args):
     ch = getCh(args.channel)
     imgs = [cv2.imread(name, ch) for name in args.jpeg]
 
-    comp = imgSplit(imgEncodeDecode(imgs, ch, args.quality),
-                    args.img_size, args.round)
-    raw = imgSplit(imgs, args.img_size, args.round)
+    comp, _ = imgSplit(imgEncodeDecode(imgs, ch, args.quality),
+                       args.img_size, args.round)
+    raw, _ = imgSplit(imgs, args.img_size, args.round)
 
     shuffle = np.random.permutation(range(len(comp)))
     train_size = int(len(comp) * args.train_per_all)
