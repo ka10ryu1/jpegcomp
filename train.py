@@ -92,7 +92,7 @@ def main(args):
     # Set up a neural network to train
     # Classifier reports softmax cross entropy loss and accuracy at every
     # iteration, which will be used by the PrintReport extension below.
-    model = L.Classifier(JC(n_size=args.unit), lossfun=getLossfun(args.lossfun))
+    model = L.Classifier(JC(n_size=args.unit, layer=4), lossfun=getLossfun(args.lossfun))
     model.compute_accuracy = False
 
     if args.gpu >= 0:
