@@ -5,7 +5,6 @@ help = '学習メイン部'
 #
 
 import os
-import cv2
 import argparse
 import numpy as np
 
@@ -25,22 +24,28 @@ def command():
     parser = argparse.ArgumentParser(description=help)
     parser.add_argument('-i', '--in_path', default='./result/',
                         help='入力データセットのフォルダ (default: ./result/)')
-    parser.add_argument('-l', '--lossfun', default='mse',
+    parser.add_argument('-lf', '--lossfun', default='mse',
                         help='損失関数 (default: MSE)')
-    parser.add_argument('--batchsize', '-b', type=int, default=100,
+    parser.add_argument('-a1', '--actfunc_1', default='relu',
+                        help='活性化関数(1) (default: relu)')
+    parser.add_argument('-a2', '--actfunc_2', default='sigmoid',
+                        help='活性化関数(2) (default: sigmoid)')
+    parser.add_argument('-ln', '--layer_num', type=int, default=3,
+                        help='ネットワーク層の数 (default: 3)')
+    parser.add_argument('-u', '--unit', type=int, default=128,
+                        help='ネットワークのユニット数(default: 128)')
+    parser.add_argument('-b', '--batchsize', type=int, default=100,
                         help='ミニバッチサイズ (default: 100)')
-    parser.add_argument('--epoch', '-e', type=int, default=20,
+    parser.add_argument('-e', '--epoch', type=int, default=20,
                         help='エポック数 (default 20)')
-    parser.add_argument('--frequency', '-f', type=int, default=-1,
+    parser.add_argument('-f', '--frequency', type=int, default=-1,
                         help='スナップショット周期 (default: -1)')
-    parser.add_argument('--gpu', '-g', type=int, default=-1,
+    parser.add_argument('-g', '--gpu_id', type=int, default=-1,
                         help='GPU ID (default -1)')
-    parser.add_argument('--out_path', '-o', default='./result/',
+    parser.add_argument('-o', '--out_path', default='./result/',
                         help='生成物の保存先(default: ./result/)')
-    parser.add_argument('--resume', '-r', default='',
-                        help='Resume the training from snapshot')
-    parser.add_argument('--unit', '-u', type=int, default=128,
-                        help='Number of units(default: 128)')
+    parser.add_argument('-r', '--resume', default='',
+                        help='使用するスナップショットのパス(default: no use)')
     parser.add_argument('--noplot', dest='plot', action='store_false',
                         help='Disable PlotReport extension')
     return parser.parse_args()
@@ -83,8 +88,17 @@ def getLossfun(lossfun_str):
     else:
         lossfun = F.softmax_cross_entropy
 
-    print('lossfun:', lossfun.__name__)
     return lossfun
+
+
+def getActFunc(actfunc_str):
+    if(actfunc_str.lower() == 'relu'):
+        actfunc = F.relu
+
+    elif(actfunc_str.lower() == 'sigmoid'):
+        actfunc = F.sigmoid
+
+    return actfunc
 
 
 def main(args):
@@ -92,12 +106,18 @@ def main(args):
     # Set up a neural network to train
     # Classifier reports softmax cross entropy loss and accuracy at every
     # iteration, which will be used by the PrintReport extension below.
-    model = L.Classifier(JC(n_size=args.unit, layer=4), lossfun=getLossfun(args.lossfun))
+    actfunc_1 = getActFunc(args.actfunc_1)
+    actfunc_2 = getActFunc(args.actfunc_2)
+    model = L.Classifier(
+        JC(n_size=args.unit, layer=args.layer_num,
+           actfunc_1=actfunc_1, actfunc_2=actfunc_2),
+        lossfun=getLossfun(args.lossfun)
+    )
     model.compute_accuracy = False
 
-    if args.gpu >= 0:
+    if args.gpu_id >= 0:
         # Make a specified GPU current
-        chainer.cuda.get_device_from_id(args.gpu).use()
+        chainer.cuda.get_device_from_id(args.gpu_id).use()
         model.to_gpu()  # Copy the model to the GPU
 
     # Setup an optimizer
@@ -106,17 +126,21 @@ def main(args):
 
     # Load dataset
     train, test = getImgData(args.in_path)
+    model_name = 'unit({0})_ch({1})_layer({2})_actFunc({3}_{4}).model'.format(
+        args.unit, train[0][0].shape[0], args.layer_num,
+        actfunc_1.__name__, actfunc_2.__name__
+    )
 
     train_iter = chainer.iterators.SerialIterator(train, args.batchsize)
     test_iter = chainer.iterators.SerialIterator(test, args.batchsize,
                                                  repeat=False, shuffle=False)
 
     # Set up a trainer
-    updater = training.StandardUpdater(train_iter, optimizer, device=args.gpu)
+    updater = training.StandardUpdater(train_iter, optimizer, device=args.gpu_id)
     trainer = training.Trainer(updater, (args.epoch, 'epoch'), out=args.out_path)
 
     # Evaluate the model with the test dataset for each epoch
-    trainer.extend(extensions.Evaluator(test_iter, model, device=args.gpu))
+    trainer.extend(extensions.Evaluator(test_iter, model, device=args.gpu_id))
 
     # Dump a computational graph from 'loss' variable at the first iteration
     # The "main" refers to the target link of the "main" optimizer.
@@ -154,8 +178,13 @@ def main(args):
         # Resume from a snapshot
         chainer.serializers.load_npz(args.resume, trainer)
 
+    if not os.path.isdir(args.out_path):
+        os.makedirs(args.out_path)
+
     # Run the training
     trainer.run()
+
+    chainer.serializers.save_npz(os.path.join(args.out_path, model_name), model)
 
 
 if __name__ == '__main__':
