@@ -42,10 +42,10 @@ class JC(Chain):
         self.actfunc_1 = actfunc_1
         self.actfunc_2 = actfunc_2
 
-        # print('[Network info]')
-        # print('  Layer: {0}\n  Act Func: {1}, {2}'.format(
-        #     layer, actfunc_1.__name__, actfunc_2.__name__)
-        # )
+        print('[Network info]')
+        print('  Unit:\t{0}\n  Out:\t{1}\n  Layer:\t{2}\n  Act Func:\t{3}, {4}'.format(
+            n_unit, n_out, layer, actfunc_1.__name__, actfunc_2.__name__)
+        )
 
     def __call__(self, x):
         h = self.actfunc_1(self.bn1(self.conv1(x)))

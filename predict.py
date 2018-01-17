@@ -6,6 +6,7 @@ help = 'スナップショットを利用した画像の生成'
 
 import os
 import cv2
+import json
 import argparse
 import numpy as np
 
@@ -18,17 +19,17 @@ from chainer.cuda import to_cpu
 
 from network import JC
 from func import argsPrint, getCh, img2arr, arr2img
-from func import imgSplit, imgEncodeDecode
+from func import imgSplit, imgEncodeDecode, getActFunc
 
 
 def command():
     parser = argparse.ArgumentParser(description=help)
     parser.add_argument('model',
                         help='使用する学習済みモデル')
+    parser.add_argument('param',
+                        help='使用するモデルパラメータ')
     parser.add_argument('jpeg', nargs='+',
                         help='使用する画像のパス')
-    parser.add_argument('--channel', '-c', type=int, default=1,
-                        help='画像のチャンネル数（default: 1 channel）')
     parser.add_argument('--img_size', '-s', type=int, default=32,
                         help='生成される画像サイズ（default: 32 pixel）')
     parser.add_argument('--quality', '-q', type=int, default=5,
@@ -42,9 +43,22 @@ def command():
     return parser.parse_args()
 
 
-def predict(model, args, img, ch, val):
+def getModelParam(path):
+    try:
+        with open(path, 'r') as f:
+            d = json.load(f)
 
-    comp = imgEncodeDecode([img], ch, args.quality)
+    except json.JSONDecodeError as e:
+        print('JSONDecodeError: ', e)
+
+    af1 = getActFunc(d['actfunc_1'])
+    af2 = getActFunc(d['actfunc_2'])
+    return d['unit'], d['img_ch'], d['layer'], af1, af2
+
+
+def predict(model, args, img, ch, ch_flg, val):
+
+    comp = imgEncodeDecode([img], ch_flg, args.quality)
 
     if not os.path.isdir(args.out_path):
         os.makedirs(args.out_path)
@@ -60,7 +74,7 @@ def predict(model, args, img, ch, val):
         x = img2arr(comp[i:i + args.batch], gpu=args.gpu)
         y = model.predictor(x)
         y = to_cpu(y.array)
-        y = arr2img(y, args.channel, args.img_size * 2)
+        y = arr2img(y, ch, args.img_size * 2)
         imgs.extend(y)
 
     buf = [np.vstack(imgs[i * size[0]: (i + 1) * size[0]])
@@ -77,8 +91,10 @@ def predict(model, args, img, ch, val):
 
 
 def main(args):
-    ch = getCh(args.channel)
-    imgs = [cv2.imread(name, ch) for name in args.jpeg]
+    unit, ch, layer, af1, af2 = getModelParam(args.param)
+
+    ch_flg = getCh(ch)
+    imgs = [cv2.imread(name, ch_flg) for name in args.jpeg]
 
     model = L.Classifier(
         JC(n_unit=16, n_out=1, layer=3, actfunc_1=F.relu, actfunc_2=F.sigmoid)
@@ -91,7 +107,7 @@ def main(args):
     if args.gpu >= 0:
         chainer.cuda.get_device_from_id(args.gpu).use()
         model.to_gpu()
-    imgs = [predict(model, args, img, ch, i) for i, img in enumerate(imgs)]
+    imgs = [predict(model, args, img, ch, ch_flg, i) for i, img in enumerate(imgs)]
     for i in imgs:
         cv2.imshow('test', i)
         cv2.waitKey()

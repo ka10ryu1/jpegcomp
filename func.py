@@ -9,6 +9,8 @@ try:
 except ImportError:
     print('not import cupy')
 
+import chainer.functions as F
+
 
 def argsPrint(p, bar=30):
     """
@@ -118,3 +120,56 @@ def img2arr(imgs, norm=255, dtype=np.float32, gpu=-1):
 def arr2img(arr, ch, size, norm=255, dtype=np.uint8):
     y = np.array(arr).reshape((-1, size, size, ch)) * 255
     return np.array(y, dtype=np.uint8)
+
+
+def getLossfun(lossfun_str):
+    if(lossfun_str.lower() == 'mse'):
+        lossfun = F.mean_squared_error
+
+    elif(lossfun_str.lower() == 'mae'):
+        lossfun = F.mean_absolute_error
+
+    elif(lossfun_str.lower() == 'abs'):
+        lossfun = F.absolute_error
+
+    elif(lossfun_str.lower() == 'se'):
+        lossfun = F.squared_error
+
+    elif(lossfun_str.lower() == 'softmax'):
+        lossfun = F.softmax_cross_entropy
+
+    else:
+        lossfun = F.softmax_cross_entropy
+
+    return lossfun
+
+
+def getActFunc(actfunc_str):
+    if(actfunc_str.lower() == 'relu'):
+        actfunc = F.relu
+
+    elif(actfunc_str.lower() == 'elu'):
+        actfunc = F.elu
+
+    elif(actfunc_str.lower() == 'c_relu'):
+        actfunc = F.clipped_relu
+
+    elif(actfunc_str.lower() == 'l_relu'):
+        actfunc = F.leaky_relu
+
+    elif(actfunc_str.lower() == 'sigmoid'):
+        actfunc = F.sigmoid
+
+    elif(actfunc_str.lower() == 'h_sigmoid'):
+        actfunc = F.hard_sigmoid
+
+    elif(actfunc_str.lower() == 'tanh'):
+        actfunc = F.hard_sigmoid
+
+    elif(actfunc_str.lower() == 's_plus'):
+        actfunc = F.soft_plus
+
+    else:
+        actfunc = F.relu
+
+    return actfunc

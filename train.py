@@ -5,20 +5,20 @@ help = '学習メイン部'
 #
 
 import os
+import json
 import argparse
 import numpy as np
 from datetime import datetime
 
 import chainer
 import chainer.links as L
-import chainer.functions as F
 from chainer import training
 from chainer.training import extensions
 from chainer.datasets import tuple_dataset
 
 
 from network import JC
-from func import argsPrint, imgs2x, img2arr
+from func import argsPrint, imgs2x, img2arr, getLossfun, getActFunc
 
 
 def command():
@@ -72,57 +72,11 @@ def getImgData(folder):
     return train, test
 
 
-def getLossfun(lossfun_str):
-    if(lossfun_str.lower() == 'mse'):
-        lossfun = F.mean_squared_error
+def getFilePath(folder, name, ext):
+    if not os.path.isdir(folder):
+        os.makedirs(folder)
 
-    elif(lossfun_str.lower() == 'mae'):
-        lossfun = F.mean_absolute_error
-
-    elif(lossfun_str.lower() == 'abs'):
-        lossfun = F.absolute_error
-
-    elif(lossfun_str.lower() == 'se'):
-        lossfun = F.squared_error
-
-    elif(lossfun_str.lower() == 'softmax'):
-        lossfun = F.softmax_cross_entropy
-
-    else:
-        lossfun = F.softmax_cross_entropy
-
-    return lossfun
-
-
-def getActFunc(actfunc_str):
-    if(actfunc_str.lower() == 'relu'):
-        actfunc = F.relu
-
-    elif(actfunc_str.lower() == 'elu'):
-        actfunc = F.elu
-
-    elif(actfunc_str.lower() == 'c_relu'):
-        actfunc = F.clipped_relu
-
-    elif(actfunc_str.lower() == 'l_relu'):
-        actfunc = F.leaky_relu
-
-    elif(actfunc_str.lower() == 'sigmoid'):
-        actfunc = F.sigmoid
-
-    elif(actfunc_str.lower() == 'h_sigmoid'):
-        actfunc = F.hard_sigmoid
-
-    elif(actfunc_str.lower() == 'tanh'):
-        actfunc = F.hard_sigmoid
-
-    elif(actfunc_str.lower() == 's_plus'):
-        actfunc = F.soft_plus
-
-    else:
-        actfunc = F.relu
-
-    return actfunc
+    return os.path.join(folder, name + ext)
 
 
 def main(args):
@@ -153,10 +107,14 @@ def main(args):
 
     # Load dataset
     train, test = getImgData(args.in_path)
-    model_name = 'unit({0})_ch({1})_layer({2})_actFunc({3}_{4})_{5}.model'.format(
-        args.unit, train[0][0].shape[0], args.layer_num,
-        actfunc_1.__name__, actfunc_2.__name__, exec_time
-    )
+
+    model_param = {
+        'unit':  args.unit,
+        'img_ch': train[0][0].shape[0],
+        'layer': args.layer_num,
+        'actfunc_1': args.actfunc_1,
+        'actfunc_2': args.actfunc_2
+    }
 
     train_iter = chainer.iterators.SerialIterator(train, args.batchsize)
     test_iter = chainer.iterators.SerialIterator(test, args.batchsize,
@@ -210,13 +168,16 @@ def main(args):
         # Resume from a snapshot
         chainer.serializers.load_npz(args.resume, trainer)
 
-    if not os.path.isdir(args.out_path):
-        os.makedirs(args.out_path)
-
     if args.only_check is False:
         # Run the training
         trainer.run()
-        chainer.serializers.save_npz(os.path.join(args.out_path, model_name), model)
+        chainer.serializers.save_npz(
+            getFilePath(args.out_path, exec_time, '.model'),
+            model
+        )
+        with open(getFilePath(args.out_path, exec_time, '.json'), 'w') as f:
+            json.dump(model_param, f)
+
     else:
         print('Check Finish:', exec_time)
 

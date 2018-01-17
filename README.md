@@ -87,6 +87,11 @@ plot:	True
 resume:
 unit:	16
 ------------------------------
+[Network info]
+  Unit:	16
+  Out:	1
+  Layer:	3
+  Act Func:	relu, sigmoid
 epoch       main/loss   validation/main/loss  elapsed_time
 1           0.176222    0.183978              119.484
 2           0.131534    0.124229              239.324
@@ -107,7 +112,7 @@ resultフォルダ中に*.log、*_graph.dot、*_plot.png、*.snapshot、*.model�
 
 ### 実行
 
-$ ./predict.py ./result/*.model ./FontData/The_Night*
+$ ./predict.py ./result/*.model ./result/*.json ./FontData/The_Night*
 
 ### 端末の確認
 
@@ -124,6 +129,11 @@ model:	./result/unit(16)_ch(1)_layer(3)_actFunc(relu_sigmoid)_180117-150852.mode
 out_path:	./result/
 quality:	5
 ------------------------------
+[Network info]
+  Unit:	16
+  Out:	1
+  Layer:	3
+  Act Func:	relu, sigmoid
 
 ### 生成物の確認
 
