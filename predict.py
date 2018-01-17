@@ -12,6 +12,7 @@ import numpy as np
 
 import chainer
 import chainer.links as L
+import chainer.functions as F
 from chainer.cuda import to_cpu
 
 
@@ -22,8 +23,8 @@ from func import imgSplit, imgEncodeDecode
 
 def command():
     parser = argparse.ArgumentParser(description=help)
-    parser.add_argument('snapshot',
-                        help='使用するスナップショット')
+    parser.add_argument('model',
+                        help='使用する学習済みモデル')
     parser.add_argument('jpeg', nargs='+',
                         help='使用する画像のパス')
     parser.add_argument('--channel', '-c', type=int, default=1,
@@ -79,10 +80,12 @@ def main(args):
     ch = getCh(args.channel)
     imgs = [cv2.imread(name, ch) for name in args.jpeg]
 
-    model = L.Classifier(JC())
+    model = L.Classifier(
+        JC(n_unit=16, n_out=1, layer=3, actfunc_1=F.relu, actfunc_2=F.sigmoid)
+    )
     chainer.serializers.load_npz(
-        args.snapshot,
-        model, path='updater/model:main/'
+        args.model,
+        model,  # path='model:main/'
     )
 
     if args.gpu >= 0:

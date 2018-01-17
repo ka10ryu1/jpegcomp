@@ -26,31 +26,31 @@ def command():
     parser.add_argument('-i', '--in_path', default='./result/',
                         help='入力データセットのフォルダ (default: ./result/)')
     parser.add_argument('-lf', '--lossfun', default='mse',
-                        help='損失関数 (default: MSE)')
+                        help='損失関数 (default: mse, other: mae, abs, se, softmax)')
     parser.add_argument('-a1', '--actfunc_1', default='relu',
-                        help='活性化関数(1) (default: relu)')
+                        help='活性化関数(1) (default: relu, other: elu, c_relu, l_relu, sigmoid, h_sigmoid, tanh, s_plus)')
     parser.add_argument('-a2', '--actfunc_2', default='sigmoid',
-                        help='活性化関数(2) (default: sigmoid)')
+                        help='活性化関数(2) (default: sigmoid, other: relu, elu, c_relu, l_relu, h_sigmoid, tanh, s_plus)')
     parser.add_argument('-ln', '--layer_num', type=int, default=3,
                         help='ネットワーク層の数 (default: 3)')
-    parser.add_argument('-u', '--unit', type=int, default=128,
-                        help='ネットワークのユニット数(default: 128)')
+    parser.add_argument('-u', '--unit', type=int, default=16,
+                        help='ネットワークのユニット数 (default: 16)')
     parser.add_argument('-b', '--batchsize', type=int, default=100,
                         help='ミニバッチサイズ (default: 100)')
-    parser.add_argument('-e', '--epoch', type=int, default=20,
-                        help='エポック数 (default 20)')
+    parser.add_argument('-e', '--epoch', type=int, default=10,
+                        help='学習のエポック数 (default 10)')
     parser.add_argument('-f', '--frequency', type=int, default=-1,
                         help='スナップショット周期 (default: -1)')
     parser.add_argument('-g', '--gpu_id', type=int, default=-1,
-                        help='GPU ID (default -1)')
+                        help='使用するGPUのID (default -1)')
     parser.add_argument('-o', '--out_path', default='./result/',
                         help='生成物の保存先(default: ./result/)')
     parser.add_argument('-r', '--resume', default='',
                         help='使用するスナップショットのパス(default: no use)')
     parser.add_argument('--noplot', dest='plot', action='store_false',
-                        help='Disable PlotReport extension')
+                        help='学習過程をPNG形式で出力しない場合に使用する')
     parser.add_argument('--only_check', action='store_true',
-                        help='option test')
+                        help='オプション引数が正しく設定されているかチェックする')
     return parser.parse_args()
 
 
@@ -98,8 +98,29 @@ def getActFunc(actfunc_str):
     if(actfunc_str.lower() == 'relu'):
         actfunc = F.relu
 
+    elif(actfunc_str.lower() == 'elu'):
+        actfunc = F.elu
+
+    elif(actfunc_str.lower() == 'c_relu'):
+        actfunc = F.clipped_relu
+
+    elif(actfunc_str.lower() == 'l_relu'):
+        actfunc = F.leaky_relu
+
     elif(actfunc_str.lower() == 'sigmoid'):
         actfunc = F.sigmoid
+
+    elif(actfunc_str.lower() == 'h_sigmoid'):
+        actfunc = F.hard_sigmoid
+
+    elif(actfunc_str.lower() == 'tanh'):
+        actfunc = F.hard_sigmoid
+
+    elif(actfunc_str.lower() == 's_plus'):
+        actfunc = F.soft_plus
+
+    else:
+        actfunc = F.relu
 
     return actfunc
 
