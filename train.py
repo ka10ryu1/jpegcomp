@@ -7,6 +7,7 @@ help = '学習メイン部'
 import os
 import argparse
 import numpy as np
+from datetime import datetime
 
 import chainer
 import chainer.links as L
@@ -48,6 +49,8 @@ def command():
                         help='使用するスナップショットのパス(default: no use)')
     parser.add_argument('--noplot', dest='plot', action='store_false',
                         help='Disable PlotReport extension')
+    parser.add_argument('--only_check', action='store_true',
+                        help='option test')
     return parser.parse_args()
 
 
@@ -103,13 +106,16 @@ def getActFunc(actfunc_str):
 
 def main(args):
 
+    now = datetime.today()
+    exec_time = now.strftime('%y%m%d-%H%M%S')
+
     # Set up a neural network to train
     # Classifier reports softmax cross entropy loss and accuracy at every
     # iteration, which will be used by the PrintReport extension below.
     actfunc_1 = getActFunc(args.actfunc_1)
     actfunc_2 = getActFunc(args.actfunc_2)
     model = L.Classifier(
-        JC(n_size=args.unit, layer=args.layer_num,
+        JC(n_unit=args.unit, layer=args.layer_num,
            actfunc_1=actfunc_1, actfunc_2=actfunc_2),
         lossfun=getLossfun(args.lossfun)
     )
@@ -126,9 +132,9 @@ def main(args):
 
     # Load dataset
     train, test = getImgData(args.in_path)
-    model_name = 'unit({0})_ch({1})_layer({2})_actFunc({3}_{4}).model'.format(
+    model_name = 'unit({0})_ch({1})_layer({2})_actFunc({3}_{4})_{5}.model'.format(
         args.unit, train[0][0].shape[0], args.layer_num,
-        actfunc_1.__name__, actfunc_2.__name__
+        actfunc_1.__name__, actfunc_2.__name__, exec_time
     )
 
     train_iter = chainer.iterators.SerialIterator(train, args.batchsize)
@@ -144,20 +150,25 @@ def main(args):
 
     # Dump a computational graph from 'loss' variable at the first iteration
     # The "main" refers to the target link of the "main" optimizer.
-    trainer.extend(extensions.dump_graph('main/loss'))
+    trainer.extend(
+        extensions.dump_graph('main/loss', out_name=exec_time + '_graph.dot')
+    )
 
     # Take a snapshot for each specified epoch
     frequency = args.epoch if args.frequency == -1 else max(1, args.frequency)
-    trainer.extend(extensions.snapshot(), trigger=(frequency, 'epoch'))
+    trainer.extend(
+        extensions.snapshot(filename=exec_time + '_{.updater.epoch}.snapshot'),
+        trigger=(frequency, 'epoch')
+    )
 
     # Write a log of evaluation statistics for each epoch
-    trainer.extend(extensions.LogReport())
+    trainer.extend(extensions.LogReport(log_name=exec_time + '.log'))
 
     # Save two plot images to the result dir
     if args.plot and extensions.PlotReport.available():
         trainer.extend(
             extensions.PlotReport(['main/loss', 'validation/main/loss'],
-                                  'epoch', file_name='loss.png'))
+                                  'epoch', file_name=exec_time + '_plot.png'))
 
     # Print selected entries of the log to stdout
     # Here "main" refers to the target link of the "main" optimizer again, and
@@ -181,10 +192,12 @@ def main(args):
     if not os.path.isdir(args.out_path):
         os.makedirs(args.out_path)
 
-    # Run the training
-    trainer.run()
-
-    chainer.serializers.save_npz(os.path.join(args.out_path, model_name), model)
+    if args.only_check is False:
+        # Run the training
+        trainer.run()
+        chainer.serializers.save_npz(os.path.join(args.out_path, model_name), model)
+    else:
+        print('Check Finish:', exec_time)
 
 
 if __name__ == '__main__':
