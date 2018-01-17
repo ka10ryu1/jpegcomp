@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 help = 'dot言語で記述されたファイルをPNG形式に変換する'
 
-import pydot
 import os
+import pydot
 import argparse
 
 from func import argsPrint, getFilePath
@@ -21,8 +21,11 @@ def command():
 
 def main(args):
     for name in args.dot:
+        # dot言語で記述されたファイルを読み込む
         (graph,) = pydot.graph_from_dot_file(name)
+        # 保存用の名前を抽出する
         name, _ = os.path.splitext(os.path.basename(name))
+        # 形式を選択して保存する
         if(args.ext == 'png'):
             graph.write_png(getFilePath(args.out_path, name, '.png'))
         elif(args.ext == 'pdf'):

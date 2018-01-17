@@ -29,13 +29,20 @@ def command():
 
 
 def main(args):
+    # OpenCV形式で画像を読み込むために
+    # チャンネル数をOpenCVのフラグ形式に変換する
     ch = getCh(args.channel)
+    # OpenCV形式で画像をリストで読み込む
     imgs = [cv2.imread(name, ch) for name in args.jpeg]
-
+    # 画像を圧縮して分割する（学習の入力データに相当）
     comp, _ = imgSplit(imgEncodeDecode(imgs, ch, args.quality),
                        args.img_size, args.round)
+    # 画像を分割する（正解データに相当）
     raw, _ = imgSplit(imgs, args.img_size, args.round)
 
+    # 画像の並び順をシャッフルするための配列を作成する
+    # compとrawの対応を崩さないようにシャッフルしなければならない
+    # また、train_sizeで端数を切り捨てる
     shuffle = np.random.permutation(range(len(comp)))
     train_size = int(len(comp) * args.train_per_all)
     train_comp = comp[shuffle[:train_size]]
@@ -47,9 +54,12 @@ def main(args):
     print('test comp: ', test_comp.shape)
     print('     raw:  ', test_raw.shape)
 
+    # 保存するフォルダがなければ生成する
     if not os.path.isdir(args.out_path):
         os.makedirs(args.out_path)
 
+    # 生成したデータをnpz形式でデータセットとして保存する
+    # ここで作成したデータの中身を確認する場合はnpz2jpg.pyを使用するとよい
     np.savez(os.path.join(args.out_path, 'train'),
              comp=train_comp, raw=train_raw)
     np.savez(os.path.join(args.out_path, 'test'),

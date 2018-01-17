@@ -74,19 +74,25 @@ def getImgData(folder):
 
 def main(args):
 
+    # 各種データをユニークな名前で保存するために時刻情報を取得する
     now = datetime.today()
     exec_time = now.strftime('%y%m%d-%H%M%S')
 
     # Set up a neural network to train
     # Classifier reports softmax cross entropy loss and accuracy at every
     # iteration, which will be used by the PrintReport extension below.
+
+    # 活性化関数を取得する
     actfunc_1 = getActFunc(args.actfunc_1)
     actfunc_2 = getActFunc(args.actfunc_2)
+    # モデルを決定する
     model = L.Classifier(
         JC(n_unit=args.unit, layer=args.layer_num,
            actfunc_1=actfunc_1, actfunc_2=actfunc_2),
         lossfun=getLossfun(args.lossfun)
     )
+    # Accuracyは今回使用しないのでFalseにする
+    # もしも使用したいのであれば、自分でAccuracyを評価する関数を作成する必要あり？
     model.compute_accuracy = False
 
     if args.gpu_id >= 0:
@@ -100,6 +106,7 @@ def main(args):
 
     # Load dataset
     train, test = getImgData(args.in_path)
+    # predict.pyでモデルを決定する際に必要なので記憶しておく
     model_param = {
         'unit':  args.unit,
         'img_ch': train[0][0].shape[0],
@@ -163,10 +170,15 @@ def main(args):
     if args.only_check is False:
         # Run the training
         trainer.run()
+
+        # 最後にモデルを保存する
+        # スナップショットを使ってもいいが、
+        # スナップショットはファイルサイズが大きいので
         chainer.serializers.save_npz(
             getFilePath(args.out_path, exec_time, '.model'),
             model
         )
+        # predict.pyでモデルを決定するために学習が終わったところでjson形式で保存する
         with open(getFilePath(args.out_path, exec_time, '.json'), 'w') as f:
             json.dump(model_param, f)
 
@@ -177,5 +189,4 @@ def main(args):
 if __name__ == '__main__':
     args = command()
     argsPrint(args)
-
     main(args)

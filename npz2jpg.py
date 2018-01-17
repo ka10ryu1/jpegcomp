@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-help = '画像を読み込んでデータセットを作成する'
+help = '作成したデータセットの中身を画像として出力する'
 
 import cv2
 import argparse
@@ -24,17 +24,24 @@ def command():
 
 
 def main(args):
+    # NPZ形式のファイルを読み込む
     np_arr = np.load(args.npz)
     comp = np_arr['comp']
     raw = np_arr['raw']
 
+    # 全てを画像化するのは無駄なのでランダムに抽出する
     np.random.seed(args.random_seed)
     shuffle = np.random.permutation(range(len(comp)))
+    # ランダムに抽出した画像を結合する
+    # 上半分にはcompの画像をimg_numの数だけ
+    # 下半分にはrawの画像をimg_numの数だけ結合した画像を作成する
     img = np.vstack((np.hstack(comp[shuffle[:args.img_num]]),
                      np.hstack(raw[shuffle[:args.img_num]])))
+    # そのままのサイズでは画像が小さいので、拡大する
     w, h = img.shape[:2]
     img = cv2.resize(img, (h * args.img_rate, w * args.img_rate),
                      cv2.INTER_NEAREST)
+    # 作成した画像を表示・保存する
     cv2.imshow('test', img)
     cv2.waitKey(0)
     cv2.imwrite(getFilePath(args.out_path, 'npz2jpg', '.jpg'), img)
