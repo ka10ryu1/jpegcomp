@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 help = '便利機能'
 
+import os
 import cv2
 import numpy as np
 
@@ -173,3 +174,10 @@ def getActFunc(actfunc_str):
         actfunc = F.relu
 
     return actfunc
+
+
+def getFilePath(folder, name, ext):
+    if not os.path.isdir(folder):
+        os.makedirs(folder)
+
+    return os.path.join(folder, name + ext)

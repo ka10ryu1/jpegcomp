@@ -4,22 +4,19 @@
 help = 'スナップショットを利用した画像の生成'
 #
 
-import os
 import cv2
 import json
 import argparse
 import numpy as np
-
 
 import chainer
 import chainer.links as L
 import chainer.functions as F
 from chainer.cuda import to_cpu
 
-
 from network import JC
 from func import argsPrint, getCh, img2arr, arr2img
-from func import imgSplit, imgEncodeDecode, getActFunc
+from func import imgSplit, imgEncodeDecode, getActFunc, getFilePath
 
 
 def command():
@@ -59,12 +56,8 @@ def getModelParam(path):
 def predict(model, args, img, ch, ch_flg, val):
 
     comp = imgEncodeDecode([img], ch_flg, args.quality)
-
-    if not os.path.isdir(args.out_path):
-        os.makedirs(args.out_path)
-
     cv2.imwrite(
-        os.path.join(args.out_path, 'comp-' + str(val * 10).zfill(3) + '.jpg'),
+        getFilePath(args.out_path, 'comp-' + str(val * 10).zfill(3), '.jpg'),
         comp[0]
     )
 
@@ -84,39 +77,34 @@ def predict(model, args, img, ch, ch_flg, val):
     half_size = (int(img.shape[1] * h), int(img.shape[0] * h))
     flg = cv2.INTER_NEAREST
     img = cv2.resize(img, half_size, flg)
-    cv2.imwrite(os.path.join(
-        args.out_path, 'comp-' + str(val * 10 + 1).zfill(3) + '.jpg'), img
+    cv2.imwrite(
+        getFilePath(args.out_path, 'comp-' + str(val * 10 + 1).zfill(3), '.jpg'),
+        img
     )
     return img
 
 
 def main(args):
     unit, ch, layer, af1, af2 = getModelParam(args.param)
-
     ch_flg = getCh(ch)
     imgs = [cv2.imread(name, ch_flg) for name in args.jpeg]
 
     model = L.Classifier(
         JC(n_unit=16, n_out=1, layer=3, actfunc_1=F.relu, actfunc_2=F.sigmoid)
     )
-    chainer.serializers.load_npz(
-        args.model,
-        model,  # path='model:main/'
-    )
+    chainer.serializers.load_npz(args.model, model)
 
     if args.gpu >= 0:
         chainer.cuda.get_device_from_id(args.gpu).use()
         model.to_gpu()
+
     imgs = [predict(model, args, img, ch, ch_flg, i) for i, img in enumerate(imgs)]
     for i in imgs:
         cv2.imshow('test', i)
         cv2.waitKey()
 
-    # print(y.shape)
-
 
 if __name__ == '__main__':
     args = command()
     argsPrint(args)
-
     main(args)

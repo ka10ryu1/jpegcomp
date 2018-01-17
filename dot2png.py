@@ -5,7 +5,7 @@ import pydot
 import os
 import argparse
 
-from func import argsPrint
+from func import argsPrint, getFilePath
 
 
 def command():
@@ -20,18 +20,15 @@ def command():
 
 
 def main(args):
-    if not os.path.isdir(args.out_path):
-        os.makedirs(args.out_path)
-
     for name in args.dot:
         (graph,) = pydot.graph_from_dot_file(name)
         name, _ = os.path.splitext(os.path.basename(name))
         if(args.ext == 'png'):
-            graph.write_png(os.path.join(args.out_path, name + '.png'))
+            graph.write_png(getFilePath(args.out_path, name, '.png'))
         elif(args.ext == 'pdf'):
-            graph.write_pdf(os.path.join(args.out_path, name + '.pdf'))
+            graph.write_pdf(getFilePath(args.out_path, name, '.pdf'))
         elif(args.ext == 'svg'):
-            graph.write_svg(os.path.join(args.out_path, name + '.svg'))
+            graph.write_svg(getFilePath(args.out_path, name, '.svg'))
         else:
             print('[ERROR] ext option miss:', args.ext)
 

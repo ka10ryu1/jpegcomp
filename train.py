@@ -18,7 +18,7 @@ from chainer.datasets import tuple_dataset
 
 
 from network import JC
-from func import argsPrint, imgs2x, img2arr, getLossfun, getActFunc
+from func import argsPrint, imgs2x, img2arr, getLossfun, getActFunc, getFilePath
 
 
 def command():
@@ -72,13 +72,6 @@ def getImgData(folder):
     return train, test
 
 
-def getFilePath(folder, name, ext):
-    if not os.path.isdir(folder):
-        os.makedirs(folder)
-
-    return os.path.join(folder, name + ext)
-
-
 def main(args):
 
     now = datetime.today()
@@ -107,7 +100,6 @@ def main(args):
 
     # Load dataset
     train, test = getImgData(args.in_path)
-
     model_param = {
         'unit':  args.unit,
         'img_ch': train[0][0].shape[0],

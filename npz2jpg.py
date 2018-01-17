@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 help = '画像を読み込んでデータセットを作成する'
 
-import os
 import cv2
 import argparse
 import numpy as np
 
-from func import argsPrint
+from func import argsPrint, getFilePath
 
 
 def command():
@@ -24,7 +23,7 @@ def command():
     return parser.parse_args()
 
 
-wdef main(args):
+def main(args):
     np_arr = np.load(args.npz)
     comp = np_arr['comp']
     raw = np_arr['raw']
@@ -38,11 +37,7 @@ wdef main(args):
                      cv2.INTER_NEAREST)
     cv2.imshow('test', img)
     cv2.waitKey(0)
-
-    if not os.path.isdir(args.out_path):
-        os.makedirs(args.out_path)
-
-    cv2.imwrite(os.path.join(args.out_path, 'npz2jpg.jpg'), img)
+    cv2.imwrite(getFilePath(args.out_path, 'npz2jpg', '.jpg'), img)
 
 
 if __name__ == '__main__':
