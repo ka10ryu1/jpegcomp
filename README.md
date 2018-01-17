@@ -16,7 +16,10 @@
 # ファイル構成
 
 ## 生成方法
-o$ ls `find ./ -maxdepth 2 -type f -print` | xargs grep 'help = ' --include=*.py >& log.txt
+
+```console
+$ ls `find ./ -maxdepth 2 -type f -print` | xargs grep 'help = ' --include=*.py >& log.txt
+```
 
 ## ファイル
 
@@ -35,11 +38,14 @@ o$ ls `find ./ -maxdepth 2 -type f -print` | xargs grep 'help = ' --include=*.py
 
 ### 実行
 
+```console
 $ ./create_dataset.py ./FontData/font_0[0-1]*
+```
 
 ### 端末の確認
 以下のとおりであれば正常に実行できている
 
+```console
 not import cupy
 ------------------------------
 channel:	1
@@ -56,7 +62,7 @@ train comp: (6800, 32, 32)
       raw:  (6800, 32, 32)
 test comp:  (1200, 32, 32)
      raw:   (1200, 32, 32)
-
+```
 `not import cupy`はcupyをインストールしていない場合に表示される
 
 ### 生成物の確認
@@ -67,10 +73,13 @@ resultフォルダが作成され、その中にtest.npzとtrain.npzが生成さ
 
 ### 実行
 
+```console
 $ ./train.py
+```
 
 ### 端末の確認
 
+```console
 not import cupy
 ------------------------------
 actfunc_1:	relu
@@ -104,6 +113,7 @@ epoch       main/loss   validation/main/loss  elapsed_time
 8           0.0689926   0.064955              950.95
 9           0.0630572   0.0585681             1068.53
 10          0.0578445   0.0542895             1185.45
+```
 
 ### 生成物の確認
 
@@ -113,10 +123,13 @@ resultフォルダ中に*.log、*_graph.dot、*_plot.png、*.snapshot、*.model�
 
 ### 実行
 
+```console
 $ ./predict.py ./result/*.model ./result/*.json ./FontData/The_Night*
+```
 
 ### 端末の確認
 
+```console
 not import cupy
 ------------------------------
 batch:	100
@@ -135,6 +148,7 @@ quality:	5
   Out:	1
   Layer:	3
   Act Func:	relu, sigmoid
+```
 
 ### 生成物の確認
 
@@ -144,12 +158,18 @@ resultフォルダ中にcomp-*.jpgファイルが生成されていればOK
 
 ## 生成されたデータの削除
 
+```console
 $ ./clean_all.sh
+```
 
 ## ハイパーパラメータを変更して検証
 
+```console
 $ ./auto_train.sh
+```
 
 ## Dotファイルの画像化
 
+```console
 $ ./dot2png.py ./result/*.dot
+```
