@@ -11,25 +11,29 @@ import chainer.links as L
 
 class JC(Chain):
     def __init__(self,
-                 n_in=1, n_size=128, n_out=1,
+                 n_unit=128, n_out=1,
                  layer=3, actfunc_1=F.relu, actfunc_2=F.sigmoid):
         """
-        [in] n_in:    入力チャンネル
-        [in] n_size:  中間チャンネルサイズ
-        [in] n_out:   出力チャンネル
+        [in] n_unit:    中間層のユニット数
+        [in] n_out:     出力チャンネル
+        [in] layer:     中間層の数
+        [in] actfunc_1: 活性化関数
+        [in] actfunc_2: 活性化関数（最終段に使用する）
         """
+
         super(JC, self).__init__()
         with self.init_scope():
-            self.conv1 = L.Convolution2D(None, n_size, 9,  pad=4)
-            self.bn1 = L.BatchNormalization(n_size)
-            self.conv2 = L.Convolution2D(None, n_size, 1)
-            self.bn2 = L.BatchNormalization(n_size)
+            self.conv1 = L.Convolution2D(None, n_unit, 9,  pad=4)
+            self.bn1 = L.BatchNormalization(n_unit)
+            self.conv2 = L.Convolution2D(None, n_unit, 1)
+            self.bn2 = L.BatchNormalization(n_unit)
             if(layer > 3):
-                self.conv3 = L.Convolution2D(None, n_size, 1)
-                self.bn3 = L.BatchNormalization(n_size)
+                self.conv3 = L.Convolution2D(None, n_unit, 1)
+                self.bn3 = L.BatchNormalization(n_unit)
+
             if(layer > 4):
-                self.conv4 = L.Convolution2D(None, n_size, 1)
-                self.bn4 = L.BatchNormalization(n_size)
+                self.conv4 = L.Convolution2D(None, n_unit, 1)
+                self.bn4 = L.BatchNormalization(n_unit)
 
             self.convN = L.Convolution2D(None, 4, 5,  pad=2)
             self.bnN = L.BatchNormalization(1)
@@ -48,11 +52,11 @@ class JC(Chain):
         h = self.actfunc_1(self.bn2(self.conv2(h)))
         if(self.layer > 3):
             h = self.actfunc_1(self.bn3(self.conv3(h)))
+
         if(self.layer > 4):
             h = self.actfunc_1(self.bn4(self.conv4(h)))
 
-        y = self.actfunc_2(self.bnN(self.PS(self.convN(h))))
-        return y
+        return self.actfunc_2(self.bnN(self.PS(self.convN(h))))
 
     def PS(self, h, r=2):
         """
