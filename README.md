@@ -4,14 +4,12 @@
 
 # 動作環境
 
-- OS
-  - Ubuntu 16.04.3 LTS ($ cat /etc/issue)
-- Python
-  - 3.5.2 ($ python3 -V)
-- chainer
-  - 3.2 ($ pip3 show chainer | grep Ver)
-- numpy
-  1.13.3 ($ pip3 show numpy | grep Ver)
+- Ubuntu 16.04.3 LTS ($ cat /etc/issue)
+- Python 3.5.2 ($ python3 -V)
+- chainer 3.2 ($ pip3 show chainer | grep Ver)
+- numpy 1.13.3 ($ pip3 show numpy | grep Ver)
+- cupy ?
+- opencv-python ?  
 
 # ファイル構成
 
