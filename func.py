@@ -5,8 +5,8 @@ help = '便利機能'
 #
 
 import os
-import sys
 import cv2
+import inspect
 import numpy as np
 
 try:
@@ -67,7 +67,7 @@ def imgEncodeDecode(in_imgs, ch, quality=5):
     for img in in_imgs:
         result, encimg = cv2.imencode('.jpg', img, encode_param)
         if False == result:
-            print('could not encode image!')
+            print('[Error] {0}\n\tcould not encode image!'.format(fileFuncLine()))
             exit()
 
         decimg = cv2.imdecode(encimg, ch)
@@ -148,8 +148,8 @@ def getLossfun(lossfun_str):
         lossfun = F.softmax_cross_entropy
     else:
         lossfun = F.softmax_cross_entropy
-        print('\n[Warning] {0}: {1}->{2}\n'.format(
-            sys._getframe().f_code.co_name, lossfun_str, lossfun.__name__)
+        print('\n[Warning] {0}\n\t{1}->{2}\n'.format(
+            fileFuncLine(), lossfun_str, lossfun.__name__)
         )
 
     return lossfun
@@ -174,8 +174,8 @@ def getActfun(actfun_str):
         actfun = F.soft_plus
     else:
         actfun = F.relu
-        print('\n[Warning] {0}: {1}->{2}\n'.format(
-            sys._getframe().f_code.co_name, actfun_str, actfun.__name__)
+        print('\n[Warning] {1}\n\t{0}->{1}'.format(
+            fileFuncLine(), actfun_str, actfun.__name__)
         )
 
     return actfun
@@ -186,3 +186,10 @@ def getFilePath(folder, name, ext):
         os.makedirs(folder)
 
     return os.path.join(folder, name + ext)
+
+
+def fileFuncLine():
+    funcname = inspect.currentframe().f_back.f_code.co_name
+    filename = os.path.basename(inspect.currentframe().f_back.f_code.co_filename)
+    lineno = inspect.currentframe().f_back.f_lineno
+    return '{0}, {1}(), {2}line'.format(filename, funcname, lineno)
