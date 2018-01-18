@@ -16,7 +16,7 @@ from chainer.cuda import to_cpu
 
 from network import JC
 from func import argsPrint, getCh, img2arr, arr2img
-from func import imgSplit, imgEncodeDecode, getActFunc, getFilePath
+from func import imgSplit, imgEncodeDecode, getActfun, getFilePath
 
 
 def command():
@@ -48,8 +48,8 @@ def getModelParam(path):
     except json.JSONDecodeError as e:
         print('JSONDecodeError: ', e)
 
-    af1 = getActFunc(d['actfunc_1'])
-    af2 = getActFunc(d['actfunc_2'])
+    af1 = getActfun(d['actfun_1'])
+    af2 = getActfun(d['actfun_2'])
     return d['unit'], d['img_ch'], d['layer'], af1, af2
 
 
@@ -99,7 +99,7 @@ def main(args):
     imgs = [cv2.imread(name, ch_flg) for name in args.jpeg]
     # 学習モデルを生成する
     model = L.Classifier(
-        JC(n_unit=16, n_out=1, layer=3, actfunc_1=F.relu, actfunc_2=F.sigmoid)
+        JC(n_unit=16, n_out=1, layer=3, actfun_1=F.relu, actfun_2=F.sigmoid)
     )
     chainer.serializers.load_npz(args.model, model)
     # GPUの設定

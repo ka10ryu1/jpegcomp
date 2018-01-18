@@ -27,6 +27,12 @@ done
 shift $((OPTIND - 1))
 
 # test1
-./train.py -lf mae -a1 relu -a2 sigmoid -ln 2 -u 16 -b 400 -e 6 -f 3 $FLAG_CHK
+./train.py -lf mae -a1 relu -a2 sigmoid -ln 2 -u 16 -b 400 -e 20 -f 3 $FLAG_CHK
 # test2
-./train.py -lf mse -a1 relu -a2 sigmoid -ln 2 -u 16 -b 400 -e 6 -f 3 $FLAG_CHK
+./train.py -lf mse -a1 relu -a2 sigmoid -ln 2 -u 16 -b 400 -e 20 -f 3 $FLAG_CHK
+# test3
+./train.py -lf abs -a1 relu -a2 sigmoid -ln 2 -u 16 -b 400 -e 20 -f 3 $FLAG_CHK
+# test4
+./train.py -lf se -a1 relu -a2 sigmoid -ln 2 -u 16 -b 400 -e 20 -f 3 $FLAG_CHK
+# test5
+./train.py -lf softmax -a1 relu -a2 sigmoid -ln 2 -u 16 -b 400 -e 20 -f 3 $FLAG_CHK

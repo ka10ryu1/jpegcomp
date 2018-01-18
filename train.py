@@ -18,7 +18,7 @@ from chainer.datasets import tuple_dataset
 
 
 from network import JC
-from func import argsPrint, imgs2x, img2arr, getLossfun, getActFunc, getFilePath
+from func import argsPrint, imgs2x, img2arr, getLossfun, getActfun, getFilePath
 
 
 def command():
@@ -27,9 +27,9 @@ def command():
                         help='入力データセットのフォルダ (default: ./result/)')
     parser.add_argument('-lf', '--lossfun', default='mse',
                         help='損失関数 (default: mse, other: mae, abs, se, softmax)')
-    parser.add_argument('-a1', '--actfunc_1', default='relu',
+    parser.add_argument('-a1', '--actfun_1', default='relu',
                         help='活性化関数(1) (default: relu, other: elu, c_relu, l_relu, sigmoid, h_sigmoid, tanh, s_plus)')
-    parser.add_argument('-a2', '--actfunc_2', default='sigmoid',
+    parser.add_argument('-a2', '--actfun_2', default='sigmoid',
                         help='活性化関数(2) (default: sigmoid, other: relu, elu, c_relu, l_relu, h_sigmoid, tanh, s_plus)')
     parser.add_argument('-ln', '--layer_num', type=int, default=3,
                         help='ネットワーク層の数 (default: 3)')
@@ -83,12 +83,12 @@ def main(args):
     # iteration, which will be used by the PrintReport extension below.
 
     # 活性化関数を取得する
-    actfunc_1 = getActFunc(args.actfunc_1)
-    actfunc_2 = getActFunc(args.actfunc_2)
+    actfun_1 = getActfun(args.actfun_1)
+    actfun_2 = getActfun(args.actfun_2)
     # モデルを決定する
     model = L.Classifier(
         JC(n_unit=args.unit, layer=args.layer_num,
-           actfunc_1=actfunc_1, actfunc_2=actfunc_2),
+           actfun_1=actfun_1, actfun_2=actfun_2),
         lossfun=getLossfun(args.lossfun)
     )
     # Accuracyは今回使用しないのでFalseにする
@@ -111,8 +111,8 @@ def main(args):
         'unit':  args.unit,
         'img_ch': train[0][0].shape[0],
         'layer': args.layer_num,
-        'actfunc_1': args.actfunc_1,
-        'actfunc_2': args.actfunc_2
+        'actfun_1': args.actfun_1,
+        'actfun_2': args.actfun_2
     }
 
     train_iter = chainer.iterators.SerialIterator(train, args.batchsize)

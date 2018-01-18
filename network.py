@@ -12,13 +12,13 @@ import chainer.links as L
 class JC(Chain):
     def __init__(self,
                  n_unit=128, n_out=1,
-                 layer=3, actfunc_1=F.relu, actfunc_2=F.sigmoid):
+                 layer=3, actfun_1=F.relu, actfun_2=F.sigmoid):
         """
         [in] n_unit:    中間層のユニット数
         [in] n_out:     出力チャンネル
         [in] layer:     中間層の数
-        [in] actfunc_1: 活性化関数
-        [in] actfunc_2: 活性化関数（最終段に使用する）
+        [in] actfun_1: 活性化関数
+        [in] actfun_2: 活性化関数（最終段に使用する）
         """
 
         super(JC, self).__init__()
@@ -39,24 +39,24 @@ class JC(Chain):
             self.bnN = L.BatchNormalization(1)
 
         self.layer = layer
-        self.actfunc_1 = actfunc_1
-        self.actfunc_2 = actfunc_2
+        self.actfun_1 = actfun_1
+        self.actfun_2 = actfun_2
 
         print('[Network info]')
         print('  Unit:\t{0}\n  Out:\t{1}\n  Layer:\t{2}\n  Act Func:\t{3}, {4}'.format(
-            n_unit, n_out, layer, actfunc_1.__name__, actfunc_2.__name__)
+            n_unit, n_out, layer, actfun_1.__name__, actfun_2.__name__)
         )
 
     def __call__(self, x):
-        h = self.actfunc_1(self.bn1(self.conv1(x)))
-        h = self.actfunc_1(self.bn2(self.conv2(h)))
+        h = self.actfun_1(self.bn1(self.conv1(x)))
+        h = self.actfun_1(self.bn2(self.conv2(h)))
         if(self.layer > 3):
-            h = self.actfunc_1(self.bn3(self.conv3(h)))
+            h = self.actfun_1(self.bn3(self.conv3(h)))
 
         if(self.layer > 4):
-            h = self.actfunc_1(self.bn4(self.conv4(h)))
+            h = self.actfun_1(self.bn4(self.conv4(h)))
 
-        return self.actfunc_2(self.bnN(self.PS(self.convN(h))))
+        return self.actfun_2(self.bnN(self.PS(self.convN(h))))
 
     def PS(self, h, r=2):
         """

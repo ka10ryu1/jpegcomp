@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
+# -*-coding: utf-8 -*-
+#
 help = '画像を読み込んでデータセットを作成する'
+#
 
 import os
 import cv2

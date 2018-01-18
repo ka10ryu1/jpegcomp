@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
+# -*-coding: utf-8 -*-
+#
 help = 'dot言語で記述されたファイルをPNG形式に変換する'
+#
 
 import os
 # pydot: 1.2.4

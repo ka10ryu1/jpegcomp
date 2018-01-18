@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
+# -*-coding: utf-8 -*-
+#
 help = '便利機能'
+#
 
 import os
+import sys
 import cv2
 import numpy as np
 
@@ -144,31 +148,37 @@ def getLossfun(lossfun_str):
         lossfun = F.softmax_cross_entropy
     else:
         lossfun = F.softmax_cross_entropy
+        print('\n[Warning] {0}: {1}->{2}\n'.format(
+            sys._getframe().f_code.co_name, lossfun_str, lossfun.__name__)
+        )
 
     return lossfun
 
 
-def getActFunc(actfunc_str):
-    if(actfunc_str.lower() == 'relu'):
-        actfunc = F.relu
-    elif(actfunc_str.lower() == 'elu'):
-        actfunc = F.elu
-    elif(actfunc_str.lower() == 'c_relu'):
-        actfunc = F.clipped_relu
-    elif(actfunc_str.lower() == 'l_relu'):
-        actfunc = F.leaky_relu
-    elif(actfunc_str.lower() == 'sigmoid'):
-        actfunc = F.sigmoid
-    elif(actfunc_str.lower() == 'h_sigmoid'):
-        actfunc = F.hard_sigmoid
-    elif(actfunc_str.lower() == 'tanh'):
-        actfunc = F.hard_sigmoid
-    elif(actfunc_str.lower() == 's_plus'):
-        actfunc = F.soft_plus
+def getActfun(actfun_str):
+    if(actfun_str.lower() == 'relu'):
+        actfun = F.relu
+    elif(actfun_str.lower() == 'elu'):
+        actfun = F.elu
+    elif(actfun_str.lower() == 'c_relu'):
+        actfun = F.clipped_relu
+    elif(actfun_str.lower() == 'l_relu'):
+        actfun = F.leaky_relu
+    elif(actfun_str.lower() == 'sigmoid'):
+        actfun = F.sigmoid
+    elif(actfun_str.lower() == 'h_sigmoid'):
+        actfun = F.hard_sigmoid
+    elif(actfun_str.lower() == 'tanh'):
+        actfun = F.hard_sigmoid
+    elif(actfun_str.lower() == 's_plus'):
+        actfun = F.soft_plus
     else:
-        actfunc = F.relu
+        actfun = F.relu
+        print('\n[Warning] {0}: {1}->{2}\n'.format(
+            sys._getframe().f_code.co_name, actfun_str, actfun.__name__)
+        )
 
-    return actfunc
+    return actfun
 
 
 def getFilePath(folder, name, ext):
