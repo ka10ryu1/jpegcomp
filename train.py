@@ -26,7 +26,7 @@ def command():
     parser.add_argument('-i', '--in_path', default='./result/',
                         help='入力データセットのフォルダ (default: ./result/)')
     parser.add_argument('-lf', '--lossfun', default='mse',
-                        help='損失関数 (default: mse, other: mae, abs, se, softmax)')
+                        help='損失関数 (default: mse, other: mae)')
     parser.add_argument('-a1', '--actfun_1', default='relu',
                         help='活性化関数(1) (default: relu, other: elu, c_relu, l_relu, sigmoid, h_sigmoid, tanh, s_plus)')
     parser.add_argument('-a2', '--actfun_2', default='sigmoid',
@@ -58,12 +58,18 @@ def getImgData(folder):
     for l in os.listdir(folder):
         if 'train' in l:
             np_arr = np.load(os.path.join(folder, l))
+            print('train (comp/raw): {0}/{1}'.format(
+                np_arr['comp'].shape, np_arr['raw'].shape)
+            )
             train = tuple_dataset.TupleDataset(
                 img2arr(np_arr['comp']),
                 img2arr(imgs2x(np_arr['raw']))
             )
         elif 'test' in l:
             np_arr = np.load(os.path.join(folder, l))
+            print('test  (comp/raw): {0}/{1}'.format(
+                np_arr['comp'].shape, np_arr['raw'].shape)
+            )
             test = tuple_dataset.TupleDataset(
                 img2arr(np_arr['comp']),
                 img2arr(imgs2x(np_arr['raw']))

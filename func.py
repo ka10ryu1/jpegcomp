@@ -140,14 +140,8 @@ def getLossfun(lossfun_str):
         lossfun = F.mean_squared_error
     elif(lossfun_str.lower() == 'mae'):
         lossfun = F.mean_absolute_error
-    elif(lossfun_str.lower() == 'abs'):
-        lossfun = F.absolute_error
-    elif(lossfun_str.lower() == 'se'):
-        lossfun = F.squared_error
-    elif(lossfun_str.lower() == 'softmax'):
-        lossfun = F.softmax_cross_entropy
     else:
-        lossfun = F.softmax_cross_entropy
+        lossfun = F.mean_squared_error
         print('\n[Warning] {0}\n\t{1}->{2}\n'.format(
             fileFuncLine(), lossfun_str, lossfun.__name__)
         )
