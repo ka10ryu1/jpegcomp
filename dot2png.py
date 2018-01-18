@@ -2,6 +2,8 @@
 help = 'dot言語で記述されたファイルをPNG形式に変換する'
 
 import os
+# pydot: 1.2.4
+# graphviz: 0.8.2
 import pydot
 import argparse
 

@@ -72,28 +72,36 @@ def imgEncodeDecode(in_imgs, ch, quality=5):
     return out_imgs
 
 
-def imgSplit(imgs, size, round_num=-1):
+def imgSplit(imgs, size, round_num=-1, flg=cv2.BORDER_REFLECT_101):
     """
     入力された画像リストを正方形に分割する
+    imgsに格納されている画像はサイズが同じであること
     [in]  imgs:      入力画像リスト
     [in]  size:      正方形のサイズ（size x size）
     [in]  round_num: 丸める画像数
     [out] 分割されたnp.array形式の正方形画像リスト
     """
 
+    # 画像を分割する際に端が切れてしまうのを防ぐために余白を追加する
+    imgs = [cv2.copyMakeBorder(img, 0, size // 2, 0, size // 2, flg)
+            for img in imgs]
+    # 画像を分割しやすいように画像サイズを変更する
     v_size = imgs[0].shape[0] // size * size
     h_size = imgs[0].shape[1] // size * size
     imgs = [i[:v_size, :h_size] for i in imgs]
+    # 画像の分割数を計算する
     v_split = imgs[0].shape[0] // size
     h_split = imgs[0].shape[1] // size
+    # 画像を分割する
     out_imgs = []
     [[out_imgs.extend(np.vsplit(h_img, v_split))
       for h_img in np.hsplit(img, h_split)] for img in imgs]
 
+    # バッチサイズの関係などで、画像の数を調整したい時はここで調整する
+    # predict.pyなどで分割画像を復元したくなるので縦横の分割数も返す
     if(round_num > 0):
         round_len = len(out_imgs) // round_num * round_num
         return np.array(out_imgs[:round_len]), (v_split, h_split)
-        # return np.array(out_imgs), (v_split, h_split)
     else:
         return np.array(out_imgs), (v_split, h_split)
 
@@ -126,19 +134,14 @@ def arr2img(arr, ch, size, norm=255, dtype=np.uint8):
 def getLossfun(lossfun_str):
     if(lossfun_str.lower() == 'mse'):
         lossfun = F.mean_squared_error
-
     elif(lossfun_str.lower() == 'mae'):
         lossfun = F.mean_absolute_error
-
     elif(lossfun_str.lower() == 'abs'):
         lossfun = F.absolute_error
-
     elif(lossfun_str.lower() == 'se'):
         lossfun = F.squared_error
-
     elif(lossfun_str.lower() == 'softmax'):
         lossfun = F.softmax_cross_entropy
-
     else:
         lossfun = F.softmax_cross_entropy
 
@@ -148,28 +151,20 @@ def getLossfun(lossfun_str):
 def getActFunc(actfunc_str):
     if(actfunc_str.lower() == 'relu'):
         actfunc = F.relu
-
     elif(actfunc_str.lower() == 'elu'):
         actfunc = F.elu
-
     elif(actfunc_str.lower() == 'c_relu'):
         actfunc = F.clipped_relu
-
     elif(actfunc_str.lower() == 'l_relu'):
         actfunc = F.leaky_relu
-
     elif(actfunc_str.lower() == 'sigmoid'):
         actfunc = F.sigmoid
-
     elif(actfunc_str.lower() == 'h_sigmoid'):
         actfunc = F.hard_sigmoid
-
     elif(actfunc_str.lower() == 'tanh'):
         actfunc = F.hard_sigmoid
-
     elif(actfunc_str.lower() == 's_plus'):
         actfunc = F.soft_plus
-
     else:
         actfunc = F.relu
 
