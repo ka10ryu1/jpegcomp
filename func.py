@@ -67,7 +67,8 @@ def imgEncodeDecode(in_imgs, ch, quality=5):
     for img in in_imgs:
         result, encimg = cv2.imencode('.jpg', img, encode_param)
         if False == result:
-            print('[Error] {0}\n\tcould not encode image!'.format(fileFuncLine()))
+            print('[Error] {0}\n\tcould not encode image!'.format(
+                fileFuncLine()))
             exit()
 
         decimg = cv2.imdecode(encimg, ch)
@@ -117,6 +118,15 @@ def imgs2x(imgs, flg=cv2.INTER_NEAREST):
 
 
 def img2arr(imgs, norm=255, dtype=np.float32, gpu=-1):
+    """
+    入力画像リストをChainerで利用するために変換する
+    [in]  imgs:  入力画像リスト
+    [in]  norm:  正規化する値（255であれば、0-255を0-1に正規化する）
+    [in]  dtype: 変換するデータタイプ
+    [in]  gpu:   GPUを使用する場合はGPUIDを入力する
+    [out] 生成された行列
+    """
+
     shape = imgs[0].shape
     w, h = shape[:2]
     if(len(shape) == 2):
@@ -131,6 +141,16 @@ def img2arr(imgs, norm=255, dtype=np.float32, gpu=-1):
 
 
 def arr2img(arr, ch, size, norm=255, dtype=np.uint8):
+    """
+    Chainerの出力をOpenCVで可視化するために変換する
+    [in]  arr:   Chainerから出力された行列
+    [in]  ch:    画像に変換する際のチャンネル数
+    [in]  size:  画像に変換する際の画像サイズ
+    [in]  norm:  正規化をもとに戻す数（255であれば、0-1を0-255に変換する）
+    [in]  dtype: 変換するデータタイプ
+    [out] OpenCV形式の画像に変換された行列
+    """
+
     y = np.array(arr).reshape((-1, size, size, ch)) * 255
     return np.array(y, dtype=np.uint8)
 
@@ -184,6 +204,8 @@ def getFilePath(folder, name, ext):
 
 def fileFuncLine():
     funcname = inspect.currentframe().f_back.f_code.co_name
-    filename = os.path.basename(inspect.currentframe().f_back.f_code.co_filename)
+    filename = os.path.basename(
+        inspect.currentframe().f_back.f_code.co_filename
+    )
     lineno = inspect.currentframe().f_back.f_lineno
     return '{0}, {1}(), {2}line'.format(filename, funcname, lineno)
