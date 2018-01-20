@@ -19,6 +19,7 @@ from chainer.datasets import tuple_dataset
 
 from network import JC
 from func import argsPrint, imgs2x, img2arr, getLossfun, getActfun, getFilePath
+from plot_report_log import PlotReportLog
 
 
 def command():
@@ -126,8 +127,10 @@ def main(args):
                                                  repeat=False, shuffle=False)
 
     # Set up a trainer
-    updater = training.StandardUpdater(train_iter, optimizer, device=args.gpu_id)
-    trainer = training.Trainer(updater, (args.epoch, 'epoch'), out=args.out_path)
+    updater = training.StandardUpdater(
+        train_iter, optimizer, device=args.gpu_id)
+    trainer = training.Trainer(
+        updater, (args.epoch, 'epoch'), out=args.out_path)
 
     # Evaluate the model with the test dataset for each epoch
     trainer.extend(extensions.Evaluator(test_iter, model, device=args.gpu_id))
@@ -152,7 +155,12 @@ def main(args):
     if args.plot and extensions.PlotReport.available():
         trainer.extend(
             extensions.PlotReport(['main/loss', 'validation/main/loss'],
-                                  'epoch', file_name=exec_time + '_plot.png'))
+                                  'epoch', file_name=exec_time + '_plot.png')
+        )
+        trainer.extend(
+            PlotReportLog(['main/loss', 'validation/main/loss'],
+                          'epoch', file_name=exec_time + '_log_plot.png')
+        )
 
     # Print selected entries of the log to stdout
     # Here "main" refers to the target link of the "main" optimizer again, and
