@@ -85,7 +85,8 @@ def predict(model, args, img, ch, ch_flg, val):
     img = cv2.resize(img, half_size, flg)
     # 生成結果を保存する
     cv2.imwrite(
-        getFilePath(args.out_path, 'comp-' + str(val * 10 + 1).zfill(3), '.jpg'),
+        getFilePath(args.out_path, 'comp-' +
+                    str(val * 10 + 1).zfill(3), '.jpg'),
         img
     )
     return img
@@ -99,7 +100,7 @@ def main(args):
     imgs = [cv2.imread(name, ch_flg) for name in args.jpeg]
     # 学習モデルを生成する
     model = L.Classifier(
-        JC(n_unit=16, n_out=1, layer=3, actfun_1=F.relu, actfun_2=F.sigmoid)
+        JC(n_unit=unit, n_out=ch, layer=layer, actfun_1=af1, actfun_2=af2)
     )
     chainer.serializers.load_npz(args.model, model)
     # GPUの設定
@@ -108,7 +109,8 @@ def main(args):
         model.to_gpu()
 
     # 学習モデルを入力画像ごとに実行する
-    imgs = [predict(model, args, img, ch, ch_flg, i) for i, img in enumerate(imgs)]
+    imgs = [predict(model, args, img, ch, ch_flg, i)
+            for i, img in enumerate(imgs)]
     # 生成結果の表示
     for i in imgs:
         cv2.imshow('test', i)

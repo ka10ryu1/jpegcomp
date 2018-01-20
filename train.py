@@ -153,10 +153,10 @@ def main(args):
 
     # Save two plot images to the result dir
     if args.plot and extensions.PlotReport.available():
-        trainer.extend(
-            extensions.PlotReport(['main/loss', 'validation/main/loss'],
-                                  'epoch', file_name=exec_time + '_plot.png')
-        )
+        # trainer.extend(
+        #     extensions.PlotReport(['main/loss', 'validation/main/loss'],
+        #                           'epoch', file_name=exec_time + '_plot.png')
+        # )
         trainer.extend(
             PlotReportLog(['main/loss', 'validation/main/loss'],
                           'epoch', file_name=exec_time + '_log_plot.png')
