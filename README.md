@@ -8,8 +8,8 @@
 - Python 3.5.2 ($ python3 -V)
 - chainer 3.2 ($ pip3 show chainer | grep Ver)
 - numpy 1.13.3 ($ pip3 show numpy | grep Ver)
-- cupy ?
-- opencv-python ?  
+- cupy 2.2
+- opencv-python 3.4.0.12
 
 # ファイル構成
 
