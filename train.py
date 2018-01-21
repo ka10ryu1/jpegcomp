@@ -184,6 +184,10 @@ def main(args):
         chainer.serializers.load_npz(args.resume, trainer)
 
     if args.only_check is False:
+        # predict.pyでモデルのパラメータを読み込むjson形式で保存する
+        with open(getFilePath(args.out_path, exec_time, '.json'), 'w') as f:
+            json.dump(model_param, f)
+
         # Run the training
         trainer.run()
 
@@ -194,9 +198,6 @@ def main(args):
             getFilePath(args.out_path, exec_time, '.model'),
             model
         )
-        # predict.pyでモデルを決定するために学習が終わったところでjson形式で保存する
-        with open(getFilePath(args.out_path, exec_time, '.json'), 'w') as f:
-            json.dump(model_param, f)
 
     else:
         print('Check Finish:', exec_time)

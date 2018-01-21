@@ -12,7 +12,6 @@ import numpy as np
 
 import chainer
 import chainer.links as L
-import chainer.functions as F
 from chainer.cuda import to_cpu
 
 from network import JC

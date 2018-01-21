@@ -151,7 +151,9 @@ class PlotReportLog(extension.Extension):
             a = f.add_subplot(111)
             a.set_xlabel(self._x_key)
             if self._grid:
-                a.grid()
+                a.grid(which='major', color='black', linestyle='-')
+                a.grid(which='minor', color='black', linestyle='-')
+                # a.grid()
 
             for k in keys:
                 xy = data[k]
