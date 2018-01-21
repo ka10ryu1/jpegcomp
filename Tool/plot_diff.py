@@ -5,11 +5,13 @@ help = 'logファイルの複数比較'
 #
 
 import os
+import sys
 import json
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 
+sys.path.append('../Lib/')
 from func import argsPrint, getFilePath
 
 

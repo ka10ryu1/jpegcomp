@@ -5,9 +5,11 @@ help = '作成したデータセットの中身を画像として出力する'
 #
 
 import cv2
+import sys
 import argparse
 import numpy as np
 
+sys.path.append('../Lib/')
 from func import argsPrint, getFilePath
 
 

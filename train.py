@@ -17,9 +17,9 @@ from chainer.training import extensions
 from chainer.datasets import tuple_dataset
 
 
-from network import JC
-from func import argsPrint, imgs2x, img2arr, getLossfun, getActfun, getFilePath
-from plot_report_log import PlotReportLog
+from Lib.network import JC
+from Lib.func import argsPrint, imgs2x, img2arr, getLossfun, getActfun, getFilePath
+from Lib.plot_report_log import PlotReportLog
 
 
 def command():
