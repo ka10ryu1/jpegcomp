@@ -14,9 +14,9 @@ import chainer
 import chainer.links as L
 from chainer.cuda import to_cpu
 
-from network import JC
-from func import argsPrint, getCh, img2arr, arr2img
-from func import imgSplit, imgEncodeDecode, getActfun, getFilePath
+from Lib.network import JC
+from Lib.func import argsPrint, getCh, img2arr, arr2img
+from Lib.func import imgSplit, imgEncodeDecode, getActfun, getFilePath
 
 
 def command():

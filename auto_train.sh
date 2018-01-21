@@ -11,7 +11,6 @@ usage_exit() {
 }
 
 FLAG_CHK=""
-
 while getopts ch OPT
 do
     case $OPT in
@@ -26,7 +25,14 @@ done
 
 shift $((OPTIND - 1))
 
-# test1
-./train.py -lf mae -a1 relu -a2 sigmoid -ln 2 -u 16 -b 400 -e 20 $FLAG_CHK
-# test2
-./train.py -lf mse -a1 relu -a2 sigmoid -ln 2 -u 16 -b 400 -e 20 $FLAG_CHK
+#echo "test1"
+#./train.py -lf mse -a1 relu -a2 sigmoid -ln 4 -u 128 -b 200 -e 200 -g 0 -f 20 -o ./result/0121_test1/ $FLAG_CHK
+
+echo "test2"
+./train.py -lf mse -a1 relu -a2 sigmoid -ln 4 -u 64 -b 200 -e 200 -g 0 -f 20 -o ./result/0121_test2/ $FLAG_CHK
+
+echo "test3"
+./train.py -lf mse -a1 relu -a2 sigmoid -ln 5 -u 128 -b 200 -e 200 -g 0 -f 20 -o ./result/0121_test3/ $FLAG_CHK
+
+echo "test4"
+./train.py -lf mse -a1 relu -a2 sigmoid -ln 5 -u 64 -b 200 -e 200 -g 0 -f 20 -o ./result/0121_test4/ $FLAG_CHK

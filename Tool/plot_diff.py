@@ -52,14 +52,17 @@ def main(args):
 
     f = plt.figure()
     a = f.add_subplot(111)
-    ymax = np.max([i[int(len(i) / 4)] for i in vml])
-    ymin = np.min([np.min(i)for i in vml]) * 0.9
     a.grid(which='major', color='black', linestyle='-')
     a.grid(which='minor', color='black', linestyle='-')
     plt.yscale("log")
-    plt.ylim([ymin, ymax])
 
     [a.plot(np.array(v), label=d) for v, d in zip(vml, args.log_dir)]
+    if args.auto_ylim:
+        ymax = np.min([i[int(len(i) / 5)] for i in vml])
+        ymin = np.min([np.min(i)for i in vml]) * 0.98
+        plt.ylim([ymin, ymax])
+        print('ymin:{0:.4f}, ymax:{1:.4f}'.format(ymin, ymax))
+
     plt.legend()
     plt.savefig(getFilePath(args.out_path, 'plot_diff', '.png'), dpi=200)
     plt.show()
