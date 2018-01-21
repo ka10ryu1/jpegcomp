@@ -4,6 +4,7 @@
 help = 'スナップショットを利用した画像の生成'
 #
 
+import os
 import cv2
 import json
 import argparse
@@ -102,7 +103,20 @@ def main(args):
     model = L.Classifier(
         JC(n_unit=unit, n_out=ch, layer=layer, actfun_1=af1, actfun_2=af2)
     )
-    chainer.serializers.load_npz(args.model, model)
+
+    name, ext = os.path.splitext(os.path.basename(args.model))
+    load_path = ''
+    if(ext == '.model'):
+        print('model read')
+    elif(ext == '.snapshot'):
+        print('snapshot read')
+        load_path = 'updater/model:main/'
+    else:
+        print('model read error')
+        exit()
+
+    chainer.serializers.load_npz(args.model, model, path=load_path)
+
     # GPUの設定
     if args.gpu >= 0:
         chainer.cuda.get_device_from_id(args.gpu).use()

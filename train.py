@@ -57,7 +57,9 @@ def command():
 
 def getImgData(folder):
     for l in os.listdir(folder):
-        if 'train' in l:
+        if os.path.isdir(l):
+            pass
+        elif 'train.npz' in l:
             np_arr = np.load(os.path.join(folder, l))
             print('train (comp/raw): {0}/{1}'.format(
                 np_arr['comp'].shape, np_arr['raw'].shape)
@@ -66,7 +68,7 @@ def getImgData(folder):
                 img2arr(np_arr['comp']),
                 img2arr(imgs2x(np_arr['raw']))
             )
-        elif 'test' in l:
+        elif 'test.npz' in l:
             np_arr = np.load(os.path.join(folder, l))
             print('test  (comp/raw): {0}/{1}'.format(
                 np_arr['comp'].shape, np_arr['raw'].shape)
