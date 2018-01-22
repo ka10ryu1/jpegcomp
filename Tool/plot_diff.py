@@ -11,6 +11,7 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 
+sys.path.append('./Lib/')
 sys.path.append('../Lib/')
 from func import argsPrint, getFilePath
 
@@ -58,7 +59,7 @@ def main(args):
 
     [a.plot(np.array(v), label=d) for v, d in zip(vml, args.log_dir)]
     if args.auto_ylim:
-        ymax = np.min([i[int(len(i) / 5)] for i in vml])
+        ymax = np.min([i[int(len(i) / 8)] for i in vml])
         ymin = np.min([np.min(i)for i in vml]) * 0.98
         plt.ylim([ymin, ymax])
         print('ymin:{0:.4f}, ymax:{1:.4f}'.format(ymin, ymax))
