@@ -18,7 +18,8 @@ from chainer.datasets import tuple_dataset
 
 
 from Lib.network import JC
-from Lib.func import argsPrint, imgs2x, img2arr, getLossfun, getActfun, getFilePath
+from Lib.func import argsPrint, imgs2x, img2arr
+from Lib.func import getLossfun, getActfun, getFilePath, getOptimizer
 from Lib.plot_report_log import PlotReportLog
 
 
@@ -32,6 +33,8 @@ def command():
                         help='活性化関数(1) (default: relu, other: elu, c_relu, l_relu, sigmoid, h_sigmoid, tanh, s_plus)')
     parser.add_argument('-a2', '--actfun_2', default='sigmoid',
                         help='活性化関数(2) (default: sigmoid, other: relu, elu, c_relu, l_relu, h_sigmoid, tanh, s_plus)')
+    parser.add_argument('-opt', '--optimizer', default='adam',
+                        help='オプティマイザ (default: adam, other: ada_d, ada_g, m_sgd, n_ag, rmsp, rmsp_g, sgd, smorms)')
     parser.add_argument('-ln', '--layer_num', type=int, default=3,
                         help='ネットワーク層の数 (default: 3)')
     parser.add_argument('-u', '--unit', type=int, default=16,
@@ -110,7 +113,7 @@ def main(args):
         model.to_gpu()  # Copy the model to the GPU
 
     # Setup an optimizer
-    optimizer = chainer.optimizers.Adam()
+    optimizer = getOptimizer(args.optimizer)
     optimizer.setup(model)
 
     # Load dataset
