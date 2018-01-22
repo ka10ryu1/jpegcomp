@@ -187,7 +187,7 @@ def getActfun(actfun_str):
     elif(actfun_str.lower() == 'tanh'):
         actfun = F.hard_sigmoid
     elif(actfun_str.lower() == 's_plus'):
-        actfun = F.soft_plus
+        actfun = F.softplus
     else:
         actfun = F.relu
         print('\n[Warning] {0}\n\t{1}->{2}\n'.format(

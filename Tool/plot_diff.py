@@ -11,8 +11,7 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 
-sys.path.append('./Lib/')
-sys.path.append('../Lib/')
+[sys.path.append(d) for d in ['./Lib/', '../Lib/'] if os.path.isdir(d)]
 from func import argsPrint, getFilePath
 
 

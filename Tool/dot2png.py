@@ -11,8 +11,7 @@ import sys
 import pydot
 import argparse
 
-
-sys.path.append('../Lib/')
+[sys.path.append(d) for d in ['./Lib/', '../Lib/'] if os.path.isdir(d)]
 from func import argsPrint, getFilePath
 
 

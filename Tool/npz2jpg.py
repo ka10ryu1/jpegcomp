@@ -4,12 +4,13 @@
 help = '作成したデータセットの中身を画像として出力する'
 #
 
+import os
 import cv2
 import sys
 import argparse
 import numpy as np
 
-sys.path.append('../Lib/')
+[sys.path.append(d) for d in ['./Lib/', '../Lib/'] if os.path.isdir(d)]
 from func import argsPrint, getFilePath
 
 
