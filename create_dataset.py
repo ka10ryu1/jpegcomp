@@ -9,7 +9,7 @@ import cv2
 import argparse
 import numpy as np
 
-from func import argsPrint, getCh, imgEncodeDecode, imgSplit
+from Lib.func import argsPrint, getCh, imgEncodeDecode, imgSplit
 
 
 def command():

@@ -80,9 +80,9 @@ $ ./train.py
 ```console
 not import cupy
 ------------------------------
-actfunc_1:	relu
-actfunc_2:	sigmoid
-batchsize:	100
+actfun_1:	relu
+actfun_2:	sigmoid
+batchsize:	200
 epoch:	10
 frequency:	-1
 gpu_id:	-1
@@ -90,27 +90,34 @@ in_path:	./result/
 layer_num:	3
 lossfun:	mse
 only_check:	False
+optimizer:	adam
 out_path:	./result/
 plot:	True
 resume:
-unit:	16
+unit:	4
 ------------------------------
+Activation func: relu
+Activation func: sigmoid
 [Network info]
-  Unit:	16
+  Unit:	4
   Out:	1
   Layer:	3
   Act Func:	relu, sigmoid
+Loss func: mean_squared_error
+Optimizer: Adam optimizer
+test  (comp/raw): (1200, 32, 32)/(1200, 32, 32)
+train (comp/raw): (6800, 32, 32)/(6800, 32, 32)
 epoch       main/loss   validation/main/loss  elapsed_time
-1           0.176222    0.183978              119.484
-2           0.131534    0.124229              239.324
-3           0.115318    0.115374              359.106
-4           0.102909    0.100117              478.383
-5           0.0924858   0.0898679             596.97
-6           0.0835829   0.0809697             714.618
-7           0.0757951   0.0713755             831.607
-8           0.0689926   0.064955              950.95
-9           0.0630572   0.0585681             1068.53
-10          0.0578445   0.0542895             1185.45
+1           0.208491    0.119774              32.4628
+2           0.174672    0.166305              65.61
+3           0.158801    0.153584              97.5322
+4           0.146055    0.148234              129.836
+5           0.13466     0.138804              162.696
+6           0.123279    0.123111              195.181
+7           0.113303    0.113019              227.963
+8           0.10562     0.101799              259.506
+9           0.0994183   0.0968083             291.633
+10          0.0940017   0.0894627             323.381
 ```
 
 ### 生成物の確認
@@ -131,21 +138,24 @@ $ ./predict.py ./result/*.model ./result/*.json ./FontData/The_Night*
 not import cupy
 ------------------------------
 batch:	100
-channel:	1
 gpu:	-1
 img_size:	32
 jpeg[2]:
 	./FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG
 	./FontData/The_Nighthawk_Star_op.PNG
-model:	./result/unit(16)_ch(1)_layer(3)_actFunc(relu_sigmoid)_180117-150852.model
+model:	./result/180122-153747.model
 out_path:	./result/
+param:	./result/180122-153747.json
 quality:	5
 ------------------------------
+Activation func: relu
+Activation func: sigmoid
 [Network info]
-  Unit:	16
+  Unit:	4
   Out:	1
   Layer:	3
   Act Func:	relu, sigmoid
+model read
 ```
 
 ### 生成物の確認

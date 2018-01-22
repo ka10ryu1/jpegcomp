@@ -37,10 +37,10 @@ def command():
                         help='オプティマイザ (default: adam, other: ada_d, ada_g, m_sgd, n_ag, rmsp, rmsp_g, sgd, smorms)')
     parser.add_argument('-ln', '--layer_num', type=int, default=3,
                         help='ネットワーク層の数 (default: 3)')
-    parser.add_argument('-u', '--unit', type=int, default=16,
-                        help='ネットワークのユニット数 (default: 16)')
-    parser.add_argument('-b', '--batchsize', type=int, default=100,
-                        help='ミニバッチサイズ (default: 100)')
+    parser.add_argument('-u', '--unit', type=int, default=4,
+                        help='ネットワークのユニット数 (default: 4)')
+    parser.add_argument('-b', '--batchsize', type=int, default=200,
+                        help='ミニバッチサイズ (default: 200)')
     parser.add_argument('-e', '--epoch', type=int, default=10,
                         help='学習のエポック数 (default 10)')
     parser.add_argument('-f', '--frequency', type=int, default=-1,
