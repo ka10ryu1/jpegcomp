@@ -17,6 +17,7 @@ from chainer.cuda import to_cpu
 from Lib.network import JC
 from Lib.func import argsPrint, getCh, img2arr, arr2img
 from Lib.func import imgSplit, imgEncodeDecode, getActfun, getFilePath
+from Lib.func import fileFuncLine
 
 
 def command():
@@ -45,8 +46,11 @@ def getModelParam(path):
         with open(path, 'r') as f:
             d = json.load(f)
 
-    except json.JSONDecodeError as e:
-        print('JSONDecodeError: ', e)
+    except:
+        import traceback
+        traceback.print_exc()
+        print(fileFuncLine())
+        exit()
 
     af1 = getActfun(d['actfun_1'])
     af2 = getActfun(d['actfun_2'])
@@ -92,18 +96,17 @@ def predict(model, args, img, ch, ch_flg, val):
     return img
 
 
-def main(args):
-    # jsonファイルから学習モデルのパラメータを取得する
-    unit, ch, layer, af1, af2 = getModelParam(args.param)
-    # 学習モデルの出力画像のチャンネルに応じて画像を読み込む
-    ch_flg = getCh(ch)
-    imgs = [cv2.imread(name, ch_flg) for name in args.jpeg]
-    # 学習モデルを生成する
-    model = L.Classifier(
-        JC(n_unit=unit, n_out=ch, layer=layer, actfun_1=af1, actfun_2=af2)
-    )
+def isImage(name):
+    if cv2.imread(name) is not None:
+        return True
+    else:
+        print('[{0}] is not Image'.format(name))
+        print(fileFuncLine())
+        return False
 
-    name, ext = os.path.splitext(os.path.basename(args.model))
+
+def checkModelType(path):
+    name, ext = os.path.splitext(os.path.basename(path))
     load_path = ''
     if(ext == '.model'):
         print('model read')
@@ -112,9 +115,32 @@ def main(args):
         load_path = 'updater/model:main/'
     else:
         print('model read error')
+        print(fileFuncLine())
         exit()
 
-    chainer.serializers.load_npz(args.model, model, path=load_path)
+    return load_path
+
+
+def main(args):
+    # jsonファイルから学習モデルのパラメータを取得する
+    unit, ch, layer, af1, af2 = getModelParam(args.param)
+    # 学習モデルの出力画像のチャンネルに応じて画像を読み込む
+    ch_flg = getCh(ch)
+    imgs = [cv2.imread(name, ch_flg) for name in args.jpeg if isImage(name)]
+    # 学習モデルを生成する
+    model = L.Classifier(
+        JC(n_unit=unit, n_out=ch, layer=layer, actfun_1=af1, actfun_2=af2)
+    )
+
+    load_path = checkModelType(args.model)
+
+    try:
+        chainer.serializers.load_npz(args.model, model, path=load_path)
+    except:
+        import traceback
+        traceback.print_exc()
+        print(fileFuncLine())
+        exit()
 
     # GPUの設定
     if args.gpu >= 0:

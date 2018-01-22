@@ -240,4 +240,4 @@ def fileFuncLine():
         inspect.currentframe().f_back.f_code.co_filename
     )
     lineno = inspect.currentframe().f_back.f_lineno
-    return '{0}, {1}(), {2}line'.format(filename, funcname, lineno)
+    return '>>> {0}, {1}(), {2}[line] <<<\n'.format(filename, funcname, lineno)
