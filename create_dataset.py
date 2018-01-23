@@ -9,7 +9,7 @@ import cv2
 import argparse
 import numpy as np
 
-from Lib.func import argsPrint, getCh, imgEncodeDecode, imgSplit
+import Lib.myfunc as M
 
 
 def command():
@@ -34,14 +34,14 @@ def command():
 def main(args):
     # OpenCV形式で画像を読み込むために
     # チャンネル数をOpenCVのフラグ形式に変換する
-    ch = getCh(args.channel)
+    ch = M.getCh(args.channel)
     # OpenCV形式で画像をリストで読み込む
     imgs = [cv2.imread(name, ch) for name in args.jpeg]
     # 画像を圧縮して分割する（学習の入力データに相当）
-    comp, _ = imgSplit(imgEncodeDecode(imgs, ch, args.quality),
-                       args.img_size, args.round)
+    comp, _ = M.imgSplit(M.imgEncodeDecode(imgs, ch, args.quality),
+                         args.img_size, args.round)
     # 画像を分割する（正解データに相当）
-    raw, _ = imgSplit(imgs, args.img_size, args.round)
+    raw, _ = M.imgSplit(imgs, args.img_size, args.round)
 
     # 画像の並び順をシャッフルするための配列を作成する
     # compとrawの対応を崩さないようにシャッフルしなければならない
@@ -71,5 +71,5 @@ def main(args):
 
 if __name__ == '__main__':
     args = command()
-    argsPrint(args)
+    M.argsPrint(args)
     main(args)

@@ -12,7 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 [sys.path.append(d) for d in ['./Lib/', '../Lib/'] if os.path.isdir(d)]
-from func import argsPrint, getFilePath
+from myfunc import argsPrint, getFilePath
 
 
 def command():
@@ -42,6 +42,10 @@ def jsonRead(path):
 def main(args):
     vml = []
     for d in args.log_dir:
+        if not os.path.isdir(d):
+            print('[Error] this is not dir:', d)
+            continue
+
         for l in os.listdir(d):
             name, ext = os.path.splitext(os.path.basename(l))
             if(ext == '.log'):
@@ -49,6 +53,10 @@ def main(args):
                 data = jsonRead(os.path.join(d, l))
                 buf = [i['validation/main/loss'] for i in data]
                 vml.append(buf)
+
+    if len(vml) == 0:
+        print('[Error] .log not found')
+        exit()
 
     f = plt.figure()
     a = f.add_subplot(111)
