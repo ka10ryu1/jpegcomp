@@ -52,10 +52,8 @@ def main(args):
     train_raw = raw[shuffle[:train_size]]
     test_comp = comp[shuffle[train_size:]]
     test_raw = raw[shuffle[train_size:]]
-    print('train comp:', train_comp.shape)
-    print('      raw: ', train_raw.shape)
-    print('test comp: ', test_comp.shape)
-    print('     raw:  ', test_raw.shape)
+    print('train comp/raw:{0}/{1}'.format(train_comp.shape, train_raw.shape))
+    print('test  comp/raw:{0}/{1}'.format(test_comp.shape, test_raw.shape))
 
     # 保存するフォルダがなければ生成する
     if not os.path.isdir(args.out_path):
