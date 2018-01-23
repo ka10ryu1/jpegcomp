@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*-coding: utf-8 -*-
 #
-help = '作成したデータセットの中身を画像として出力する'
+help = '作成したデータセット（.npz）の中身を画像として出力する'
 #
 
 import os

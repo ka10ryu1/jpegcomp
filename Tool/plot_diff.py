@@ -28,6 +28,12 @@ def command():
 
 
 def jsonRead(path):
+    """
+    chainerのextensionで出力されたlogをjsonで読み込む
+    [in]  path: logのパス
+    [out] d:    読み込んだ辞書データ
+    """
+
     try:
         with open(path, 'r') as f:
             d = json.load(f)
@@ -42,11 +48,14 @@ def jsonRead(path):
 def main(args):
     vml = []
     for d in args.log_dir:
+        # args.log_dirがディレクトリのパスかどうか判定
         if not os.path.isdir(d):
             print('[Error] this is not dir:', d)
             continue
 
+        # ディレクトリごとにファイルのリストを作成
         for l in os.listdir(d):
+            # 拡張子が.logのファイルを探索し、testデータのlossを抽出
             name, ext = os.path.splitext(os.path.basename(l))
             if(ext == '.log'):
                 print(l)
@@ -54,23 +63,29 @@ def main(args):
                 buf = [i['validation/main/loss'] for i in data]
                 vml.append(buf)
 
+    # logファイルが見つからなかった場合、ここで終了
     if len(vml) == 0:
         print('[Error] .log not found')
         exit()
 
+    # 対数グラフの設定
     f = plt.figure()
     a = f.add_subplot(111)
     a.grid(which='major', color='black', linestyle='-')
     a.grid(which='minor', color='black', linestyle='-')
     plt.yscale("log")
-
-    [a.plot(np.array(v), label=d) for v, d in zip(vml, args.log_dir)]
+    # args.auto_ylimが設定された場合、ylimを設定する
+    # ymax: 各データの1/8番目（400個データがあれば50番目）のうち最小の数を最大値とする
+    # ymin: 各データのうち最小の数X0.98を最小値とする
     if args.auto_ylim:
         ymax = np.min([i[int(len(i) / 8)] for i in vml])
         ymin = np.min([np.min(i)for i in vml]) * 0.98
         plt.ylim([ymin, ymax])
         print('ymin:{0:.4f}, ymax:{1:.4f}'.format(ymin, ymax))
 
+    # 数値のプロット
+    [a.plot(np.array(v), label=d) for v, d in zip(vml, args.log_dir)]
+    # グラフの保存と表示
     plt.legend()
     plt.savefig(getFilePath(args.out_path, 'plot_diff', '.png'), dpi=200)
     plt.show()

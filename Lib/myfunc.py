@@ -235,6 +235,11 @@ def getFilePath(folder, name, ext):
 
 
 def fileFuncLine():
+    """
+    この関数を呼び出すと、呼び出し先のファイル名、関数名、実行行数を取得できる
+    デバッグ時に便利
+    """
+
     funcname = inspect.currentframe().f_back.f_code.co_name
     filename = os.path.basename(
         inspect.currentframe().f_back.f_code.co_filename

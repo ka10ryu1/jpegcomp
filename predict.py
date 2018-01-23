@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*-coding: utf-8 -*-
 #
-help = 'スナップショットを利用した画像の生成'
+help = 'モデルとモデルパラメータを利用して推論実行する'
 #
 
 import os
@@ -40,6 +40,16 @@ def command():
 
 
 def getModelParam(path):
+    """
+    jsonで記述されたモデルパラメータ情報を読み込む
+    [in]  path:        jsonファイルのパス
+    [out] d['unut']:   中間層のユニット数
+    [out] d['img_ch']: 画像のチャンネル数
+    [out] d['layer']:  ネットワーク層の数
+    [out] af1:         活性化関数(1)
+    [out] af2:         活性化関数(2)
+    """
+
     try:
         with open(path, 'r') as f:
             d = json.load(f)
@@ -56,6 +66,16 @@ def getModelParam(path):
 
 
 def predict(model, args, img, ch, ch_flg, val):
+    """
+    推論実行メイン部
+    [in]  model:  推論実行に使用するモデル
+    [in]  args:   実行時のオプシン引数情報
+    [in]  img:    入力画像
+    [in]  ch:     入力画像のチャンネル数
+    [in]  ch_flg: 入力画像のチャンネル数（OpenCV形式）
+    [in]  val:    画像保存時の連番情報
+    [out] img:推論実行で得られた生成画像
+    """
 
     # 入力画像を圧縮して劣化させる
     comp = M.imgEncodeDecode([img], ch_flg, args.quality)
@@ -95,6 +115,13 @@ def predict(model, args, img, ch, ch_flg, val):
 
 
 def isImage(name):
+    """
+    入力されたパスが画像か判定する
+    [in]  name: 画像か判定したいパス
+    [out] 画像ならTrue
+    """
+
+    # cv2.imreadしてNoneが返ってきたら画像でないとする
     if cv2.imread(name) is not None:
         return True
     else:
@@ -104,6 +131,14 @@ def isImage(name):
 
 
 def checkModelType(path):
+    """
+    入力されたパスが.modelか.snapshotかそれ以外か判定し、
+    load_npzのpathを設定する
+    [in]  path:      入力されたパス
+    [out] load_path: load_npzのpath
+    """
+
+    # 拡張子を正とする
     name, ext = os.path.splitext(os.path.basename(path))
     load_path = ''
     if(ext == '.model'):
@@ -129,9 +164,9 @@ def main(args):
     model = L.Classifier(
         JC(n_unit=unit, n_out=ch, layer=layer, actfun_1=af1, actfun_2=af2)
     )
-
+    # load_npzのpath情報を取得する
     load_path = checkModelType(args.model)
-
+    # 学習済みモデルの読み込み
     try:
         chainer.serializers.load_npz(args.model, model, path=load_path)
     except:

@@ -21,14 +21,24 @@ $ ls `find ./ -maxdepth 2 -type f -print` | xargs grep 'help = ' --include=*.py 
 
 ## ファイル
 
-- ./create_dataset.py:  '画像を読み込んでデータセットを作成する'
-- ./dot2png.py:         'dot言語で記述されたファイルをPNG形式に変換する'
-- ./func.py:            '便利機能'
-- ./network.py:         'jpegcompのネットワーク部分'
-- ./npz2jpg.py:         '画像を読み込んでデータセットを作成する'
-- ./predict.py:         'スナップショットを利用した画像の生成'
-- ./train.py:           '学習メイン部'
-- ./FontData:           '学習とテストに使用する画像データなど（サイズが大きいので注意）'
+- ./Lib/myfunc.py
+  - 便利機能
+- ./Lib/network.py
+  - jpegcompのネットワーク部分
+- ./Tool/dot2png.py
+  - dot言語で記述されたファイルをPNG形式に変換する
+- ./Tool/npz2jpg.py
+  - 作成したデータセット（.npz）の中身を画像として出力する
+- ./Tool/plot_diff.py
+  - logファイルの複数比較
+- ./create_dataset.py
+  - 画像を読み込んでデータセットを作成する
+- ./predict.py
+  - モデルとモデルパラメータを利用して推論実行する
+- ./train.py
+  - '学習メイン部'
+- ./FontData
+  - 学習とテストに使用する画像データなど（サイズが大きいので注意）
 
 # チュートリアル
 
