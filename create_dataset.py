@@ -24,8 +24,8 @@ def command():
                         help='切り捨てる数（default: 1000）')
     parser.add_argument('--quality', '-q', type=int, default=5,
                         help='画像の圧縮率（default: 5）')
-    parser.add_argument('--train_per_all', '-t', type=float, default=0.85,
-                        help='画像数に対する学習用画像の割合（default: 0.85）')
+    parser.add_argument('--train_per_all', '-t', type=float, default=0.9,
+                        help='画像数に対する学習用画像の割合（default: 0.9）')
     parser.add_argument('-o', '--out_path', default='./result/',
                         help='・ (default: ./result/)')
     return parser.parse_args()
@@ -36,8 +36,10 @@ def main(args):
     # チャンネル数をOpenCVのフラグ形式に変換する
     ch = M.getCh(args.channel)
     # OpenCV形式で画像をリストで読み込む
+    print('read images...')
     imgs = [cv2.imread(name, ch) for name in args.jpeg]
     # 画像を圧縮して分割する（学習の入力データに相当）
+    print('split images...')
     comp, _ = M.imgSplit(M.imgEncodeDecode(imgs, ch, args.quality),
                          args.img_size, args.round)
     # 画像を分割する（正解データに相当）
@@ -46,6 +48,7 @@ def main(args):
     # 画像の並び順をシャッフルするための配列を作成する
     # compとrawの対応を崩さないようにシャッフルしなければならない
     # また、train_sizeで端数を切り捨てる
+    print('shuffle images...')
     shuffle = np.random.permutation(range(len(comp)))
     train_size = int(len(comp) * args.train_per_all)
     train_comp = comp[shuffle[:train_size]]
@@ -61,9 +64,11 @@ def main(args):
 
     # 生成したデータをnpz形式でデータセットとして保存する
     # ここで作成したデータの中身を確認する場合はnpz2jpg.pyを使用するとよい
-    np.savez(os.path.join(args.out_path, 'train'),
+    print('save npz...')
+    size_str = str(args.img_size).zfill(2) + 'x' + str(args.img_size).zfill(2)
+    np.savez(os.path.join(args.out_path, 'train_' + size_str),
              comp=train_comp, raw=train_raw)
-    np.savez(os.path.join(args.out_path, 'test'),
+    np.savez(os.path.join(args.out_path, 'test_' + size_str),
              comp=test_comp, raw=test_raw)
 
 
