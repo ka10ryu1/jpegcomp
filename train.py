@@ -58,10 +58,13 @@ def command():
 
 
 def getImageData(folder):
+    train_flg = False
+    test_flg = False
     for l in os.listdir(folder):
+        name, ext = os.path.splitext(os.path.basename(l))
         if os.path.isdir(l):
             pass
-        elif 'train.npz' in l:
+        elif('train_' in name)and('.npz' in ext):
             np_arr = np.load(os.path.join(folder, l))
             print('train (comp/raw): {0}/{1}'.format(
                 np_arr['comp'].shape, np_arr['raw'].shape)
@@ -70,7 +73,10 @@ def getImageData(folder):
                 M.img2arr(np_arr['comp']),
                 M.img2arr(M.imgs2x(np_arr['raw']))
             )
-        elif 'test.npz' in l:
+            if(train._length > 0):
+                train_flg = True
+
+        elif('test_' in name)and('.npz' in ext):
             np_arr = np.load(os.path.join(folder, l))
             print('test  (comp/raw): {0}/{1}'.format(
                 np_arr['comp'].shape, np_arr['raw'].shape)
@@ -79,8 +85,14 @@ def getImageData(folder):
                 M.img2arr(np_arr['comp']),
                 M.img2arr(M.imgs2x(np_arr['raw']))
             )
+            if(test._length > 0):
+                test_flg = True
 
-    return train, test
+    if(train_flg is True)and(test_flg is True):
+        return train, test
+    else:
+        print('[Error] dataset not found in this folder:', folder)
+        exit()
 
 
 def main(args):
