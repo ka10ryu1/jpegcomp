@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # -*-coding: utf-8 -*-
 #
-help = '便利機能'
+help = '画像処理に関する便利機能'
 #
 
 import os
+import sys
 import cv2
-import inspect
 import numpy as np
 
 try:
@@ -17,25 +17,8 @@ except ImportError:
 import chainer.functions as F
 import chainer.optimizers as O
 
-
-def argsPrint(p, bar=30):
-    """
-    argparseの parse_args() で生成されたオブジェクトを入力すると、
-    integersとaccumulateを自動で取得して表示する
-    [in] p: parse_args()で生成されたオブジェクト
-    [in] bar: 区切りのハイフンの数
-    """
-
-    print('-' * bar)
-    args = [(i, getattr(p, i)) for i in dir(p) if not '_' in i[0]]
-    for i, j in args:
-        if isinstance(j, list):
-            print('{0}[{1}]:'.format(i, len(j)))
-            [print('\t{}'.format(k)) for k in j]
-        else:
-            print('{0}:\t{1}'.format(i, j))
-
-    print('-' * bar)
+[sys.path.append(d) for d in ['../Lib/'] if os.path.isdir(d)]
+from Lib.Tools import fileFuncLine
 
 
 def getCh(ch):
@@ -69,7 +52,8 @@ def imgEncodeDecode(in_imgs, ch, quality=5):
         result, encimg = cv2.imencode('.jpg', img, encode_param)
         if False == result:
             print('[Error] {0}\n\tcould not encode image!'.format(
-                fileFuncLine()))
+                fileFuncLine())
+            )
             exit()
 
         decimg = cv2.imdecode(encimg, ch)
@@ -225,24 +209,3 @@ def getOptimizer(opt_str):
 
     print('Optimizer:', opt.__doc__.split('.')[0])
     return opt
-
-
-def getFilePath(folder, name, ext):
-    if not os.path.isdir(folder):
-        os.makedirs(folder)
-
-    return os.path.join(folder, name + ext)
-
-
-def fileFuncLine():
-    """
-    この関数を呼び出すと、呼び出し先のファイル名、関数名、実行行数を取得できる
-    デバッグ時に便利
-    """
-
-    funcname = inspect.currentframe().f_back.f_code.co_name
-    filename = os.path.basename(
-        inspect.currentframe().f_back.f_code.co_filename
-    )
-    lineno = inspect.currentframe().f_back.f_lineno
-    return '>>> {0}, {1}(), {2}[line] <<<\n'.format(filename, funcname, lineno)
