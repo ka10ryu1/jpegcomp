@@ -187,7 +187,7 @@ jpegcomp直下にいるものとする
 │   ├── The_Night_of_the_Milky_Way_Train_ch2.PNG
 │   ├── The_Nighthawk_Star_op.PNG
 │   ├── font_00.bmp
-│   ├── font_01.bmp
+│   └── font_01.bmp
 └── jpegcomp
      ├── FontData
      ├── Lib
