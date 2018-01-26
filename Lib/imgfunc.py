@@ -111,7 +111,8 @@ def rotate(imgs):
     out_imgs = imgs.copy()
     [out_imgs.append(cv2.flip(i, 0)) for i in imgs]
     [out_imgs.append(cv2.flip(i, 1)) for i in imgs]
-    return imgs
+    [out_imgs.append(cv2.flip(cv2.flip(i, 1), 0)) for i in imgs]
+    return out_imgs
 
 
 def size2x(imgs, flg=cv2.INTER_NEAREST):
