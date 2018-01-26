@@ -9,7 +9,8 @@ import cv2
 import argparse
 import numpy as np
 
-import Lib.myfunc as M
+import Lib.imgfunc as IMG
+import Tools.func as F
 
 
 def command():
@@ -34,16 +35,23 @@ def command():
 def main(args):
     # OpenCV形式で画像を読み込むために
     # チャンネル数をOpenCVのフラグ形式に変換する
-    ch = M.getCh(args.channel)
+    ch = IMG.getCh(args.channel)
     # OpenCV形式で画像をリストで読み込む
     print('read images...')
     imgs = [cv2.imread(name, ch) for name in args.jpeg]
     # 画像を圧縮して分割する（学習の入力データに相当）
     print('split images...')
-    comp, _ = M.imgSplit(M.imgEncodeDecode(imgs, ch, args.quality),
-                         args.img_size, args.round)
+    comp, _ = IMG.imgSplit(
+        IMG.imgEncodeDecode(imgs, ch, args.quality),
+        args.img_size,
+        args.round
+    )
     # 画像を分割する（正解データに相当）
-    raw, _ = M.imgSplit(imgs, args.img_size, args.round)
+    raw, _ = IMG.imgSplit(
+        imgs,
+        args.img_size,
+        args.round
+    )
 
     # 画像の並び順をシャッフルするための配列を作成する
     # compとrawの対応を崩さないようにシャッフルしなければならない
@@ -65,14 +73,16 @@ def main(args):
     # 生成したデータをnpz形式でデータセットとして保存する
     # ここで作成したデータの中身を確認する場合はnpz2jpg.pyを使用するとよい
     print('save npz...')
-    size_str = str(args.img_size).zfill(2) + 'x' + str(args.img_size).zfill(2)
-    np.savez(os.path.join(args.out_path, 'train_' + size_str),
+    size_str = '_' + str(args.img_size).zfill(2) + 'x' + str(args.img_size).zfill(2)
+    num_str = '_' + str(train_comp.shape[0]).zfill(6)
+    np.savez(os.path.join(args.out_path, 'train' + size_str + num_str),
              comp=train_comp, raw=train_raw)
-    np.savez(os.path.join(args.out_path, 'test_' + size_str),
+    num_str = '_' + str(test_comp.shape[0]).zfill(6)
+    np.savez(os.path.join(args.out_path, 'test' + size_str + num_str),
              comp=test_comp, raw=test_raw)
 
 
 if __name__ == '__main__':
     args = command()
-    M.argsPrint(args)
+    F.argsPrint(args)
     main(args)

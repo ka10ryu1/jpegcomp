@@ -18,8 +18,9 @@ from chainer.datasets import tuple_dataset
 
 
 from Lib.network import JC
-import Lib.myfunc as M
 from Lib.plot_report_log import PlotReportLog
+import Lib.imgfunc as IMG
+import Tools.func as F
 
 
 def command():
@@ -64,26 +65,26 @@ def getImageData(folder):
         name, ext = os.path.splitext(os.path.basename(l))
         if os.path.isdir(l):
             pass
-        elif('train_' in name)and('.npz' in ext):
+        elif('train_' in name)and('.npz' in ext)and(train_flg is False):
             np_arr = np.load(os.path.join(folder, l))
             print('train (comp/raw): {0}/{1}'.format(
                 np_arr['comp'].shape, np_arr['raw'].shape)
             )
             train = tuple_dataset.TupleDataset(
-                M.img2arr(np_arr['comp']),
-                M.img2arr(M.imgs2x(np_arr['raw']))
+                IMG.img2arr(np_arr['comp']),
+                IMG.img2arr(IMG.imgs2x(np_arr['raw']))
             )
             if(train._length > 0):
                 train_flg = True
 
-        elif('test_' in name)and('.npz' in ext):
+        elif('test_' in name)and('.npz' in ext)and(test_flg is False):
             np_arr = np.load(os.path.join(folder, l))
             print('test  (comp/raw): {0}/{1}'.format(
                 np_arr['comp'].shape, np_arr['raw'].shape)
             )
             test = tuple_dataset.TupleDataset(
-                M.img2arr(np_arr['comp']),
-                M.img2arr(M.imgs2x(np_arr['raw']))
+                IMG.img2arr(np_arr['comp']),
+                IMG.img2arr(IMG.imgs2x(np_arr['raw']))
             )
             if(test._length > 0):
                 test_flg = True
@@ -106,13 +107,13 @@ def main(args):
     # iteration, which will be used by the PrintReport extension below.
 
     # 活性化関数を取得する
-    actfun_1 = M.getActfun(args.actfun_1)
-    actfun_2 = M.getActfun(args.actfun_2)
+    actfun_1 = IMG.getActfun(args.actfun_1)
+    actfun_2 = IMG.getActfun(args.actfun_2)
     # モデルを決定する
     model = L.Classifier(
         JC(n_unit=args.unit, layer=args.layer_num,
            actfun_1=actfun_1, actfun_2=actfun_2),
-        lossfun=M.getLossfun(args.lossfun)
+        lossfun=IMG.getLossfun(args.lossfun)
     )
     # Accuracyは今回使用しないのでFalseにする
     # もしも使用したいのであれば、自分でAccuracyを評価する関数を作成する必要あり？
@@ -124,7 +125,7 @@ def main(args):
         model.to_gpu()  # Copy the model to the GPU
 
     # Setup an optimizer
-    optimizer = M.getOptimizer(args.optimizer)
+    optimizer = IMG.getOptimizer(args.optimizer)
     optimizer.setup(model)
 
     # Load dataset
@@ -199,7 +200,7 @@ def main(args):
 
     if args.only_check is False:
         # predict.pyでモデルのパラメータを読み込むjson形式で保存する
-        with open(M.getFilePath(args.out_path, exec_time, '.json'), 'w') as f:
+        with open(F.getFilePath(args.out_path, exec_time, '.json'), 'w') as f:
             json.dump(model_param, f)
 
         # Run the training
@@ -209,7 +210,7 @@ def main(args):
         # スナップショットを使ってもいいが、
         # スナップショットはファイルサイズが大きいので
         chainer.serializers.save_npz(
-            M.getFilePath(args.out_path, exec_time, '.model'),
+            F.getFilePath(args.out_path, exec_time, '.model'),
             model
         )
 
@@ -219,5 +220,5 @@ def main(args):
 
 if __name__ == '__main__':
     args = command()
-    M.argsPrint(args)
+    F.argsPrint(args)
     main(args)

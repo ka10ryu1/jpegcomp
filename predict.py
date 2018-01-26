@@ -15,7 +15,8 @@ import chainer.links as L
 from chainer.cuda import to_cpu
 
 from Lib.network import JC
-import Lib.myfunc as M
+import Lib.imgfunc as IMG
+import Tools.func as F
 
 
 def command():
@@ -57,11 +58,11 @@ def getModelParam(path):
     except:
         import traceback
         traceback.print_exc()
-        print(M.fileFuncLine())
+        print(F.fileFuncLine())
         exit()
 
-    af1 = M.getActfun(d['actfun_1'])
-    af2 = M.getActfun(d['actfun_2'])
+    af1 = IMG.getActfun(d['actfun_1'])
+    af2 = IMG.getActfun(d['actfun_2'])
     return d['unit'], d['img_ch'], d['layer'], af1, af2
 
 
@@ -78,22 +79,22 @@ def predict(model, args, img, ch, ch_flg, val):
     """
 
     # 入力画像を圧縮して劣化させる
-    comp = M.imgEncodeDecode([img], ch_flg, args.quality)
+    comp = IMG.imgEncodeDecode([img], ch_flg, args.quality)
     # 比較のため圧縮画像を保存する
     cv2.imwrite(
-        M.getFilePath(args.out_path, 'comp-' + str(val * 10).zfill(3), '.jpg'),
+        F.getFilePath(args.out_path, 'comp-' + str(val * 10).zfill(3), '.jpg'),
         comp[0]
     )
 
     # 入力画像を分割する
-    comp, size = M.imgSplit(comp, args.img_size)
+    comp, size = IMG.imgSplit(comp, args.img_size)
     imgs = []
     # バッチサイズごとに学習済みモデルに入力して画像を生成する
     for i in range(0, len(comp), args.batch):
-        x = M.img2arr(comp[i:i + args.batch], gpu=args.gpu)
+        x = IMG.img2arr(comp[i:i + args.batch], gpu=args.gpu)
         y = model.predictor(x)
         y = to_cpu(y.array)
-        y = M.arr2img(y, ch, args.img_size * 2)
+        y = IMG.arr2img(y, ch, args.img_size * 2)
         imgs.extend(y)
 
     # 生成された画像を結合する
@@ -107,7 +108,7 @@ def predict(model, args, img, ch, ch_flg, val):
     img = cv2.resize(img, half_size, flg)
     # 生成結果を保存する
     cv2.imwrite(
-        M.getFilePath(args.out_path, 'comp-' +
+        F.getFilePath(args.out_path, 'comp-' +
                       str(val * 10 + 1).zfill(3), '.jpg'),
         img
     )
@@ -126,7 +127,7 @@ def isImage(name):
         return True
     else:
         print('[{0}] is not Image'.format(name))
-        print(M.fileFuncLine())
+        print(F.fileFuncLine())
         return False
 
 
@@ -148,7 +149,7 @@ def checkModelType(path):
         load_path = 'updater/model:main/'
     else:
         print('model read error')
-        print(M.fileFuncLine())
+        print(F.fileFuncLine())
         exit()
 
     return load_path
@@ -158,7 +159,7 @@ def main(args):
     # jsonファイルから学習モデルのパラメータを取得する
     unit, ch, layer, af1, af2 = getModelParam(args.param)
     # 学習モデルの出力画像のチャンネルに応じて画像を読み込む
-    ch_flg = M.getCh(ch)
+    ch_flg = IMG.getCh(ch)
     imgs = [cv2.imread(name, ch_flg) for name in args.jpeg if isImage(name)]
     # 学習モデルを生成する
     model = L.Classifier(
@@ -172,7 +173,7 @@ def main(args):
     except:
         import traceback
         traceback.print_exc()
-        print(M.fileFuncLine())
+        print(F.fileFuncLine())
         exit()
 
     # GPUの設定
@@ -191,5 +192,5 @@ def main(args):
 
 if __name__ == '__main__':
     args = command()
-    M.argsPrint(args)
+    F.argsPrint(args)
     main(args)

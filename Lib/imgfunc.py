@@ -17,8 +17,8 @@ except ImportError:
 import chainer.functions as F
 import chainer.optimizers as O
 
-[sys.path.append(d) for d in ['../Lib/'] if os.path.isdir(d)]
-from Lib.Tools import fileFuncLine
+[sys.path.append(d) for d in ['./Tools/'] if os.path.isdir(d)]
+from Tools.func import fileFuncLine
 
 
 def getCh(ch):
@@ -86,6 +86,11 @@ def imgSplit(imgs, size, round_num=-1, flg=cv2.BORDER_REFLECT_101):
     out_imgs = []
     [[out_imgs.extend(np.vsplit(h_img, v_split))
       for h_img in np.hsplit(img, h_split)] for img in imgs]
+
+    if(round_num > len(out_imgs)):
+        print('[Error] round({0}) > split images({1})'.format(round_num, len(out_imgs)))
+        print(fileFuncLine())
+        exit()
 
     # バッチサイズの関係などで、画像の数を調整したい時はここで調整する
     # predict.pyなどで分割画像を復元したくなるので縦横の分割数も返す
