@@ -67,8 +67,8 @@ def getImageData(folder):
             pass
         elif('train_' in name)and('.npz' in ext)and(train_flg is False):
             np_arr = np.load(os.path.join(folder, l))
-            print('train (comp/raw): {0}/{1}'.format(
-                np_arr['comp'].shape, np_arr['raw'].shape)
+            print('{0}:\tcomp{1},\traw{2}'.format(
+                l, np_arr['comp'].shape, np_arr['raw'].shape)
             )
             train = tuple_dataset.TupleDataset(
                 IMG.imgs2arr(np_arr['comp']),
@@ -79,8 +79,8 @@ def getImageData(folder):
 
         elif('test_' in name)and('.npz' in ext)and(test_flg is False):
             np_arr = np.load(os.path.join(folder, l))
-            print('test  (comp/raw): {0}/{1}'.format(
-                np_arr['comp'].shape, np_arr['raw'].shape)
+            print('{0}:\tcomp{1},\traw{2}'.format(
+                l, np_arr['comp'].shape, np_arr['raw'].shape)
             )
             test = tuple_dataset.TupleDataset(
                 IMG.imgs2arr(np_arr['comp']),
