@@ -66,19 +66,15 @@ def main(args):
     print('train comp/raw:{0}/{1}'.format(train_comp.shape, train_raw.shape))
     print('test  comp/raw:{0}/{1}'.format(test_comp.shape, test_raw.shape))
 
-    # 保存するフォルダがなければ生成する
-    if not os.path.isdir(args.out_path):
-        os.makedirs(args.out_path)
-
     # 生成したデータをnpz形式でデータセットとして保存する
     # ここで作成したデータの中身を確認する場合はnpz2jpg.pyを使用するとよい
     print('save npz...')
     size_str = '_' + str(args.img_size).zfill(2) + 'x' + str(args.img_size).zfill(2)
     num_str = '_' + str(train_comp.shape[0]).zfill(6)
-    np.savez(os.path.join(args.out_path, 'train' + size_str + num_str),
+    np.savez(F.getFilePath(args.out_path, 'train' + size_str + num_str),
              comp=train_comp, raw=train_raw)
     num_str = '_' + str(test_comp.shape[0]).zfill(6)
-    np.savez(os.path.join(args.out_path, 'test' + size_str + num_str),
+    np.savez(F.getFilePath(args.out_path, 'test' + size_str + num_str),
              comp=test_comp, raw=test_raw)
 
 
