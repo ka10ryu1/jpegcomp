@@ -30,22 +30,22 @@ $ ls `find ./ -maxdepth 2 -type f -print` | xargs grep 'help = ' --include=*.py 
 │   └── train_32x32_007200.npz
 ├── LICENSE
 ├── Lib
-│   ├── imgfunc.py  **画像処理に関する便利機能**
-│   ├── network.py  **jpegcompのネットワーク部分**
+│   ├── imgfunc.py  > 画像処理に関する便利機能
+│   ├── network.py  > jpegcompのネットワーク部分
 │   └── plot_report_log.py
 ├── README.md
 ├── Tools
 │   ├── LICENSE
 │   ├── README.md
-│   ├── dot2png.py   **dot言語で記述されたファイルをPNG形式に変換する**
-│   ├── func.py      **便利機能**
-│   ├── npz2jpg.py   **作成したデータセット（.npz）の中身を画像として出力する**
-│   └── plot_diff.py **logファイルの複数比較**
+│   ├── dot2png.py   > dot言語で記述されたファイルをPNG形式に変換する
+│   ├── func.py      > 便利機能
+│   ├── npz2jpg.py   > 作成したデータセット（.npz）の中身を画像として出力する
+│   └── plot_diff.py > logファイルの複数比較
 ├── auto_train.sh
 ├── clean_all.sh
-├── create_dataset.py  **画像を読み込んでデータセットを作成する**
-├── predict.py         **モデルとモデルパラメータを利用して推論実行する**
-└── train.py           **学習メイン部**
+├── create_dataset.py  > 画像を読み込んでデータセットを作成する
+├── predict.py         > モデルとモデルパラメータを利用して推論実行する
+└── train.py           > 学習メイン部
 ```
 
 FontDataはチュートリアル用のデータセットとテスト用の画像しかない。完全版データは非常に重いので別リポジトリにて管理している。
@@ -109,7 +109,7 @@ epoch       main/loss   validation/main/loss  elapsed_time
 
 ### 生成物の確認
 
-resultフォルダ中に*.json、*.log、*_graph.dot、*_log_plot.png、*.snapshot、*.modelが生成されていればOK
+resultフォルダ中に`*.json`、`*.log`、`*_graph.dot`、`*_log_plot.png`、`*.snapshot`、`*.model`が生成されていればOK
 
 ## 学習で作成されたモデルを使用する
 
@@ -147,7 +147,7 @@ model read
 
 ### 生成物の確認
 
-resultフォルダ中にcomp-*.jpgファイルが生成されていればOK
+resultフォルダ中に`comp-*.jpg`ファイルが生成されていればOK
 
 # その他の機能
 
@@ -227,5 +227,5 @@ save npz...
 ### 生成物の確認
 
 resultフォルダが作成され、その中に以下のファイルが生成されていればOK
-- test_32x32_000800.npz
-- train_32x32_007200.npz
+- `test_32x32_000800.npz`
+- `train_32x32_007200.npz`
