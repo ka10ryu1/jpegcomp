@@ -24,10 +24,11 @@ from Tools.func import fileFuncLine
 def getCh(ch):
     """
     入力されたチャンネル数をOpenCVの形式に変換する
-    [in]  ch:入力されたチャンネル数 (type=int)
+    [in]  ch:入力されたチャンネル数 (type=int or np.shape)
     [out] OpenCVの形式
     """
 
+    # np.shapeが代入された場合、shapeの数でチャンネル数を判断する
     if isinstance(ch, list):
         if len(ch) == 3:
             ch = ch[2]
@@ -93,6 +94,7 @@ def split(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
     [[out_imgs.extend(np.vsplit(h_img, v_split))
       for h_img in np.hsplit(img, h_split)] for img in imgs]
 
+    # 切り捨てたい数よりも画像数が少ないと0枚になってしまうので注意
     if(round_num > len(out_imgs)):
         print('[Error] round({0}) > split images({1})'.format(round_num, len(out_imgs)))
         print(fileFuncLine())
@@ -108,6 +110,12 @@ def split(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
 
 
 def rotate(imgs):
+    """
+    画像を回転させてデータ数を水増しする
+    [in]  imgs:     入力画像リスト
+    [out] out_imgs: 出力画像リスト（4倍）
+    """
+
     out_imgs = imgs.copy()
     [out_imgs.append(cv2.flip(i, 0)) for i in imgs]
     [out_imgs.append(cv2.flip(i, 1)) for i in imgs]
@@ -131,12 +139,11 @@ def imgs2arr(imgs, norm=255, dtype=np.float32, gpu=-1):
     [out] 生成された行列
     """
 
-    shape = imgs[0].shape
-    w, h = shape[:2]
-    if(len(shape) == 2):
+    try:
+        w, h, ch = imgs[0].shape
+    except:
+        w, h = imgs[0].shape
         ch = 1
-    else:
-        ch = shape[2]
 
     if(gpu >= 0):
         return xp.array(imgs, dtype=dtype).reshape((-1, ch, w, h)) / norm
