@@ -21,68 +21,43 @@ $ ls `find ./ -maxdepth 2 -type f -print` | xargs grep 'help = ' --include=*.py 
 
 ## ファイル
 
-- ./Lib/myfunc.py
-  - 便利機能
-- ./Lib/network.py
-  - jpegcompのネットワーク部分
-- ./Tool/dot2png.py
-  - dot言語で記述されたファイルをPNG形式に変換する
-- ./Tool/npz2jpg.py
-  - 作成したデータセット（.npz）の中身を画像として出力する
-- ./Tool/plot_diff.py
-  - logファイルの複数比較
-- ./create_dataset.py
-  - 画像を読み込んでデータセットを作成する
-- ./predict.py
-  - モデルとモデルパラメータを利用して推論実行する
-- ./train.py
-  - '学習メイン部'
-- ./FontData
-  - 学習とテストに使用する画像データなど（サイズが大きいので注意）
+```console
+.
+├── FontData
+│   ├── The_Night_of_the_Milky_Way_Train_ch2.PNG
+│   ├── The_Nighthawk_Star_op.PNG
+│   ├── test_32x32_000800.npz
+│   └── train_32x32_007200.npz
+├── LICENSE
+├── Lib
+│   ├── imgfunc.py  **画像処理に関する便利機能**
+│   ├── network.py  **jpegcompのネットワーク部分**
+│   └── plot_report_log.py
+├── README.md
+├── Tools
+│   ├── LICENSE
+│   ├── README.md
+│   ├── dot2png.py   **dot言語で記述されたファイルをPNG形式に変換する**
+│   ├── func.py      **便利機能**
+│   ├── npz2jpg.py   **作成したデータセット（.npz）の中身を画像として出力する**
+│   └── plot_diff.py **logファイルの複数比較**
+├── auto_train.sh
+├── clean_all.sh
+├── create_dataset.py  **画像を読み込んでデータセットを作成する**
+├── predict.py         **モデルとモデルパラメータを利用して推論実行する**
+└── train.py           **学習メイン部**
+```
+
+FontDataはチュートリアル用のデータセットとテスト用の画像しかない。完全版データは非常に重いので別リポジトリにて管理している。
 
 # チュートリアル
-
-## データセットを作成する
-
-### 実行
-
-```console
-$ ./create_dataset.py ./FontData/font_0[0-1]*
-```
-
-### 端末の確認
-以下のとおりであれば正常に実行できている
-
-```console
-not import cupy
-------------------------------
-channel:	1
-img_size:	32
-jpeg[2]:
-	./FontData/font_00.bmp
-	./FontData/font_01.bmp
-out_path:	./result/
-quality:	5
-round:	1000
-train_per_all:	0.85
-------------------------------
-train comp: (6800, 32, 32)
-      raw:  (6800, 32, 32)
-test comp:  (1200, 32, 32)
-     raw:   (1200, 32, 32)
-```
-`not import cupy`はcupyをインストールしていない場合に表示される
-
-### 生成物の確認
-
-resultフォルダが作成され、その中にtest.npzとtrain.npzが生成されていればOK
 
 ## 学習する
 
 ### 実行
 
 ```console
-$ ./train.py
+$ ./train.py -i FontData/
 ```
 
 ### 端末の確認
@@ -96,10 +71,10 @@ batchsize:	200
 epoch:	10
 frequency:	-1
 gpu_id:	-1
-in_path:	./result/
+in_path:	FontData/
 layer_num:	3
 lossfun:	mse
-only_check:	False
+only_check:	True
 optimizer:	adam
 out_path:	./result/
 plot:	True
@@ -115,31 +90,33 @@ Activation func: sigmoid
   Act Func:	relu, sigmoid
 Loss func: mean_squared_error
 Optimizer: Adam optimizer
-test  (comp/raw): (1200, 32, 32)/(1200, 32, 32)
-train (comp/raw): (6800, 32, 32)/(6800, 32, 32)
+train_32x32_007200.npz:	comp(7200, 32, 32),	raw(7200, 32, 32)
+test_32x32_000800.npz:	comp(800, 32, 32),	raw(800, 32, 32)
 epoch       main/loss   validation/main/loss  elapsed_time
-1           0.208491    0.119774              32.4628
-2           0.174672    0.166305              65.61
-3           0.158801    0.153584              97.5322
-4           0.146055    0.148234              129.836
-5           0.13466     0.138804              162.696
-6           0.123279    0.123111              195.181
-7           0.113303    0.113019              227.963
-8           0.10562     0.101799              259.506
-9           0.0994183   0.0968083             291.633
-10          0.0940017   0.0894627             323.381
+1           0.176155    0.153774              73.2628
+2           0.146684    0.136503              147.235
+3           0.134237    0.129488              221.06
+4           0.124759    0.120349              294.067
+5           0.117036    0.112505              366.737
+6           0.110237    0.107868              440.326
+7           0.104063    0.100743              513.166
+8           0.0984077   0.0963099             587.07
+9           0.0932294   0.0918062             660.406
+10          0.0883972   0.0864184             733.576
 ```
+
+`not import cupy`はcupyをインストールしていない場合に表示される
 
 ### 生成物の確認
 
-resultフォルダ中に*.log、*_graph.dot、*_plot.png、*.snapshot、*.modelが生成されていればOK
+resultフォルダ中に*.json、*.log、*_graph.dot、*_log_plot.png、*.snapshot、*.modelが生成されていればOK
 
 ## 学習で作成されたモデルを使用する
 
 ### 実行
 
 ```console
-$ ./predict.py ./result/*.model ./result/*.json ./FontData/The_Night*
+$  ./predict.py ./result/*.model ./result/*.json ./FontData/The_Night*
 ```
 
 ### 端末の確認
@@ -153,9 +130,9 @@ img_size:	32
 jpeg[2]:
 	./FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG
 	./FontData/The_Nighthawk_Star_op.PNG
-model:	./result/180122-153747.model
+model:	./result/180126-140329.model
 out_path:	./result/
-param:	./result/180122-153747.json
+param:	./result/180126-140329.json
 quality:	5
 ------------------------------
 Activation func: relu
@@ -189,5 +166,66 @@ $ ./auto_train.sh
 ## Dotファイルの画像化
 
 ```console
-$ ./dot2png.py ./result/*.dot
+$ ./Tools/dot2png.py ./result/*.dot
 ```
+
+## NPZデータセットの中身をランダム表示
+
+```console
+$ ./Tools/npz2jpg.py ./FontData/test_32x32_000800.npz
+```
+
+## データセットを作成する
+
+### 構成
+
+jpegcomp直下にいるものとする
+
+```console
+├── FontDataAll
+│   ├── README.md
+│   ├── The_Night_of_the_Milky_Way_Train_ch2.PNG
+│   ├── The_Nighthawk_Star_op.PNG
+│   ├── font_00.bmp
+│   ├── font_01.bmp
+└── jpegcomp
+     ├── FontData
+     ├── Lib
+     └── Tools
+```
+
+### 実行
+
+```console
+$ ./create_dataset.py ../FontDataAll/font_0[0-1]*
+```
+
+### 端末の確認
+以下のとおりであれば正常に実行できている
+
+```console
+not import cupy
+------------------------------
+channel:	1
+img_size:	32
+jpeg[2]:
+	../FontDataAll/font_00.bmp
+	../FontDataAll/font_01.bmp
+out_path:	./result/
+quality:	5
+round:	1000
+train_per_all:	0.9
+------------------------------
+read images...
+split images...
+shuffle images...
+train comp/raw:(7200, 32, 32)/(7200, 32, 32)
+test  comp/raw:(800, 32, 32)/(800, 32, 32)
+save npz...
+```
+
+### 生成物の確認
+
+resultフォルダが作成され、その中に以下のファイルが生成されていればOK
+- test_32x32_000800.npz
+- train_32x32_007200.npz
