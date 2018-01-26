@@ -23,19 +23,29 @@ class JC(Chain):
 
         super(JC, self).__init__()
         with self.init_scope():
-            self.conv1 = L.Convolution2D(None, n_unit, 9,  pad=4)
+            self.conv1 = L.Convolution2D(
+                None, n_unit, ksize=3, stride=1, pad=1
+            )
             self.bn1 = L.BatchNormalization(n_unit)
-            self.conv2 = L.Convolution2D(None, n_unit, 1)
+            self.conv2 = L.Convolution2D(
+                None, n_unit, ksize=7, stride=1, pad=3
+            )
             self.bn2 = L.BatchNormalization(n_unit)
             if(layer > 3):
-                self.conv3 = L.Convolution2D(None, n_unit, 1)
+                self.conv3 = L.Convolution2D(
+                    None, n_unit, ksize=3, stride=1, pad=1
+                )
                 self.bn3 = L.BatchNormalization(n_unit)
 
             if(layer > 4):
-                self.conv4 = L.Convolution2D(None, n_unit, 1)
+                self.conv4 = L.Convolution2D(
+                    None, n_unit, ksize=3, stride=1, pad=1
+                )
                 self.bn4 = L.BatchNormalization(n_unit)
 
-            self.convN = L.Convolution2D(None, 4, 5,  pad=2)
+            self.convN = L.Convolution2D(
+                None, 4, ksize=5,  stride=1, pad=2
+            )
             self.bnN = L.BatchNormalization(1)
 
         self.layer = layer
@@ -56,7 +66,8 @@ class JC(Chain):
         if(self.layer > 4):
             h = self.actfun_1(self.bn4(self.conv4(h)))
 
-        return self.actfun_2(self.bnN(self.PS(self.convN(h))))
+        y = self.actfun_2(self.bnN(self.PS(self.convN(h))))
+        return y
 
     def PS(self, h, r=2):
         """
