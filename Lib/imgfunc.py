@@ -28,6 +28,12 @@ def getCh(ch):
     [out] OpenCVの形式
     """
 
+    if isinstance(ch, list):
+        if len(ch) == 3:
+            ch = ch[2]
+        else:
+            ch = 1
+
     if(ch == 1):
         return cv2.IMREAD_GRAYSCALE
     elif(ch == 3):

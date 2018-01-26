@@ -66,21 +66,20 @@ def getModelParam(path):
     return d['unit'], d['img_ch'], d['layer'], af1, af2
 
 
-def predict(model, args, img, ch, ch_flg, val):
+def predict(model, args, img, ch, val):
     """
     推論実行メイン部
     [in]  model:  推論実行に使用するモデル
     [in]  args:   実行時のオプシン引数情報
     [in]  img:    入力画像
     [in]  ch:     入力画像のチャンネル数
-    [in]  ch_flg: 入力画像のチャンネル数（OpenCV形式）
     [in]  val:    画像保存時の連番情報
     [out] img:推論実行で得られた生成画像
     """
 
     org_size = img.shape
     # 入力画像を圧縮して劣化させる
-    comp = IMG.encodeDecode([img], ch_flg, args.quality)
+    comp = IMG.encodeDecode([img], IMG.getCh(ch), args.quality)
     # 比較のため圧縮画像を保存する
     cv2.imwrite(
         F.getFilePath(args.out_path, 'comp-' + str(val * 10).zfill(3), '.jpg'),
@@ -184,7 +183,7 @@ def main(args):
         model.to_gpu()
 
     # 学習モデルを入力画像ごとに実行する
-    imgs = [predict(model, args, img, ch, ch_flg, i)
+    imgs = [predict(model, args, img, ch, i)
             for i, img in enumerate(imgs)]
     # 生成結果の表示
     for i in imgs:
