@@ -41,14 +41,14 @@ def main(args):
     imgs = [cv2.imread(name, ch) for name in args.jpeg]
     # 画像を圧縮して分割する（学習の入力データに相当）
     print('split images...')
-    comp, _ = IMG.imgSplit(
-        IMG.imgEncodeDecode(imgs, ch, args.quality),
+    comp, _ = IMG.split(
+        IMG.rotate(IMG.encodeDecode(imgs, ch, args.quality)),
         args.img_size,
         args.round
     )
     # 画像を分割する（正解データに相当）
-    raw, _ = IMG.imgSplit(
-        imgs,
+    raw, _ = IMG.split(
+        IMG.rotate(imgs),
         args.img_size,
         args.round
     )

@@ -36,7 +36,7 @@ def getCh(ch):
         return cv2.IMREAD_UNCHANGED
 
 
-def imgEncodeDecode(in_imgs, ch, quality=5):
+def encodeDecode(in_imgs, ch, quality=5):
     """
     入力された画像リストを圧縮する
     [in]  in_imgs:  入力画像リスト
@@ -62,7 +62,7 @@ def imgEncodeDecode(in_imgs, ch, quality=5):
     return out_imgs
 
 
-def imgSplit(imgs, size, round_num=-1, flg=cv2.BORDER_REFLECT_101):
+def split(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
     """
     入力された画像リストを正方形に分割する
     imgsに格納されている画像はサイズが同じであること
@@ -73,7 +73,7 @@ def imgSplit(imgs, size, round_num=-1, flg=cv2.BORDER_REFLECT_101):
     """
 
     # 画像を分割する際に端が切れてしまうのを防ぐために余白を追加する
-    imgs = [cv2.copyMakeBorder(img, 0, size // 2, 0, size // 2, flg)
+    imgs = [cv2.copyMakeBorder(img, 0, size, 0, size, flg)
             for img in imgs]
     # 画像を分割しやすいように画像サイズを変更する
     v_size = imgs[0].shape[0] // size * size
@@ -101,13 +101,20 @@ def imgSplit(imgs, size, round_num=-1, flg=cv2.BORDER_REFLECT_101):
         return np.array(out_imgs), (v_split, h_split)
 
 
-def imgs2x(imgs, flg=cv2.INTER_NEAREST):
+def rotate(imgs):
+    out_imgs = imgs.copy()
+    [out_imgs.append(cv2.flip(i, 0)) for i in imgs]
+    [out_imgs.append(cv2.flip(i, 1)) for i in imgs]
+    return imgs
+
+
+def size2x(imgs, flg=cv2.INTER_NEAREST):
     w, h = imgs[0].shape[:2]
     size = (w * 2, h * 2)
     return [cv2.resize(i, size, flg) for i in imgs]
 
 
-def img2arr(imgs, norm=255, dtype=np.float32, gpu=-1):
+def imgs2arr(imgs, norm=255, dtype=np.float32, gpu=-1):
     """
     入力画像リストをChainerで利用するために変換する
     [in]  imgs:  入力画像リスト
@@ -130,7 +137,7 @@ def img2arr(imgs, norm=255, dtype=np.float32, gpu=-1):
         return np.array(imgs, dtype=dtype).reshape((-1, ch, w, h)) / norm
 
 
-def arr2img(arr, ch, size, norm=255, dtype=np.uint8):
+def arr2imgs(arr, ch, size, norm=255, dtype=np.uint8):
     """
     Chainerの出力をOpenCVで可視化するために変換する
     [in]  arr:   Chainerから出力された行列

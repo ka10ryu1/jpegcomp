@@ -33,15 +33,15 @@ class JC(Chain):
             self.bn2 = L.BatchNormalization(n_unit)
             if(layer > 3):
                 self.conv3 = L.Convolution2D(
-                    None, n_unit, ksize=3, stride=1, pad=1
+                    None, n_unit * 2, ksize=3, stride=1, pad=1
                 )
-                self.bn3 = L.BatchNormalization(n_unit)
+                self.bn3 = L.BatchNormalization(n_unit * 2)
 
             if(layer > 4):
                 self.conv4 = L.Convolution2D(
-                    None, n_unit, ksize=3, stride=1, pad=1
+                    None, n_unit * 2, ksize=3, stride=1, pad=1
                 )
-                self.bn4 = L.BatchNormalization(n_unit)
+                self.bn4 = L.BatchNormalization(n_unit * 2)
 
             self.convN = L.Convolution2D(
                 None, 4, ksize=5,  stride=1, pad=2
