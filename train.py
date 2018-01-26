@@ -71,8 +71,8 @@ def getImageData(folder):
                 np_arr['comp'].shape, np_arr['raw'].shape)
             )
             train = tuple_dataset.TupleDataset(
-                IMG.img2arr(np_arr['comp']),
-                IMG.img2arr(IMG.imgs2x(np_arr['raw']))
+                IMG.imgs2arr(np_arr['comp']),
+                IMG.imgs2arr(IMG.size2x(np_arr['raw']))
             )
             if(train._length > 0):
                 train_flg = True
@@ -83,8 +83,8 @@ def getImageData(folder):
                 np_arr['comp'].shape, np_arr['raw'].shape)
             )
             test = tuple_dataset.TupleDataset(
-                IMG.img2arr(np_arr['comp']),
-                IMG.img2arr(IMG.imgs2x(np_arr['raw']))
+                IMG.imgs2arr(np_arr['comp']),
+                IMG.imgs2arr(IMG.size2x(np_arr['raw']))
             )
             if(test._length > 0):
                 test_flg = True

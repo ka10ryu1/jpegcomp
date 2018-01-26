@@ -78,8 +78,9 @@ def predict(model, args, img, ch, ch_flg, val):
     [out] img:推論実行で得られた生成画像
     """
 
+    org_size = img.shape
     # 入力画像を圧縮して劣化させる
-    comp = IMG.imgEncodeDecode([img], ch_flg, args.quality)
+    comp = IMG.encodeDecode([img], ch_flg, args.quality)
     # 比較のため圧縮画像を保存する
     cv2.imwrite(
         F.getFilePath(args.out_path, 'comp-' + str(val * 10).zfill(3), '.jpg'),
@@ -87,14 +88,14 @@ def predict(model, args, img, ch, ch_flg, val):
     )
 
     # 入力画像を分割する
-    comp, size = IMG.imgSplit(comp, args.img_size)
+    comp, size = IMG.split(comp, args.img_size)
     imgs = []
     # バッチサイズごとに学習済みモデルに入力して画像を生成する
     for i in range(0, len(comp), args.batch):
-        x = IMG.img2arr(comp[i:i + args.batch], gpu=args.gpu)
+        x = IMG.imgs2arr(comp[i:i + args.batch], gpu=args.gpu)
         y = model.predictor(x)
         y = to_cpu(y.array)
-        y = IMG.arr2img(y, ch, args.img_size * 2)
+        y = IMG.arr2imgs(y, ch, args.img_size * 2)
         imgs.extend(y)
 
     # 生成された画像を結合する
@@ -106,6 +107,7 @@ def predict(model, args, img, ch, ch_flg, val):
     half_size = (int(img.shape[1] * h), int(img.shape[0] * h))
     flg = cv2.INTER_NEAREST
     img = cv2.resize(img, half_size, flg)
+    img = img[:org_size[0], :org_size[1]]
     # 生成結果を保存する
     cv2.imwrite(
         F.getFilePath(args.out_path, 'comp-' +
