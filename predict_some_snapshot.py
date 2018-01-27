@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*-coding: utf-8 -*-
 #
-help = 'モデルとモデルパラメータを利用して推論実行する'
+help = '複数のsnapshotoとひとつのモデルパラメータを利用してsnapshotの推移を可視化する'
 #
 
 import os
