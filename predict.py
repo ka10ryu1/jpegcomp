@@ -81,10 +81,12 @@ def predict(model, args, img, ch, val):
     # 入力画像を圧縮して劣化させる
     comp = IMG.encodeDecode([img], IMG.getCh(ch), args.quality)
     # 比較のため圧縮画像を保存する
-    cv2.imwrite(
-        F.getFilePath(args.out_path, 'comp-' + str(val * 10).zfill(3), '.jpg'),
-        comp[0]
-    )
+    if(val >= 0):
+        cv2.imwrite(
+            F.getFilePath(args.out_path, 'comp-' +
+                          str(val * 10).zfill(3), '.jpg'),
+            comp[0]
+        )
 
     # 入力画像を分割する
     comp, size = IMG.split(comp, args.img_size)
@@ -108,11 +110,13 @@ def predict(model, args, img, ch, val):
     img = cv2.resize(img, half_size, flg)
     img = img[:org_size[0], :org_size[1]]
     # 生成結果を保存する
-    cv2.imwrite(
-        F.getFilePath(args.out_path, 'comp-' +
-                      str(val * 10 + 1).zfill(3), '.jpg'),
-        img
-    )
+    if(val >= 0):
+        cv2.imwrite(
+            F.getFilePath(args.out_path, 'comp-' +
+                          str(val * 10 + 1).zfill(3), '.jpg'),
+            img
+        )
+
     return img
 
 
@@ -144,9 +148,9 @@ def checkModelType(path):
     name, ext = os.path.splitext(os.path.basename(path))
     load_path = ''
     if(ext == '.model'):
-        print('model read')
+        print('model read:', path)
     elif(ext == '.snapshot'):
-        print('snapshot read')
+        print('snapshot read', path)
         load_path = 'updater/model:main/'
     else:
         print('model read error')
