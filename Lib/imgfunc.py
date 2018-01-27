@@ -96,7 +96,8 @@ def split(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
 
     # 切り捨てたい数よりも画像数が少ないと0枚になってしまうので注意
     if(round_num > len(out_imgs)):
-        print('[Error] round({0}) > split images({1})'.format(round_num, len(out_imgs)))
+        print('[Error] round({0}) > split images({1})'.format(
+            round_num, len(out_imgs)))
         print(fileFuncLine())
         exit()
 
@@ -119,8 +120,13 @@ def rotate(imgs):
     out_imgs = imgs.copy()
     [out_imgs.append(cv2.flip(i, 0)) for i in imgs]
     [out_imgs.append(cv2.flip(i, 1)) for i in imgs]
-    [out_imgs.append(cv2.flip(cv2.flip(i, 1), 0)) for i in imgs]
+    #[out_imgs.append(cv2.flip(cv2.flip(i, 1), 0)) for i in imgs]
     return out_imgs
+
+
+def whiteCheck(imgs, val=253):
+    return [i for i in imgs
+            if(val > np.sum(i) // (i.shape[0] * i.shape[1]))]
 
 
 def size2x(imgs, flg=cv2.INTER_NEAREST):
