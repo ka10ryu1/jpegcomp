@@ -171,7 +171,7 @@ $ ./Tools/dot2png.py ./result/*.dot
 
 以下のような画像が生成される（例はMNISTのネットワーク層）。
 
-<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/dot2png.png" width="320px">
+<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/cg.png" width="320px">
 
 
 ## NPZデータセットの中身をランダム表示
