@@ -124,7 +124,7 @@ def rotate(imgs):
     return out_imgs
 
 
-def whiteCheck(imgs, val=253):
+def whiteCheck(imgs, val=245):
     return [i for i in imgs
             if(val > np.sum(i) // (i.shape[0] * i.shape[1]))]
 
