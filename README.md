@@ -245,3 +245,69 @@ save npz...
 resultフォルダが作成され、その中に以下のファイルが生成されていればOK
 - `test_32x32_000800.npz`
 - `train_32x32_007200.npz`
+
+## スナップショットの進捗具合を可視化する
+
+各スナップショットで推論実行したものを比較することで学習がどれだけ進んでいるかを可視化する。
+
+### 実行
+
+```console
+$ ./predict_some_snapshot.py [スナップショットのあるディレクトリ（jsonファイルも必要）] ./FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG
+```
+
+### 端末の確認
+
+```console
+not import cupy
+------------------------------
+batch:	100
+gpu:	-1
+image_num:	10
+img_rate:	2
+img_size:	32
+jpeg[1]:
+	./FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG
+out_path:	./result/
+quality:	5
+random_seed:	25
+snapshot_and_json:	./result/
+------------------------------
+180129-144349_16.snapshot 180129-144349_16 .snapshot
+180129-144349_4.snapshot 180129-144349_4 .snapshot
+180129-144349_18.snapshot 180129-144349_18 .snapshot
+180129-144349_20.snapshot 180129-144349_20 .snapshot
+180129-144349_graph.dot 180129-144349_graph .dot
+180129-144349.json 180129-144349 .json
+180129-144349_6.snapshot 180129-144349_6 .snapshot
+180129-144349_12.snapshot 180129-144349_12 .snapshot
+180129-144349_8.snapshot 180129-144349_8 .snapshot
+180129-144349_10.snapshot 180129-144349_10 .snapshot
+180129-144349_log_plot.png 180129-144349_log_plot .png
+180129-144349.log 180129-144349 .log
+180129-144349_2.snapshot 180129-144349_2 .snapshot
+180129-144349_14.snapshot 180129-144349_14 .snapshot
+Activation func: relu
+Activation func: sigmoid
+[Network info]
+  Unit:	2
+  Out:	1
+  Layer:	3
+  Act Func:	relu, sigmoid
+snapshot read ./result/180129-144349_2.snapshot
+snapshot read ./result/180129-144349_4.snapshot
+snapshot read ./result/180129-144349_6.snapshot
+snapshot read ./result/180129-144349_8.snapshot
+snapshot read ./result/180129-144349_10.snapshot
+snapshot read ./result/180129-144349_12.snapshot
+snapshot read ./result/180129-144349_14.snapshot
+snapshot read ./result/180129-144349_16.snapshot
+snapshot read ./result/180129-144349_18.snapshot
+snapshot read ./result/180129-144349_20.snapshot
+```
+
+### 生成物
+
+以下のような画像が生成される。一番左が正解画像で、右に行くほど新しいスナップショットの結果になる。
+
+<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/snapshots.jpg" width="320px">
