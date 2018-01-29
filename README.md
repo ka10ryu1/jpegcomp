@@ -273,20 +273,7 @@ quality:	5
 random_seed:	25
 snapshot_and_json:	./result/
 ------------------------------
-180129-144349_16.snapshot 180129-144349_16 .snapshot
-180129-144349_4.snapshot 180129-144349_4 .snapshot
-180129-144349_18.snapshot 180129-144349_18 .snapshot
-180129-144349_20.snapshot 180129-144349_20 .snapshot
-180129-144349_graph.dot 180129-144349_graph .dot
-180129-144349.json 180129-144349 .json
-180129-144349_6.snapshot 180129-144349_6 .snapshot
-180129-144349_12.snapshot 180129-144349_12 .snapshot
-180129-144349_8.snapshot 180129-144349_8 .snapshot
-180129-144349_10.snapshot 180129-144349_10 .snapshot
-180129-144349_log_plot.png 180129-144349_log_plot .png
-180129-144349.log 180129-144349 .log
-180129-144349_2.snapshot 180129-144349_2 .snapshot
-180129-144349_14.snapshot 180129-144349_14 .snapshot
+model param: ./result/180129-144349.json
 Activation func: relu
 Activation func: sigmoid
 [Network info]

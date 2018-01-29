@@ -51,6 +51,7 @@ def getModelParam(path):
     [out] af2:         活性化関数(2)
     """
 
+    print('model param:', path)
     try:
         with open(path, 'r') as f:
             d = json.load(f)
