@@ -34,6 +34,8 @@ def command():
                         help='切り出す画像数 (default: 10)')
     parser.add_argument('--random_seed', '-rs', type=int, default=25,
                         help='乱数シード（default: 25, random: -1）')
+    parser.add_argument('--img_rate', '-r', type=int, default=4,
+                        help='画像サイズの倍率（default: 4）')
     parser.add_argument('--gpu', '-g', type=int, default=-1,
                         help='GPU ID (default -1)')
     parser.add_argument('--out_path', '-o', default='./result/',
@@ -101,6 +103,9 @@ def main(args):
 
     # 生成結果の表示
     img = np.hstack(out_imgs)
+    w, h = img.shape[:2]
+    img = cv2.resize(img, (h * args.img_rate, w * args.img_rate),
+                     cv2.INTER_NEAREST)
     cv2.imshow('predict some snapshots', img)
     cv2.waitKey()
     cv2.imwrite(F.getFilePath(args.out_path, 'snapshots.jpg'), img)
