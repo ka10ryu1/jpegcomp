@@ -59,6 +59,9 @@ def command():
 
 
 def getImageData(folder):
+    if not os.path.isdir(folder):
+        os.makedirs(folder)
+
     train_flg = False
     test_flg = False
     for l in os.listdir(folder):
