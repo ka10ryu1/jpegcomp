@@ -2,6 +2,12 @@
 
 圧縮されたJpeg画像の復元
 
+## 学習結果（5%に圧縮した画像を復元）
+
+圧縮画像
+
+復元画像
+
 # 動作環境
 
 - Ubuntu 16.04.3 LTS ($ cat /etc/issue)
@@ -22,12 +28,11 @@ $ ls `find ./ -maxdepth 2 -type f -print` | xargs grep 'help = ' --include=*.py 
 ## ファイル
 
 ```console
-.
 ├── FontData
-│   ├── The_Night_of_the_Milky_Way_Train_ch2.PNG
-│   ├── The_Nighthawk_Star_op.PNG
-│   ├── test_32x32_000800.npz
-│   └── train_32x32_007200.npz
+│   ├── The_Night_of_the_Milky_Way_Train_ch2.PNG > predict用画像
+│   ├── The_Nighthawk_Star_op.PNG                > predict用画像
+│   ├── test_32x32_000800.npz                    > 学習用データセット（サンプル）
+│   └── train_32x32_007200.npz                   > 学習用データセット（サンプル）
 ├── LICENSE
 ├── Lib
 │   ├── imgfunc.py  > 画像処理に関する便利機能
@@ -43,16 +48,17 @@ $ ls `find ./ -maxdepth 2 -type f -print` | xargs grep 'help = ' --include=*.py 
 │   └── plot_diff.py > logファイルの複数比較
 ├── auto_train.sh
 ├── clean_all.sh
-├── create_dataset.py  > 画像を読み込んでデータセットを作成する
-├── predict.py         > モデルとモデルパラメータを利用して推論実行する
-└── train.py           > 学習メイン部
+├── create_dataset.py        > 画像を読み込んでデータセットを作成する
+├── predict.py               > モデルとモデルパラメータを利用して推論実行する
+├── predict_some_snapshot.py > 複数のsnapshotoとひとつのモデルパラメータを利用してsnapshotの推移を可視化する
+└── train.py                 > 学習メイン部
 ```
 
 FontDataはチュートリアル用のデータセットとテスト用の画像しかない。完全版データは非常に重いので別リポジトリにて管理している。
 
 # チュートリアル
 
-## 学習する
+## 1. 学習する
 
 ### 実行
 
@@ -111,7 +117,7 @@ epoch       main/loss   validation/main/loss  elapsed_time
 
 resultフォルダ中に`*.json`、`*.log`、`*_graph.dot`、`*_log_plot.png`、`*.snapshot`、`*.model`が生成されていればOK
 
-## 学習で作成されたモデルを使用する
+## 2. 学習で作成されたモデルを使用する
 
 ### 実行
 
