@@ -2,6 +2,12 @@
 
 圧縮されたJpeg画像の復元
 
+## 学習結果（5%に圧縮した画像を復元）
+
+圧縮画像
+
+復元画像
+
 # 動作環境
 
 - Ubuntu 16.04.3 LTS ($ cat /etc/issue)
@@ -22,12 +28,11 @@ $ ls `find ./ -maxdepth 2 -type f -print` | xargs grep 'help = ' --include=*.py 
 ## ファイル
 
 ```console
-.
 ├── FontData
-│   ├── The_Night_of_the_Milky_Way_Train_ch2.PNG
-│   ├── The_Nighthawk_Star_op.PNG
-│   ├── test_32x32_000800.npz
-│   └── train_32x32_007200.npz
+│   ├── The_Night_of_the_Milky_Way_Train_ch2.PNG > predict用画像
+│   ├── The_Nighthawk_Star_op.PNG                > predict用画像
+│   ├── test_32x32_000800.npz                    > 学習用データセット（サンプル）
+│   └── train_32x32_007200.npz                   > 学習用データセット（サンプル）
 ├── LICENSE
 ├── Lib
 │   ├── imgfunc.py  > 画像処理に関する便利機能
@@ -43,16 +48,17 @@ $ ls `find ./ -maxdepth 2 -type f -print` | xargs grep 'help = ' --include=*.py 
 │   └── plot_diff.py > logファイルの複数比較
 ├── auto_train.sh
 ├── clean_all.sh
-├── create_dataset.py  > 画像を読み込んでデータセットを作成する
-├── predict.py         > モデルとモデルパラメータを利用して推論実行する
-└── train.py           > 学習メイン部
+├── create_dataset.py        > 画像を読み込んでデータセットを作成する
+├── predict.py               > モデルとモデルパラメータを利用して推論実行する
+├── predict_some_snapshot.py > 複数のsnapshotoとひとつのモデルパラメータを利用してsnapshotの推移を可視化する
+└── train.py                 > 学習メイン部
 ```
 
 FontDataはチュートリアル用のデータセットとテスト用の画像しかない。完全版データは非常に重いので別リポジトリにて管理している。
 
 # チュートリアル
 
-## 学習する
+## 1. 学習する
 
 ### 実行
 
@@ -111,7 +117,7 @@ epoch       main/loss   validation/main/loss  elapsed_time
 
 resultフォルダ中に`*.json`、`*.log`、`*_graph.dot`、`*_log_plot.png`、`*.snapshot`、`*.model`が生成されていればOK
 
-## 学習で作成されたモデルを使用する
+## 2. 学習で作成されたモデルを使用する
 
 ### 実行
 
@@ -169,11 +175,21 @@ $ ./auto_train.sh
 $ ./Tools/dot2png.py ./result/*.dot
 ```
 
+以下のような画像が生成される（例はMNISTのネットワーク層）。
+
+<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/cg.png" width="320px">
+
+
 ## NPZデータセットの中身をランダム表示
 
 ```console
 $ ./Tools/npz2jpg.py ./FontData/test_32x32_000800.npz
 ```
+
+以下のような画像が生成される。上段が圧縮画像、下段が無圧縮画像
+
+<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/npz2jpg.jpg" width="320px">
+
 
 ## データセットを作成する
 
@@ -229,3 +245,56 @@ save npz...
 resultフォルダが作成され、その中に以下のファイルが生成されていればOK
 - `test_32x32_000800.npz`
 - `train_32x32_007200.npz`
+
+## スナップショットの進捗具合を可視化する
+
+各スナップショットで推論実行したものを比較することで学習がどれだけ進んでいるかを可視化する。
+
+### 実行
+
+```console
+$ ./predict_some_snapshot.py [スナップショットのあるディレクトリ（jsonファイルも必要）] ./FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG
+```
+
+### 端末の確認
+
+```console
+not import cupy
+------------------------------
+batch:	100
+gpu:	-1
+image_num:	10
+img_rate:	2
+img_size:	32
+jpeg[1]:
+	./FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG
+out_path:	./result/
+quality:	5
+random_seed:	25
+snapshot_and_json:	./result/
+------------------------------
+model param: ./result/180129-144349.json
+Activation func: relu
+Activation func: sigmoid
+[Network info]
+  Unit:	2
+  Out:	1
+  Layer:	3
+  Act Func:	relu, sigmoid
+snapshot read ./result/180129-144349_2.snapshot
+snapshot read ./result/180129-144349_4.snapshot
+snapshot read ./result/180129-144349_6.snapshot
+snapshot read ./result/180129-144349_8.snapshot
+snapshot read ./result/180129-144349_10.snapshot
+snapshot read ./result/180129-144349_12.snapshot
+snapshot read ./result/180129-144349_14.snapshot
+snapshot read ./result/180129-144349_16.snapshot
+snapshot read ./result/180129-144349_18.snapshot
+snapshot read ./result/180129-144349_20.snapshot
+```
+
+### 生成物
+
+以下のような画像が生成される。一番左が正解画像で、右に行くほど新しいスナップショットの結果になる。
+
+<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/snapshots.jpg" width="320px">
