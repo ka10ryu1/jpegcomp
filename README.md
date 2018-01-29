@@ -175,6 +175,11 @@ $ ./Tools/dot2png.py ./result/*.dot
 $ ./Tools/npz2jpg.py ./FontData/test_32x32_000800.npz
 ```
 
+以下のような画像が生成される。上段が圧縮画像、下段が無圧縮画像
+
+<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/npz2jpg.jpg" width="320px">
+
+
 ## データセットを作成する
 
 ### 構成
