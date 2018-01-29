@@ -176,7 +176,8 @@ def main(args):
         # )
         trainer.extend(
             PlotReportLog(['main/loss', 'validation/main/loss'],
-                          'epoch', file_name=exec_time + '_log_plot.png')
+                          'epoch', file_name='log_plot.png')
+            # 'epoch', file_name=exec_time + '_log_plot.png')
         )
 
     # Print selected entries of the log to stdout
