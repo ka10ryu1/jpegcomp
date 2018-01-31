@@ -151,6 +151,7 @@ class PlotReportLog(extension.Extension):
             a = f.add_subplot(111)
             a.set_xlabel(self._x_key)
             if self._grid:
+                # 追記（グリッド線を追加）
                 a.grid(which='major', color='gray', linestyle=':')
                 a.grid(which='minor', color='gray', linestyle=':')
                 # a.grid()
@@ -161,6 +162,7 @@ class PlotReportLog(extension.Extension):
                     continue
 
                 xy = numpy.array(xy)
+                # 追記（対数表示に変更）
                 plt.yscale("log")
                 a.plot(xy[:, 0], xy[:, 1], marker=self._marker, label=k)
 
@@ -168,8 +170,9 @@ class PlotReportLog(extension.Extension):
                 if self._postprocess is not None:
                     self._postprocess(f, a, summary)
 
+                # 追記（validationの最新の値を表示）
                 a.annotate('validation\n{0:8.6f}'.format(xy[-1, 1]),
-                           xy=(xy[-1, 0], xy[-1, 1]), xycoords='data',
+                           xy=(xy[-1]), xycoords='data',
                            xytext=(-90, 75), textcoords='offset points',
                            bbox=dict(boxstyle="round", fc="0.8"),
                            arrowprops=dict(arrowstyle="->",
