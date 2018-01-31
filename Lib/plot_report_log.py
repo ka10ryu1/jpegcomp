@@ -151,8 +151,8 @@ class PlotReportLog(extension.Extension):
             a = f.add_subplot(111)
             a.set_xlabel(self._x_key)
             if self._grid:
-                a.grid(which='major', color='black', linestyle='-')
-                a.grid(which='minor', color='black', linestyle='-')
+                a.grid(which='major', color='gray', linestyle=':')
+                a.grid(which='minor', color='gray', linestyle=':')
                 # a.grid()
 
             for k in keys:
@@ -167,6 +167,14 @@ class PlotReportLog(extension.Extension):
             if a.has_data():
                 if self._postprocess is not None:
                     self._postprocess(f, a, summary)
+
+                a.annotate('validation\n{0:8.6f}'.format(xy[-1, 1]),
+                           xy=(xy[-1, 0], xy[-1, 1]), xycoords='data',
+                           xytext=(-90, 75), textcoords='offset points',
+                           bbox=dict(boxstyle="round", fc="0.8"),
+                           arrowprops=dict(arrowstyle="->",
+                                           connectionstyle="arc,angleA=0,armA=50,rad=10"))
+
                 l = a.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
                 f.savefig(path.join(trainer.out, self._file_name),
                           bbox_extra_artists=(l,), bbox_inches='tight')
