@@ -26,27 +26,27 @@ class JC(Chain):
             self.conv1 = L.Convolution2D(
                 None, n_unit, ksize=3, stride=1, pad=1
             )
-            self.bn1 = L.BatchNormalization(n_unit)
+            self.brn1 = L.BatchReNormalization(n_unit)
             self.conv2 = L.Convolution2D(
                 None, n_unit, ksize=7, stride=1, pad=3
             )
-            self.bn2 = L.BatchNormalization(n_unit)
+            self.brn2 = L.BatchReNormalization(n_unit)
             if(layer > 3):
                 self.conv3 = L.Convolution2D(
                     None, n_unit * 2, ksize=3, stride=1, pad=1
                 )
-                self.bn3 = L.BatchNormalization(n_unit * 2)
+                self.brn3 = L.BatchReNormalization(n_unit * 2)
 
             if(layer > 4):
                 self.conv4 = L.Convolution2D(
                     None, n_unit * 2, ksize=3, stride=1, pad=1
                 )
-                self.bn4 = L.BatchNormalization(n_unit * 2)
+                self.brn4 = L.BatchReNormalization(n_unit * 2)
 
             self.convN = L.Convolution2D(
                 None, 4, ksize=5,  stride=1, pad=2
             )
-            self.bnN = L.BatchNormalization(1)
+            self.brnN = L.BatchReNormalization(1)
 
         self.layer = layer
         self.actfun_1 = actfun_1
@@ -58,15 +58,15 @@ class JC(Chain):
         )
 
     def __call__(self, x):
-        h = self.actfun_1(self.bn1(self.conv1(x)))
-        h = self.actfun_1(self.bn2(self.conv2(h)))
+        h = self.actfun_1(self.brn1(self.conv1(x)))
+        h = self.actfun_1(self.brn2(self.conv2(h)))
         if(self.layer > 3):
-            h = self.actfun_1(self.bn3(self.conv3(h)))
+            h = self.actfun_1(self.brn3(self.conv3(h)))
 
         if(self.layer > 4):
-            h = self.actfun_1(self.bn4(self.conv4(h)))
+            h = self.actfun_1(self.brn4(self.conv4(h)))
 
-        y = self.actfun_2(self.bnN(self.PS(self.convN(h))))
+        y = self.actfun_2(self.brnN(self.PS(self.convN(h))))
         return y
 
     def PS(self, h, r=2):
