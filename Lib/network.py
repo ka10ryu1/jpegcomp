@@ -26,27 +26,27 @@ class JC(Chain):
             self.conv1 = L.Convolution2D(
                 None, n_unit, ksize=3, stride=1, pad=1
             )
-            self.brn1 = L.BatchReNormalization(n_unit)
+            self.brn1 = L.BatchRenormalization(n_unit)
             self.conv2 = L.Convolution2D(
                 None, n_unit, ksize=7, stride=1, pad=3
             )
-            self.brn2 = L.BatchReNormalization(n_unit)
+            self.brn2 = L.BatchRenormalization(n_unit)
             if(layer > 3):
                 self.conv3 = L.Convolution2D(
                     None, n_unit * 2, ksize=3, stride=1, pad=1
                 )
-                self.brn3 = L.BatchReNormalization(n_unit * 2)
+                self.brn3 = L.BatchRenormalization(n_unit * 2)
 
             if(layer > 4):
                 self.conv4 = L.Convolution2D(
                     None, n_unit * 2, ksize=3, stride=1, pad=1
                 )
-                self.brn4 = L.BatchReNormalization(n_unit * 2)
+                self.brn4 = L.BatchRenormalization(n_unit * 2)
 
             self.convN = L.Convolution2D(
                 None, 4, ksize=5,  stride=1, pad=2
             )
-            self.brnN = L.BatchReNormalization(1)
+            self.brnN = L.BatchRenormalization(1)
 
         self.layer = layer
         self.actfun_1 = actfun_1
