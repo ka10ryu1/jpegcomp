@@ -10,15 +10,14 @@ import chainer.links as L
 
 
 class JC(Chain):
-    def __init__(self,
-                 n_unit=128, n_out=1,
-                 layer=3, actfun_1=F.relu, actfun_2=F.sigmoid):
+    def __init__(self, n_unit=128, n_out=1,
+                 layer=3, actfun_1=F.relu, actfun_2=F.sigmoid, view=False):
         """
         [in] n_unit:    中間層のユニット数
         [in] n_out:     出力チャンネル
         [in] layer:     中間層の数
-        [in] actfun_1: 活性化関数
-        [in] actfun_2: 活性化関数（最終段に使用する）
+        [in] actfun_1: 活性化関数（Layer A用）
+        [in] actfun_2: 活性化関数（Layer B用）
         """
 
         super(JC, self).__init__()
@@ -51,6 +50,7 @@ class JC(Chain):
         self.layer = layer
         self.actfun_1 = actfun_1
         self.actfun_2 = actfun_2
+        self.view = view
 
         print('[Network info]')
         print('  Unit:\t{0}\n  Out:\t{1}\n  Layer:\t{2}\n  Act Func:\t{3}, {4}'.format(
@@ -58,36 +58,39 @@ class JC(Chain):
         )
 
     def __call__(self, x):
-        view = False
-        h = self.layer_A(x, self.brn1a, self.cnv1a, view)
-        h = self.layer_B(h, self.brn1b, self.cnv1b, view)
+        h = self.layer_A(x, self.brn1a, self.cnv1a)
+        h = self.layer_B(h, self.brn1b, self.cnv1b)
         hc = h
-        h = self.layer_A(h, self.brn2a, self.cnv2a, view)
-        h = self.layer_B(h, self.brn2b, self.cnv2b, view)
+        h = self.layer_A(h, self.brn2a, self.cnv2a)
+        h = self.layer_B(h, self.brn2b, self.cnv2b)
         hc = F.concat((hc, h))
 
         if(self.layer > 3):
-            h = self.layer_A(h, self.brn3a, self.cnv3a, view)
-            h = self.layer_B(h, self.brn3b, self.cnv3b, view)
+            h = self.layer_A(h, self.brn3a, self.cnv3a)
+            h = self.layer_B(h, self.brn3b, self.cnv3b)
             hc = F.concat((hc, h))
 
         if(self.layer > 4):
-            h = self.layer_A(h, self.brn4a, self.cnv4a, view)
-            h = self.layer_B(h, self.brn4b, self.cnv4b, view)
+            h = self.layer_A(h, self.brn4a, self.cnv4a)
+            h = self.layer_B(h, self.brn4b, self.cnv4b)
             hc = F.concat((hc, h))
 
-        h = self.layer_A(hc, self.brnNa, self.cnvNa, view)
-        y = self.layer_B(h, self.brnNb, self.cnvNb, view)
+        h = self.layer_A(hc, self.brnNa, self.cnvNa)
+        y = self.layer_B(h, self.brnNb, self.cnvNb)
+        if self.view:
+            print(y.shape)
+            exit()
+
         return y
 
-    def layer_A(self, x, brn, cnv, view=False):
-        if view:
+    def layer_A(self, x, brn, cnv):
+        if self.view:
             print(x.shape)
 
         return self.actfun_1(brn(cnv(x)))
 
-    def layer_B(self, x, brn, cnv, view=False):
-        if view:
+    def layer_B(self, x, brn, cnv):
+        if self.view:
             print(x.shape)
 
         return self.actfun_2(brn(self.PS(cnv(x))))
