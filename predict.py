@@ -14,7 +14,7 @@ import chainer
 import chainer.links as L
 from chainer.cuda import to_cpu
 
-from Lib.network import JC
+from Lib.network2 import JC
 import Lib.imgfunc as IMG
 import Tools.func as F
 

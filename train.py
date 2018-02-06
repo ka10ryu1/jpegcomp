@@ -17,7 +17,7 @@ from chainer.training import extensions
 from chainer.datasets import tuple_dataset
 
 
-from Lib.network import JC
+from Lib.network2 import JC
 from Lib.plot_report_log import PlotReportLog
 import Lib.imgfunc as IMG
 import Tools.func as F
@@ -31,8 +31,8 @@ def command():
                         help='損失関数 (default: mse, other: mae)')
     parser.add_argument('-a1', '--actfun_1', default='relu',
                         help='活性化関数(1) (default: relu, other: elu, c_relu, l_relu, sigmoid, h_sigmoid, tanh, s_plus)')
-    parser.add_argument('-a2', '--actfun_2', default='sigmoid',
-                        help='活性化関数(2) (default: sigmoid, other: relu, elu, c_relu, l_relu, h_sigmoid, tanh, s_plus)')
+    parser.add_argument('-a2', '--actfun_2', default='h_sigmoid',
+                        help='活性化関数(2) (default: h_sigmoid, other: relu, elu, c_relu, l_relu, sigmoid, tanh, s_plus)')
     parser.add_argument('-opt', '--optimizer', default='adam',
                         help='オプティマイザ (default: adam, other: ada_d, ada_g, m_sgd, n_ag, rmsp, rmsp_g, sgd, smorms)')
     parser.add_argument('-ln', '--layer_num', type=int, default=3,
