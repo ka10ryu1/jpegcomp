@@ -33,12 +33,14 @@ def command():
                         help='活性化関数(1) (default: relu, other: elu, c_relu, l_relu, sigmoid, h_sigmoid, tanh, s_plus)')
     parser.add_argument('-a2', '--actfun_2', default='h_sigmoid',
                         help='活性化関数(2) (default: h_sigmoid, other: relu, elu, c_relu, l_relu, sigmoid, tanh, s_plus)')
-    parser.add_argument('-opt', '--optimizer', default='adam',
-                        help='オプティマイザ (default: adam, other: ada_d, ada_g, m_sgd, n_ag, rmsp, rmsp_g, sgd, smorms)')
+    parser.add_argument('-opt', '--optimizer', default='smorms',
+                        help='オプティマイザ (default: smorms, other: adam, ada_d, ada_g, m_sgd, n_ag, rmsp, rmsp_g, sgd)')
     parser.add_argument('-ln', '--layer_num', type=int, default=3,
                         help='ネットワーク層の数 (default: 3)')
-    parser.add_argument('-u', '--unit', type=int, default=4,
-                        help='ネットワークのユニット数 (default: 4)')
+    parser.add_argument('-u', '--unit', type=int, default=8,
+                        help='ネットワークのユニット数 (default: 8)')
+    parser.add_argument('-sr', '--shuffle_rate', type=int, default=4,
+                        help='PSの拡大率 (default: 4)')
     parser.add_argument('-b', '--batchsize', type=int, default=200,
                         help='ミニバッチサイズ (default: 200)')
     parser.add_argument('-e', '--epoch', type=int, default=10,
@@ -103,7 +105,9 @@ def main(args):
 
     # 各種データをユニークな名前で保存するために時刻情報を取得する
     now = datetime.today()
-    exec_time = now.strftime('%y%m%d-%H%M%S')
+    exec_time1 = int(now.strftime('%y%m%d'))
+    exec_time2 = int(now.strftime('%H%M%S'))
+    exec_time = np.base_repr(exec_time1*exec_time2, 32).lower()
 
     # Set up a neural network to train
     # Classifier reports softmax cross entropy loss and accuracy at every
@@ -114,7 +118,7 @@ def main(args):
     actfun_2 = IMG.getActfun(args.actfun_2)
     # モデルを決定する
     model = L.Classifier(
-        JC(n_unit=args.unit, layer=args.layer_num,
+        JC(n_unit=args.unit, layer=args.layer_num, rate=args.shuffle_rate,
            actfun_1=actfun_1, actfun_2=actfun_2,
            view=args.only_check),
         lossfun=IMG.getLossfun(args.lossfun)
@@ -139,6 +143,7 @@ def main(args):
         'unit':  args.unit,
         'img_ch': train[0][0].shape[0],
         'layer': args.layer_num,
+        'shuffle_rate': args.shuffle_rate,
         'actfun_1': args.actfun_1,
         'actfun_2': args.actfun_2
     }

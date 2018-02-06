@@ -64,7 +64,7 @@ def getModelParam(path):
 
     af1 = IMG.getActfun(d['actfun_1'])
     af2 = IMG.getActfun(d['actfun_2'])
-    return d['unit'], d['img_ch'], d['layer'], af1, af2
+    return d['unit'], d['img_ch'], d['layer'], d['shuffle_rate'], af1, af2
 
 
 def predict(model, args, img, ch, val):
@@ -163,13 +163,13 @@ def checkModelType(path):
 
 def main(args):
     # jsonファイルから学習モデルのパラメータを取得する
-    unit, ch, layer, af1, af2 = getModelParam(args.param)
+    unit, ch, layer, sr, af1, af2 = getModelParam(args.param)
     # 学習モデルの出力画像のチャンネルに応じて画像を読み込む
     ch_flg = IMG.getCh(ch)
     imgs = [cv2.imread(name, ch_flg) for name in args.jpeg if isImage(name)]
     # 学習モデルを生成する
     model = L.Classifier(
-        JC(n_unit=unit, n_out=ch, layer=layer, actfun_1=af1, actfun_2=af2)
+        JC(n_unit=unit, n_out=ch, layer=layer, rate=sr, actfun_1=af1, actfun_2=af2)
     )
     # load_npzのpath情報を取得する
     load_path = checkModelType(args.model)
