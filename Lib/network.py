@@ -12,7 +12,7 @@ import chainer.links as L
 class JC(Chain):
     def __init__(self,
                  n_unit=128, n_out=1,
-                 layer=3, actfun_1=F.relu, actfun_2=F.sigmoid):
+                 layer=3, actfun_1=F.relu, actfun_2=F.sigmoid, view=False):
         """
         [in] n_unit:    中間層のユニット数
         [in] n_out:     出力チャンネル

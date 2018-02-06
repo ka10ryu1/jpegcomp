@@ -115,7 +115,8 @@ def main(args):
     # モデルを決定する
     model = L.Classifier(
         JC(n_unit=args.unit, layer=args.layer_num,
-           actfun_1=actfun_1, actfun_2=actfun_2),
+           actfun_1=actfun_1, actfun_2=actfun_2,
+           view=args.only_check),
         lossfun=IMG.getLossfun(args.lossfun)
     )
     # Accuracyは今回使用しないのでFalseにする
@@ -207,19 +208,16 @@ def main(args):
         with open(F.getFilePath(args.out_path, exec_time, '.json'), 'w') as f:
             json.dump(model_param, f)
 
-        # Run the training
-        trainer.run()
+    # Run the training
+    trainer.run()
 
-        # 最後にモデルを保存する
-        # スナップショットを使ってもいいが、
-        # スナップショットはファイルサイズが大きいので
-        chainer.serializers.save_npz(
-            F.getFilePath(args.out_path, exec_time, '.model'),
-            model
-        )
-
-    else:
-        print('Check Finish:', exec_time)
+    # 最後にモデルを保存する
+    # スナップショットを使ってもいいが、
+    # スナップショットはファイルサイズが大きいので
+    chainer.serializers.save_npz(
+        F.getFilePath(args.out_path, exec_time, '.model'),
+        model
+    )
 
 
 if __name__ == '__main__':
