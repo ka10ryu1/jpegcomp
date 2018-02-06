@@ -10,7 +10,7 @@ import chainer.links as L
 
 
 class JC(Chain):
-    def __init__(self, n_unit=128, n_out=1,
+    def __init__(self, n_unit=128, n_out=1, rate=4,
                  layer=3, actfun_1=F.relu, actfun_2=F.sigmoid, view=False):
         """
         [in] n_unit:    中間層のユニット数
@@ -42,14 +42,15 @@ class JC(Chain):
                 self.cnv4b = L.Convolution2D(None, 4, ksize=5,  stride=1, pad=2)
                 self.brn4b = L.BatchRenormalization(1)
 
-            self.cnvNa = L.Convolution2D(None, n_unit, ksize=3, stride=1, pad=1)
+            self.cnvNa = L.Convolution2D(None, n_unit, ksize=5, stride=2, pad=2)
             self.brnNa = L.BatchRenormalization(n_unit)
-            self.cnvNb = L.Convolution2D(None, 4, ksize=5,  stride=1, pad=2)
+            self.cnvNb = L.Convolution2D(None, rate**2, ksize=5,  stride=1, pad=2)
             self.brnNb = L.BatchRenormalization(1)
 
         self.layer = layer
         self.actfun_1 = actfun_1
         self.actfun_2 = actfun_2
+        self.rate = rate
         self.view = view
 
         print('[Network info]')
@@ -76,7 +77,7 @@ class JC(Chain):
             hc = F.concat((hc, h))
 
         h = self.layer_A(hc, self.brnNa, self.cnvNa)
-        y = self.layer_B(h, self.brnNb, self.cnvNb)
+        y = self.layer_B(h, self.brnNb, self.cnvNb, r=self.rate)
         if self.view:
             print(y.shape)
             exit()
@@ -89,11 +90,11 @@ class JC(Chain):
 
         return self.actfun_1(brn(cnv(x)))
 
-    def layer_B(self, x, brn, cnv):
+    def layer_B(self, x, brn, cnv, r=2):
         if self.view:
             print(x.shape)
 
-        return self.actfun_2(brn(self.PS(cnv(x))))
+        return self.actfun_2(brn(self.PS(cnv(x), r)))
 
     def PS(self, h, r=2):
         """
