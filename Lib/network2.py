@@ -9,99 +9,41 @@ import chainer.functions as F
 import chainer.links as L
 
 
-class JC(Chain):
-    def __init__(self, n_unit=128, n_out=1, rate=4,
-                 layer=3, actfun_1=F.relu, actfun_2=F.sigmoid, view=False):
-        """
-        [in] n_unit:    中間層のユニット数
-        [in] n_out:     出力チャンネル
-        [in] layer:     中間層の数
-        [in] actfun_1: 活性化関数（Layer A用）
-        [in] actfun_2: 活性化関数（Layer B用）
-        """
-
-        super(JC, self).__init__()
+class DownSanpleBlock(Chain):
+    def __init__(self, n_unit, ksize, stride, pad, actfun):
+        super(DownSanpleBlock, self).__init__()
         with self.init_scope():
-            self.cnv1a = L.Convolution2D(None, n_unit//2, ksize=3, stride=1, pad=1)
-            self.brn1a = L.BatchRenormalization(n_unit//2)
-            self.cnv1b = L.Convolution2D(None, n_unit, ksize=5, stride=2, pad=2)
-            self.brn1b = L.BatchRenormalization(n_unit)
-            self.cnv1c = L.Convolution2D(None, n_unit*2, ksize=5,  stride=1, pad=2)
-            self.brn1c = L.BatchRenormalization(n_unit//2)
-            if(layer > 2):
-                self.cnv2a = L.Convolution2D(None, n_unit//2, ksize=3, stride=1, pad=1)
-                self.brn2a = L.BatchRenormalization(n_unit//2)
-                self.cnv2b = L.Convolution2D(None, n_unit, ksize=5, stride=2, pad=2)
-                self.brn2b = L.BatchRenormalization(n_unit)
-                self.cnv2c = L.Convolution2D(None, n_unit*2, ksize=5,  stride=1, pad=2)
-                self.brn2c = L.BatchRenormalization(n_unit//2)
+            self.cnv = L.Convolution2D(
+                None, n_unit, ksize=ksize, stride=stride, pad=pad
+            )
+            self.brn = L.BatchRenormalization(n_unit)
 
-            if(layer > 3):
-                self.cnv3a = L.Convolution2D(None, n_unit//2, ksize=3, stride=1, pad=1)
-                self.brn3a = L.BatchRenormalization(n_unit//2)
-                self.cnv3b = L.Convolution2D(None, n_unit, ksize=5, stride=2, pad=2)
-                self.brn3b = L.BatchRenormalization(n_unit)
-                self.cnv3c = L.Convolution2D(None, n_unit*2, ksize=5,  stride=1, pad=2)
-                self.brn3c = L.BatchRenormalization(n_unit//2)
+        self.actfun = actfun
 
-            self.cnvNa = L.Convolution2D(None, n_unit, ksize=3, stride=1, pad=1)
-            self.brnNa = L.BatchRenormalization(n_unit)
-            self.cnvNb = L.Convolution2D(None, n_unit, ksize=3, stride=1, pad=1)
-            self.brnNb = L.BatchRenormalization(n_unit)
-            self.cnvNc = L.Convolution2D(None, rate**2, ksize=5,  stride=1, pad=2)
-            self.brnNc = L.BatchRenormalization(1)
+    def __call__(self, x, view=False):
+        if view:
+            print('D', x.shape)
 
-        self.layer = layer
-        self.actfun_1 = actfun_1
-        self.actfun_2 = actfun_2
+        return self.actfun(self.brn(self.cnv(x)))
+
+
+class UpSampleBlock(Chain):
+    def __init__(self, n_unit_1, n_unit_2, ksize, stride, pad, actfun, rate=2):
+        super(UpSampleBlock, self).__init__()
+        with self.init_scope():
+            self.cnv = L.Convolution2D(
+                None, n_unit_1, ksize=ksize, stride=stride, pad=pad
+            )
+            self.brn = L.BatchRenormalization(n_unit_2)
+
+        self.actfun = actfun
         self.rate = rate
-        self.view = view
 
-        print('[Network info]')
-        print('  Unit:\t{0}\n  Out:\t{1}\n  Layer:\t{2}\n  Act Func:\t{3}, {4}'.format(
-            n_unit, n_out, layer, actfun_1.__name__, actfun_2.__name__)
-        )
+    def __call__(self, x, view=False):
+        if view:
+            print('U', x.shape)
 
-    def __call__(self, x):
-        hc = []
-        h = self.layer_A(x, self.brn1a, self.cnv1a)
-        h = self.layer_A(h, self.brn1b, self.cnv1b)
-        h = self.layer_B(h, self.brn1c, self.cnv1c)
-        hc.append(h)
-
-        if(self.layer > 2):
-            h = self.layer_A(h, self.brn2a, self.cnv2a)
-            h = self.layer_A(h, self.brn2b, self.cnv2b)
-            h = self.layer_B(h, self.brn2c, self.cnv2c)
-            hc.append(h)
-
-        if(self.layer > 3):
-            h = self.layer_A(h, self.brn3a, self.cnv3a)
-            h = self.layer_A(h, self.brn3b, self.cnv3b)
-            h = self.layer_B(h, self.brn3c, self.cnv3c)
-            hc.append(h)
-
-        h = F.concat(hc)
-        h = self.layer_A(h, self.brnNa, self.cnvNa)
-        h = self.layer_A(h, self.brnNb, self.cnvNb)
-        y = self.layer_B(h, self.brnNc, self.cnvNc, r=self.rate)
-        if self.view:
-            print(y.shape)
-            exit()
-
-        return y
-
-    def layer_A(self, x, brn, cnv):
-        if self.view:
-            print('layer A:', x.shape)
-
-        return self.actfun_1(brn(cnv(x)))
-
-    def layer_B(self, x, brn, cnv, r=2):
-        if self.view:
-            print('layer B:', x.shape)
-
-        return self.actfun_2(brn(self.PS(cnv(x), r)))
+        return self.actfun(self.brn(self.PS(self.cnv(x), self.rate)))
 
     def PS(self, h, r=2):
         """
@@ -117,3 +59,72 @@ class JC(Chain):
         out = F.transpose(out, (0, 3, 4, 1, 5, 2))
         out = F.reshape(out, (batchsize, out_ch, out_h, out_w))
         return out
+
+
+class JC(Chain):
+    def __init__(self, n_unit=128, n_out=1, rate=4,
+                 layer=3, actfun_1=F.relu, actfun_2=F.sigmoid, view=False):
+        """
+        [in] n_unit:    中間層のユニット数
+        [in] n_out:     出力チャンネル
+        [in] layer:     中間層の数
+        [in] actfun_1: 活性化関数（Layer A用）
+        [in] actfun_2: 活性化関数（Layer B用）
+        """
+
+        super(JC, self).__init__()
+        with self.init_scope():
+            self.block1a = DownSanpleBlock(n_unit//2, 3, 1, 1, actfun_1)
+            self.block1b = DownSanpleBlock(n_unit,    5, 2, 2, actfun_1)
+            self.block1c = UpSampleBlock(n_unit*2, n_unit//2, 5, 1, 2, actfun_2)
+            if(layer > 2):
+                self.block2a = DownSanpleBlock(n_unit//2, 3, 1, 1, actfun_1)
+                self.block2b = DownSanpleBlock(n_unit,    5, 2, 2, actfun_1)
+                self.block2c = UpSampleBlock(n_unit*2, n_unit//2, 5, 1, 2, actfun_2)
+
+            if(layer > 3):
+                self.block3a = DownSanpleBlock(n_unit//2, 3, 1, 1, actfun_1)
+                self.block3b = DownSanpleBlock(n_unit,    5, 2, 2, actfun_1)
+                self.block3c = UpSampleBlock(n_unit*2, n_unit//2, 5, 1, 2, actfun_2)
+
+            self.blockNa = DownSanpleBlock(n_unit, 3, 1, 1, actfun_1)
+            self.blockNb = DownSanpleBlock(n_unit, 3, 1, 1, actfun_1)
+            self.blockNc = UpSampleBlock(rate**2, 1, 5, 1, 2, actfun_2, rate)
+
+        self.layer = layer
+        self.view = view
+
+        print('[Network info]')
+        print('  Unit:\t{0}\n  Out:\t{1}\n  Layer:\t{2}\n  Act Func:\t{3}, {4}'.format(
+            n_unit, n_out, layer, actfun_1.__name__, actfun_2.__name__)
+        )
+
+    def __call__(self, x):
+        hc = []
+        h = self.block1a(x, self.view)
+        h = self.block1b(h, self.view)
+        h = self.block1c(h, self.view)
+        hc.append(h)
+
+        if(self.layer > 2):
+            h = self.block2a(h, self.view)
+            h = self.block2b(h, self.view)
+            h = self.block2c(h, self.view)
+            hc.append(h)
+
+        if(self.layer > 3):
+            h = self.block3a(h, self.view)
+            h = self.block3b(h, self.view)
+            h = self.block3c(h, self.view)
+            hc.append(h)
+
+        h = F.concat(hc)
+        h = self.blockNa(h, self.view)
+        h = self.blockNb(h, self.view)
+        y = self.blockNc(h, self.view)
+
+        if self.view:
+            print('Y', y.shape)
+            exit()
+
+        return y
