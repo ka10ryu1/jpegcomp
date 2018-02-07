@@ -22,30 +22,34 @@ class JC(Chain):
 
         super(JC, self).__init__()
         with self.init_scope():
-            self.cnv1a = L.Convolution2D(None, n_unit, ksize=5, stride=2, pad=2)
-            self.brn1a = L.BatchRenormalization(n_unit)
-            self.cnv1b = L.Convolution2D(None, 4, ksize=5,  stride=1, pad=2)
-            self.brn1b = L.BatchRenormalization(1)
-            self.cnv2a = L.Convolution2D(None, n_unit, ksize=5, stride=2, pad=2)
-            self.brn2a = L.BatchRenormalization(n_unit)
-            self.cnv2b = L.Convolution2D(None, 4, ksize=5,  stride=1, pad=2)
-            self.brn2b = L.BatchRenormalization(1)
+            self.cnv1a = L.Convolution2D(None, n_unit//2, ksize=3, stride=1, pad=1)
+            self.brn1a = L.BatchRenormalization(n_unit//2)
+            self.cnv1b = L.Convolution2D(None, n_unit, ksize=5, stride=2, pad=2)
+            self.brn1b = L.BatchRenormalization(n_unit)
+            self.cnv1c = L.Convolution2D(None, n_unit*2, ksize=5,  stride=1, pad=2)
+            self.brn1c = L.BatchRenormalization(n_unit//2)
+            if(layer > 2):
+                self.cnv2a = L.Convolution2D(None, n_unit//2, ksize=3, stride=1, pad=1)
+                self.brn2a = L.BatchRenormalization(n_unit//2)
+                self.cnv2b = L.Convolution2D(None, n_unit, ksize=5, stride=2, pad=2)
+                self.brn2b = L.BatchRenormalization(n_unit)
+                self.cnv2c = L.Convolution2D(None, n_unit*2, ksize=5,  stride=1, pad=2)
+                self.brn2c = L.BatchRenormalization(n_unit//2)
+
             if(layer > 3):
-                self.cnv3a = L.Convolution2D(None, n_unit, ksize=5, stride=2, pad=2)
-                self.brn3a = L.BatchRenormalization(n_unit)
-                self.cnv3b = L.Convolution2D(None, 4, ksize=5,  stride=1, pad=2)
-                self.brn3b = L.BatchRenormalization(1)
+                self.cnv3a = L.Convolution2D(None, n_unit//2, ksize=3, stride=1, pad=1)
+                self.brn3a = L.BatchRenormalization(n_unit//2)
+                self.cnv3b = L.Convolution2D(None, n_unit, ksize=5, stride=2, pad=2)
+                self.brn3b = L.BatchRenormalization(n_unit)
+                self.cnv3c = L.Convolution2D(None, n_unit*2, ksize=5,  stride=1, pad=2)
+                self.brn3c = L.BatchRenormalization(n_unit//2)
 
-            if(layer > 4):
-                self.cnv4a = L.Convolution2D(None, n_unit, ksize=5, stride=2, pad=2)
-                self.brn4a = L.BatchRenormalization(n_unit)
-                self.cnv4b = L.Convolution2D(None, 4, ksize=5,  stride=1, pad=2)
-                self.brn4b = L.BatchRenormalization(1)
-
-            self.cnvNa = L.Convolution2D(None, n_unit, ksize=5, stride=2, pad=2)
+            self.cnvNa = L.Convolution2D(None, n_unit, ksize=3, stride=1, pad=1)
             self.brnNa = L.BatchRenormalization(n_unit)
-            self.cnvNb = L.Convolution2D(None, rate**2, ksize=5,  stride=1, pad=2)
-            self.brnNb = L.BatchRenormalization(1)
+            self.cnvNb = L.Convolution2D(None, n_unit, ksize=3, stride=1, pad=1)
+            self.brnNb = L.BatchRenormalization(n_unit)
+            self.cnvNc = L.Convolution2D(None, rate**2, ksize=5,  stride=1, pad=2)
+            self.brnNc = L.BatchRenormalization(1)
 
         self.layer = layer
         self.actfun_1 = actfun_1
@@ -59,25 +63,28 @@ class JC(Chain):
         )
 
     def __call__(self, x):
+        hc = []
         h = self.layer_A(x, self.brn1a, self.cnv1a)
-        h = self.layer_B(h, self.brn1b, self.cnv1b)
-        hc = h
-        h = self.layer_A(h, self.brn2a, self.cnv2a)
-        h = self.layer_B(h, self.brn2b, self.cnv2b)
-        hc = F.concat((hc, h))
+        h = self.layer_A(h, self.brn1b, self.cnv1b)
+        h = self.layer_B(h, self.brn1c, self.cnv1c)
+        hc.append(h)
+
+        if(self.layer > 2):
+            h = self.layer_A(h, self.brn2a, self.cnv2a)
+            h = self.layer_A(h, self.brn2b, self.cnv2b)
+            h = self.layer_B(h, self.brn2c, self.cnv2c)
+            hc.append(h)
 
         if(self.layer > 3):
             h = self.layer_A(h, self.brn3a, self.cnv3a)
-            h = self.layer_B(h, self.brn3b, self.cnv3b)
-            hc = F.concat((hc, h))
+            h = self.layer_A(h, self.brn3b, self.cnv3b)
+            h = self.layer_B(h, self.brn3c, self.cnv3c)
+            hc.append(h)
 
-        if(self.layer > 4):
-            h = self.layer_A(h, self.brn4a, self.cnv4a)
-            h = self.layer_B(h, self.brn4b, self.cnv4b)
-            hc = F.concat((hc, h))
-
-        h = self.layer_A(hc, self.brnNa, self.cnvNa)
-        y = self.layer_B(h, self.brnNb, self.cnvNb, r=self.rate)
+        h = F.concat(hc)
+        h = self.layer_A(h, self.brnNa, self.cnvNa)
+        h = self.layer_A(h, self.brnNb, self.cnvNb)
+        y = self.layer_B(h, self.brnNc, self.cnvNc, r=self.rate)
         if self.view:
             print(y.shape)
             exit()
@@ -86,13 +93,13 @@ class JC(Chain):
 
     def layer_A(self, x, brn, cnv):
         if self.view:
-            print(x.shape)
+            print('layer A:', x.shape)
 
         return self.actfun_1(brn(cnv(x)))
 
     def layer_B(self, x, brn, cnv, r=2):
         if self.view:
-            print(x.shape)
+            print('layer B:', x.shape)
 
         return self.actfun_2(brn(self.PS(cnv(x), r)))
 
