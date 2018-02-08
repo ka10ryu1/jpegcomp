@@ -118,8 +118,7 @@ class JC(Chain):
             h = self.block3c(h, self.view)
             hc.append(h)
 
-        h = F.concat(hc)
-        h = self.blockNa(h, self.view)
+        h = self.blockNa(F.concat(hc), self.view)
         h = self.blockNb(h, self.view)
         y = self.blockNc(h, self.view)
 
