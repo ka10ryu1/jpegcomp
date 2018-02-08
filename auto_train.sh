@@ -25,32 +25,27 @@ done
 
 shift $((OPTIND - 1))
 
-#echo "test1"
-#./train.py -lf mse -a1 relu -a2 sigmoid -ln 4 -u 128 -b 200 -e 200 -g 0 -f 20 -o ./result/0121_test1/ $FLAG_CHK
+COUNT=1
+echo "test"${COUNT}
+./train.py -i FontData/ -o ./result/002/ -ln 4 -b 10 -e 30 -opt smorms $FLAG_CHK
+COUNT=$(( COUNT + 1 ))
 
-echo "test1"
-./train.py -i FontData/ -o ./result/011/ -ln 4 -b 10 -opt sgd $FLAG_CHK
+echo "test"${COUNT}
+./train.py -i FontData/ -o ./result/002/ -ln 4 -b 20 -e 30 -opt smorms $FLAG_CHK
+COUNT=$(( COUNT + 1 ))
 
-echo "test2"
-./train.py -i FontData/ -o ./result/011/ -ln 4 -b 10 -opt adam $FLAG_CHK
+echo "test"${COUNT}
+./train.py -i FontData/ -o ./result/002/ -ln 4 -b 30 -e 30 -opt smorms $FLAG_CHK
+COUNT=$(( COUNT + 1 ))
 
-echo "test3"
-./train.py -i FontData/ -o ./result/011/ -ln 4 -b 10 -opt ada_d $FLAG_CHK
+echo "test"${COUNT}
+./train.py -i FontData/ -o ./result/002/ -ln 4 -b 50 -e 30 -opt smorms $FLAG_CHK
+COUNT=$(( COUNT + 1 ))
 
-echo "test4"
-./train.py -i FontData/ -o ./result/011/ -ln 4 -b 10 -opt ada_g $FLAG_CHK
+echo "test"${COUNT}
+./train.py -i FontData/ -o ./result/002/ -ln 4 -b 80 -e 30 -opt smorms $FLAG_CHK
+COUNT=$(( COUNT + 1 ))
 
-echo "test5"
-./train.py -i FontData/ -o ./result/011/ -ln 4 -b 10 -opt m_sgd $FLAG_CHK
-
-echo "test6"
-./train.py -i FontData/ -o ./result/011/ -ln 4 -b 10 -opt n_ag $FLAG_CHK
-
-echo "test7"
-./train.py -i FontData/ -o ./result/011/ -ln 4 -b 10 -opt rmsp $FLAG_CHK
-
-echo "test8"
-./train.py -i FontData/ -o ./result/011/ -ln 4 -b 10 -opt rmsp_g $FLAG_CHK
-
-echo "test9"
-./train.py -i FontData/ -o ./result/011/ -ln 4 -b 10 -opt smorms $FLAG_CHK
+echo "test"${COUNT}
+./train.py -i FontData/ -o ./result/002/ -ln 4 -b 100 -e 30 -opt smorms $FLAG_CHK
+COUNT=$(( COUNT + 1 ))
