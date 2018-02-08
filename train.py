@@ -176,17 +176,18 @@ def main(args):
 
     # Write a log of evaluation statistics for each epoch
     trainer.extend(extensions.LogReport(log_name=exec_time + '.log'))
+    trainer.extend(extensions.observe_lr())
 
     # Save two plot images to the result dir
     if args.plot and extensions.PlotReport.available():
-        # trainer.extend(
-        #     extensions.PlotReport(['main/loss', 'validation/main/loss'],
-        #                           'epoch', file_name=exec_time + '_plot.png')
-        # )
         trainer.extend(
             PlotReportLog(['main/loss', 'validation/main/loss'],
-                          'epoch', file_name='log_plot.png')
-            # 'epoch', file_name=exec_time + '_log_plot.png')
+                          'epoch', file_name='loss.png')
+        )
+
+        trainer.extend(
+            PlotReportLog(['lr'],
+                          'epoch', file_name='lr.png', val_pos=(-80, -60))
         )
 
     # Print selected entries of the log to stdout
@@ -198,6 +199,7 @@ def main(args):
         'epoch',
         'main/loss',
         'validation/main/loss',
+        'lr',
         'elapsed_time'
     ]))
 

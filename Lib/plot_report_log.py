@@ -92,7 +92,7 @@ class PlotReportLog(extension.Extension):
 
     def __init__(self, y_keys, x_key='iteration', trigger=(1, 'epoch'),
                  postprocess=None, file_name='plot.png', marker='x',
-                 grid=True):
+                 grid=True, val_pos=(-80, 60)):
 
         _check_available()
 
@@ -108,6 +108,7 @@ class PlotReportLog(extension.Extension):
         self._postprocess = postprocess
         self._init_summary()
         self._data = {k: [] for k in y_keys}
+        self.val_pos = val_pos
 
     @staticmethod
     def available():
@@ -171,14 +172,15 @@ class PlotReportLog(extension.Extension):
                     self._postprocess(f, a, summary)
 
                 # 追記（validationの最新の値を表示）
-                a.annotate('validation\n{0:8.6f}'.format(xy[-1, 1]),
+                style = 'arc,angleA=0,armA=60,rad=10'
+                a.annotate('{0:8.6f}'.format(xy[-1, 1]),
                            xy=(xy[-1]), xycoords='data',
-                           xytext=(-90, 75), textcoords='offset points',
-                           bbox=dict(boxstyle="round", fc="0.8"),
-                           arrowprops=dict(arrowstyle="->",
-                                           connectionstyle="arc,angleA=0,armA=50,rad=10"))
+                           xytext=self.val_pos, textcoords='offset points',
+                           bbox=dict(boxstyle='round', fc='0.8'),
+                           arrowprops=dict(arrowstyle='->', connectionstyle=style))
 
                 l = a.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+                f.tight_layout()
                 f.savefig(path.join(trainer.out, self._file_name),
                           bbox_extra_artists=(l,), bbox_inches='tight')
 
