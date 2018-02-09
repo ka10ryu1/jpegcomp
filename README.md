@@ -181,7 +181,7 @@ $ ./concat_3_images.py ./FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG ./res
 
 以下のような画像が生成される。
 
-<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/concat-00.png" width="320px">
+<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/concat-00.jpg" width="320px">
 
 ```console
 $ ./concat_3_images.py ./FontData/The_Nighthawk_Star_op.PNG ./result/comp-01*  -r 1
@@ -189,7 +189,7 @@ $ ./concat_3_images.py ./FontData/The_Nighthawk_Star_op.PNG ./result/comp-01*  -
 
 以下のような画像が生成される。
 
-<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/concat-01.png" width="320px">
+<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/concat-01.jpg" width="320px">
 
 
 # その他の機能
