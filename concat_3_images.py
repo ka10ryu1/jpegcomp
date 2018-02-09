@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*-coding: utf-8 -*-
 #
-help = ''
+help = '3枚の画像を連結する（org, comp, restration）'
 #
 
 import cv2

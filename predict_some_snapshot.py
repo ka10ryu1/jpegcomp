@@ -12,7 +12,7 @@ import numpy as np
 import chainer
 import chainer.links as L
 
-from Lib.network import JC
+from Lib.network2 import JC
 import Lib.imgfunc as IMG
 import Tools.func as F
 from predict import getModelParam, predict, isImage, checkModelType
@@ -25,21 +25,21 @@ def command():
     parser.add_argument('jpeg', nargs='+',
                         help='使用する画像のパス')
     parser.add_argument('--img_size', '-is', type=int, default=32,
-                        help='生成される画像サイズ（default: 32 pixel）')
+                        help='生成される画像サイズ [default: 32]')
     parser.add_argument('--quality', '-q', type=int, default=5,
-                        help='画像の圧縮率（default: 5）')
+                        help='画像の圧縮率 [default: 5]')
     parser.add_argument('--batch', '-b', type=int, default=100,
-                        help='ミニバッチサイズ (default: 100)')
+                        help='ミニバッチサイズ [default: 100]')
     parser.add_argument('--image_num', '-n', type=int, default=10,
-                        help='切り出す画像数 (default: 10)')
+                        help='切り出す画像数 [default: 10]')
     parser.add_argument('--random_seed', '-rs', type=int, default=25,
-                        help='乱数シード（default: 25, random: -1）')
+                        help='乱数シード [default: 25, random: -1]')
     parser.add_argument('--img_rate', '-r', type=int, default=4,
-                        help='画像サイズの倍率（default: 4）')
+                        help='画像サイズの倍率 [default: 4]')
     parser.add_argument('--gpu', '-g', type=int, default=-1,
-                        help='GPU ID (default -1)')
+                        help='GPU ID [default -1]')
     parser.add_argument('--out_path', '-o', default='./result/',
-                        help='生成物の保存先(default: ./result/)')
+                        help='生成物の保存先[default: ./result/]')
     return parser.parse_args()
 
 
@@ -110,12 +110,12 @@ def main(args):
     # スナップショットとモデルパラメータのパスを取得する
     snapshot_path, param = getSnapshotAndParam(args.snapshot_and_json)
     # jsonファイルから学習モデルのパラメータを取得する
-    unit, ch, layer, af1, af2 = getModelParam(param)
+    unit, ch, layer, sr, af1, af2 = getModelParam(param)
     # 推論実行するために画像を読み込んで結合する
     img = getImage(args.jpeg, ch, args.random_seed)
     # 学習モデルを生成する
     model = L.Classifier(JC(
-        n_unit=unit, n_out=ch, layer=layer,
+        n_unit=unit, n_out=ch, layer=layer, rate=sr,
         actfun_1=af1, actfun_2=af2
     ))
     out_imgs = [img]

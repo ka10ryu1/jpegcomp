@@ -4,6 +4,8 @@
 # train.pyの引数を手入力するため、ミスが発生しやすい。
 # auto_train.shを修正したら、一度-cオプションを実行してミスがないか確認するべき
 
+# オプション引数を判定する部分（変更しない）
+
 usage_exit() {
     echo "Usage: $0 [-c]" 1>&2
     echo " -c: 設定が正常に動作するか確認する"
@@ -25,27 +27,29 @@ done
 
 shift $((OPTIND - 1))
 
+# 以下自由に変更する部分（オプション引数を反映させるなら、$FLG_CHKは必要）
+
 COUNT=1
-echo "test"${COUNT}
-./train.py -i FontData/ -o ./result/002/ -ln 4 -b 10 -e 30 -opt smorms $FLAG_CHK
+echo -e "\n<< test ["${COUNT}"] >>\n"
+./train.py -i FontData/ -o ./result/001/ -b 10 -e 50 $FLAG_CHK
 COUNT=$(( COUNT + 1 ))
 
-echo "test"${COUNT}
-./train.py -i FontData/ -o ./result/002/ -ln 4 -b 20 -e 30 -opt smorms $FLAG_CHK
+echo -e "\n<< test ["${COUNT}"] >>\n"
+./train.py -i FontData/ -o ./result/001/ -b 20 -e 50 $FLAG_CHK
 COUNT=$(( COUNT + 1 ))
 
-echo "test"${COUNT}
-./train.py -i FontData/ -o ./result/002/ -ln 4 -b 30 -e 30 -opt smorms $FLAG_CHK
+echo -e "\n<< test ["${COUNT}"] >>\n"
+./train.py -i FontData/ -o ./result/001/ -b 30 -e 50 $FLAG_CHK
 COUNT=$(( COUNT + 1 ))
 
-echo "test"${COUNT}
-./train.py -i FontData/ -o ./result/002/ -ln 4 -b 50 -e 30 -opt smorms $FLAG_CHK
+echo -e "\n<< test ["${COUNT}"] >>\n"
+./train.py -i FontData/ -o ./result/001/ -b 50 -e 50 $FLAG_CHK
 COUNT=$(( COUNT + 1 ))
 
-echo "test"${COUNT}
-./train.py -i FontData/ -o ./result/002/ -ln 4 -b 80 -e 30 -opt smorms $FLAG_CHK
+echo -e "\n<< test ["${COUNT}"] >>\n"
+./train.py -i FontData/ -o ./result/001/ -b 70 -e 50 $FLAG_CHK
 COUNT=$(( COUNT + 1 ))
 
-echo "test"${COUNT}
-./train.py -i FontData/ -o ./result/002/ -ln 4 -b 100 -e 30 -opt smorms $FLAG_CHK
+echo -e "\n<< test ["${COUNT}"] >>\n"
+./train.py -i FontData/ -o ./result/001/ -b 100 -e 50 $FLAG_CHK
 COUNT=$(( COUNT + 1 ))

@@ -26,33 +26,33 @@ import Tools.func as F
 def command():
     parser = argparse.ArgumentParser(description=help)
     parser.add_argument('-i', '--in_path', default='./result/',
-                        help='入力データセットのフォルダ (default: ./result/)')
+                        help='入力データセットのフォルダ [default: ./result/]')
     parser.add_argument('-lf', '--lossfun', default='mse',
-                        help='損失関数 (default: mse, other: mae)')
+                        help='損失関数 [default: mse, other: mae]')
     parser.add_argument('-a1', '--actfun_1', default='relu',
-                        help='活性化関数(1) (default: relu, other: elu, c_relu, l_relu, sigmoid, h_sigmoid, tanh, s_plus)')
+                        help='活性化関数(1) [default: relu, other: elu/c_relu/l_relu/sigmoid/h_sigmoid/tanh/s_plus]')
     parser.add_argument('-a2', '--actfun_2', default='h_sigmoid',
-                        help='活性化関数(2) (default: h_sigmoid, other: relu, elu, c_relu, l_relu, sigmoid, tanh, s_plus)')
+                        help='活性化関数(2) [default: h_sigmoid, other: relu/elu/c_relu/l_relu/sigmoid/tanh/s_plus]')
     parser.add_argument('-opt', '--optimizer', default='adam',
-                        help='オプティマイザ (default: adam, other: adam, ada_d, ada_g, m_sgd, n_ag, rmsp, rmsp_g, sgd, smorms)')
-    parser.add_argument('-ln', '--layer_num', type=int, default=3,
-                        help='ネットワーク層の数 (default: 3)')
+                        help='オプティマイザ [default: adam, other: ada_d/ada_g/m_sgd/n_ag/rmsp/rmsp_g/sgd/smorms]')
+    parser.add_argument('-ln', '--layer_num', type=int, default=2,
+                        help='ネットワーク層の数 [default: 2]')
     parser.add_argument('-u', '--unit', type=int, default=4,
-                        help='ネットワークのユニット数 (default: 4)')
+                        help='ネットワークのユニット数 [default: 4]')
     parser.add_argument('-sr', '--shuffle_rate', type=int, default=2,
-                        help='PSの拡大率 (default: 2)')
+                        help='PSの拡大率 [default: 2]')
     parser.add_argument('-b', '--batchsize', type=int, default=100,
-                        help='ミニバッチサイズ (default: 100)')
+                        help='ミニバッチサイズ [default: 100]')
     parser.add_argument('-e', '--epoch', type=int, default=10,
-                        help='学習のエポック数 (default 10)')
+                        help='学習のエポック数 [default 10]')
     parser.add_argument('-f', '--frequency', type=int, default=-1,
-                        help='スナップショット周期 (default: -1)')
+                        help='スナップショット周期 [default: -1]')
     parser.add_argument('-g', '--gpu_id', type=int, default=-1,
-                        help='使用するGPUのID (default -1)')
+                        help='使用するGPUのID [default -1]')
     parser.add_argument('-o', '--out_path', default='./result/',
-                        help='生成物の保存先(default: ./result/)')
+                        help='生成物の保存先[default: ./result/]')
     parser.add_argument('-r', '--resume', default='',
-                        help='使用するスナップショットのパス(default: no use)')
+                        help='使用するスナップショットのパス[default: no use]')
     parser.add_argument('--noplot', dest='plot', action='store_false',
                         help='学習過程をPNG形式で出力しない場合に使用する')
     parser.add_argument('--only_check', action='store_true',

@@ -28,15 +28,15 @@ def command():
     parser.add_argument('jpeg', nargs='+',
                         help='使用する画像のパス')
     parser.add_argument('--img_size', '-s', type=int, default=32,
-                        help='生成される画像サイズ（default: 32 pixel）')
+                        help='生成される画像サイズ [default: 32 pixel]')
     parser.add_argument('--quality', '-q', type=int, default=5,
-                        help='画像の圧縮率（default: 5）')
+                        help='画像の圧縮率 [default: 5]')
     parser.add_argument('--batch', '-b', type=int, default=100,
-                        help='ミニバッチサイズ (default: 100)')
+                        help='ミニバッチサイズ [default: 100]')
     parser.add_argument('--gpu', '-g', type=int, default=-1,
-                        help='GPU ID (default -1)')
+                        help='GPU ID [default -1]')
     parser.add_argument('--out_path', '-o', default='./result/',
-                        help='生成物の保存先(default: ./result/)')
+                        help='生成物の保存先[default: ./result/]')
     return parser.parse_args()
 
 
@@ -112,11 +112,9 @@ def predict(model, args, img, ch, val):
     img = img[:org_size[0], :org_size[1]]
     # 生成結果を保存する
     if(val >= 0):
-        cv2.imwrite(
-            F.getFilePath(args.out_path, 'comp-' +
-                          str(val * 10 + 1).zfill(3), '.jpg'),
-            img
-        )
+        name = F.getFilePath(args.out_path, 'comp-' + str(val * 10 + 1).zfill(3), '.jpg')
+        print('save:', name)
+        cv2.imwrite(name, img)
 
     return img
 
