@@ -171,6 +171,27 @@ save: ./result/comp-011.jpg
 
 resultフォルダ中に`comp-*.jpg`ファイルが生成されていればOK
 
+### 画像の比較
+
+`concat_3images.py`を利用することで、オリジナル画像と圧縮画像と生成画像の比較が簡単にできる。以下のように実行する。
+
+```console
+$ ./concat_3_images.py ./FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG ./result/comp-00*  -r 1
+```
+
+以下のような画像が生成される。
+
+<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/concat-00.png" width="320px">
+
+```console
+$ ./concat_3_images.py ./FontData/The_Nighthawk_Star_op.PNG ./result/comp-01*  -r 1
+```
+
+以下のような画像が生成される。
+
+<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/concat-01.png" width="320px">
+
+
 # その他の機能
 
 ## 生成されたデータの削除
@@ -220,9 +241,9 @@ $ ./Tools/plot_diff.py ./result/ -l all
 
 以下のような画像が生成される。
 
-<img src="" width="320px">
+<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/plot_diff_loss.png" width="320px">
 
-<img src="" width="320px">
+<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/plot_diff_lr.png" width="320px">
 
 ※ファイルの作成日時準備表示される。
 
