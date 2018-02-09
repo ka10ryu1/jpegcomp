@@ -18,15 +18,15 @@ def command():
     parser.add_argument('jpeg', nargs='+',
                         help='使用する画像のパス')
     parser.add_argument('--channel', '-c', type=int, default=1,
-                        help='画像のチャンネル数（default: 1 channel）')
+                        help='画像のチャンネル数 [default: 1 channel]')
     parser.add_argument('--img_size', '-s', type=int, default=32,
-                        help='生成される画像サイズ（default: 32 pixel）')
+                        help='生成される画像サイズ [default: 32 pixel]')
     parser.add_argument('--round', '-r', type=int, default=1000,
-                        help='切り捨てる数（default: 1000）')
+                        help='切り捨てる数 [default: 1000]')
     parser.add_argument('--quality', '-q', type=int, default=5,
-                        help='画像の圧縮率（default: 5）')
+                        help='画像の圧縮率 [default: 5]')
     parser.add_argument('--train_per_all', '-t', type=float, default=0.9,
-                        help='画像数に対する学習用画像の割合（default: 0.9）')
+                        help='画像数に対する学習用画像の割合 [default: 0.9]')
     parser.add_argument('-o', '--out_path', default='./result/',
                         help='・ (default: ./result/)')
     return parser.parse_args()
