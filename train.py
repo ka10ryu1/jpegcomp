@@ -72,24 +72,24 @@ def getImageData(folder):
             pass
         elif('train_' in name)and('.npz' in ext)and(train_flg is False):
             np_arr = np.load(os.path.join(folder, l))
-            print('{0}:\tcomp{1},\traw{2}'.format(
-                l, np_arr['comp'].shape, np_arr['raw'].shape)
+            print('{0}:\tcomp{1},\ty{2}'.format(
+                l, np_arr['x'].shape, np_arr['y'].shape)
             )
             train = tuple_dataset.TupleDataset(
-                IMG.imgs2arr(np_arr['comp']),
-                IMG.imgs2arr(IMG.size2x(np_arr['raw']))
+                IMG.imgs2arr(np_arr['x']),
+                IMG.imgs2arr(IMG.size2x(np_arr['y']))
             )
             if(train._length > 0):
                 train_flg = True
 
         elif('test_' in name)and('.npz' in ext)and(test_flg is False):
             np_arr = np.load(os.path.join(folder, l))
-            print('{0}:\tcomp{1},\traw{2}'.format(
-                l, np_arr['comp'].shape, np_arr['raw'].shape)
+            print('{0}:\tx{1},\ty{2}'.format(
+                l, np_arr['x'].shape, np_arr['y'].shape)
             )
             test = tuple_dataset.TupleDataset(
-                IMG.imgs2arr(np_arr['comp']),
-                IMG.imgs2arr(IMG.size2x(np_arr['raw']))
+                IMG.imgs2arr(np_arr['x']),
+                IMG.imgs2arr(IMG.size2x(np_arr['y']))
             )
             if(test._length > 0):
                 test_flg = True
@@ -107,7 +107,7 @@ def main(args):
     now = datetime.today()
     exec_time1 = int(now.strftime('%y%m%d'))
     exec_time2 = int(now.strftime('%H%M%S'))
-    exec_time = np.base_repr(exec_time1*exec_time2, 32).lower()
+    exec_time = np.base_repr(exec_time1 * exec_time2, 32).lower()
 
     # Set up a neural network to train
     # Classifier reports softmax cross entropy loss and accuracy at every
