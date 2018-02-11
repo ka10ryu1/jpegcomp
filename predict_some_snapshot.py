@@ -34,8 +34,8 @@ def command():
                         help='切り出す画像数 [default: 10]')
     parser.add_argument('--random_seed', '-rs', type=int, default=25,
                         help='乱数シード [default: 25, random: -1]')
-    parser.add_argument('--img_rate', '-r', type=int, default=4,
-                        help='画像サイズの倍率 [default: 4]')
+    parser.add_argument('--img_rate', '-r', type=int, default=1,
+                        help='画像サイズの倍率 [default: 1]')
     parser.add_argument('--gpu', '-g', type=int, default=-1,
                         help='GPU ID [default -1]')
     parser.add_argument('--out_path', '-o', default='./result/',
@@ -137,7 +137,8 @@ def main(args):
             model.to_gpu()
 
         # 学習モデルを入力画像ごとに実行する
-        out_imgs.append(predict(model, args, img, ch, -1))
+        with chainer.using_config('train', False):
+            out_imgs.append(predict(model, args, img, ch, -1))
 
     # 推論実行した各画像を結合してサイズを調整する
     img = stackImages(out_imgs, args.img_rate)
