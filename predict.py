@@ -7,6 +7,7 @@ help = 'モデルとモデルパラメータを利用して推論実行する'
 import os
 import cv2
 import json
+import time
 import argparse
 import numpy as np
 
@@ -71,7 +72,7 @@ def predict(model, args, img, ch, val):
     """
     推論実行メイン部
     [in]  model:  推論実行に使用するモデル
-    [in]  args:   実行時のオプシン引数情報
+    [in]  args:   実行時のオプション引数情報
     [in]  img:    入力画像
     [in]  ch:     入力画像のチャンネル数
     [in]  val:    画像保存時の連番情報
@@ -92,6 +93,9 @@ def predict(model, args, img, ch, val):
     # 入力画像を分割する
     comp, size = IMG.split(comp, args.img_size)
     imgs = []
+
+    st = time.time()
+
     # バッチサイズごとに学習済みモデルに入力して画像を生成する
     for i in range(0, len(comp), args.batch):
         x = IMG.imgs2arr(comp[i:i + args.batch], gpu=args.gpu)
@@ -99,6 +103,8 @@ def predict(model, args, img, ch, val):
         y = to_cpu(y.array)
         y = IMG.arr2imgs(y, ch, args.img_size * 2)
         imgs.extend(y)
+
+    print('exec time: {0:.2f}[s]'.format(time.time() - st))
 
     # 生成された画像を結合する
     buf = [np.vstack(imgs[i * size[0]: (i + 1) * size[0]])
@@ -112,7 +118,8 @@ def predict(model, args, img, ch, val):
     img = img[:org_size[0], :org_size[1]]
     # 生成結果を保存する
     if(val >= 0):
-        name = F.getFilePath(args.out_path, 'comp-' + str(val * 10 + 1).zfill(3), '.jpg')
+        name = F.getFilePath(args.out_path, 'comp-' +
+                             str(val * 10 + 1).zfill(3), '.jpg')
         print('save:', name)
         cv2.imwrite(name, img)
 
@@ -167,7 +174,8 @@ def main(args):
     imgs = [cv2.imread(name, ch_flg) for name in args.jpeg if isImage(name)]
     # 学習モデルを生成する
     model = L.Classifier(
-        JC(n_unit=unit, n_out=ch, layer=layer, rate=sr, actfun_1=af1, actfun_2=af2)
+        JC(n_unit=unit, n_out=ch, layer=layer,
+           rate=sr, actfun_1=af1, actfun_2=af2)
     )
     # load_npzのpath情報を取得する
     load_path = checkModelType(args.model)

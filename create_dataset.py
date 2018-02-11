@@ -41,13 +41,13 @@ def main(args):
     imgs = [cv2.imread(name, ch) for name in args.jpeg]
     # 画像を圧縮して分割する（学習の入力データに相当）
     print('split images...')
-    comp, _ = IMG.split(
+    x, _ = IMG.split(
         IMG.rotate(IMG.encodeDecode(imgs, ch, args.quality)),
         args.img_size,
         args.round
     )
     # 画像を分割する（正解データに相当）
-    raw, _ = IMG.split(
+    y, _ = IMG.split(
         IMG.rotate(imgs),
         args.img_size,
         args.round
@@ -57,25 +57,26 @@ def main(args):
     # compとrawの対応を崩さないようにシャッフルしなければならない
     # また、train_sizeで端数を切り捨てる
     print('shuffle images...')
-    shuffle = np.random.permutation(range(len(comp)))
-    train_size = int(len(comp) * args.train_per_all)
-    train_comp = comp[shuffle[:train_size]]
-    train_raw = raw[shuffle[:train_size]]
-    test_comp = comp[shuffle[train_size:]]
-    test_raw = raw[shuffle[train_size:]]
-    print('train comp/raw:{0}/{1}'.format(train_comp.shape, train_raw.shape))
-    print('test  comp/raw:{0}/{1}'.format(test_comp.shape, test_raw.shape))
+    shuffle = np.random.permutation(range(len(x)))
+    train_size = int(len(x) * args.train_per_all)
+    train_x = x[shuffle[:train_size]]
+    train_y = y[shuffle[:train_size]]
+    test_x = x[shuffle[train_size:]]
+    test_y = y[shuffle[train_size:]]
+    print('train x/y:{0}/{1}'.format(train_x.shape, train_y.shape))
+    print('test  x/y:{0}/{1}'.format(test_x.shape, test_y.shape))
 
     # 生成したデータをnpz形式でデータセットとして保存する
     # ここで作成したデータの中身を確認する場合はnpz2jpg.pyを使用するとよい
     print('save npz...')
-    size_str = '_' + str(args.img_size).zfill(2) + 'x' + str(args.img_size).zfill(2)
-    num_str = '_' + str(train_comp.shape[0]).zfill(6)
+    size_str = '_' + str(args.img_size).zfill(2) + 'x' + \
+        str(args.img_size).zfill(2)
+    num_str = '_' + str(train_x.shape[0]).zfill(6)
     np.savez(F.getFilePath(args.out_path, 'train' + size_str + num_str),
-             comp=train_comp, raw=train_raw)
-    num_str = '_' + str(test_comp.shape[0]).zfill(6)
+             x=train_x, y=train_y)
+    num_str = '_' + str(test_x.shape[0]).zfill(6)
     np.savez(F.getFilePath(args.out_path, 'test' + size_str + num_str),
-             comp=test_comp, raw=test_raw)
+             x=test_x, y=test_y)
 
 
 if __name__ == '__main__':
