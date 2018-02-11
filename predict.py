@@ -194,8 +194,10 @@ def main(args):
         model.to_gpu()
 
     # 学習モデルを入力画像ごとに実行する
-    imgs = [predict(model, args, img, ch, i)
-            for i, img in enumerate(imgs)]
+    with chainer.using_config('train', False):
+        imgs = [predict(model, args, img, ch, i)
+                for i, img in enumerate(imgs)]
+
     # 生成結果の表示
     for i in imgs:
         cv2.imshow('test', i)
