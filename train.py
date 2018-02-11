@@ -72,7 +72,7 @@ def getImageData(folder):
             pass
         elif('train_' in name)and('.npz' in ext)and(train_flg is False):
             np_arr = np.load(os.path.join(folder, l))
-            print('{0}:\tcomp{1},\ty{2}'.format(
+            print('{0}:\tx{1},\ty{2}'.format(
                 l, np_arr['x'].shape, np_arr['y'].shape)
             )
             train = tuple_dataset.TupleDataset(
