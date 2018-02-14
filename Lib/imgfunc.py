@@ -177,6 +177,10 @@ def getLossfun(lossfun_str):
         lossfun = F.mean_squared_error
     elif(lossfun_str.lower() == 'mae'):
         lossfun = F.mean_absolute_error
+    elif(lossfun_str.lower() == 'ber'):
+        lossfun = F.bernoulli_nll
+    elif(lossfun_str.lower() == 'gauss_kl'):
+        lossfun = F.gaussian_kl_divergence
     else:
         lossfun = F.mean_squared_error
         print('\n[Warning] {0}\n\t{1}->{2}\n'.format(
