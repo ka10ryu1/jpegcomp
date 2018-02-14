@@ -28,7 +28,7 @@ def command():
     parser.add_argument('-i', '--in_path', default='./result/',
                         help='入力データセットのフォルダ [default: ./result/]')
     parser.add_argument('-lf', '--lossfun', default='mse',
-                        help='損失関数 [default: mse, other: mae]')
+                        help='損失関数 [default: mse, other: mae, ber, gauss_kl]')
     parser.add_argument('-a1', '--actfun_1', default='relu',
                         help='活性化関数(1) [default: relu, other: elu/c_relu/l_relu/sigmoid/h_sigmoid/tanh/s_plus]')
     parser.add_argument('-a2', '--actfun_2', default='h_sigmoid',
