@@ -31,25 +31,25 @@ shift $((OPTIND - 1))
 
 COUNT=1
 echo -e "\n<< test ["${COUNT}"] >>\n"
-./train.py -i FontData/ -o ./result/001/ -b 10 -e 50 $FLAG_CHK
-COUNT=$(( COUNT + 1 ))
+./train.py -i FontData/ -o ./result/001/ -b 10 -e 30 $FLAG_CHK
+./Tools/plot_diff.py ./result/001 --no
 
-echo -e "\n<< test ["${COUNT}"] >>\n"
-./train.py -i FontData/ -o ./result/001/ -b 20 -e 50 $FLAG_CHK
 COUNT=$(( COUNT + 1 ))
+echo -e "\n<< test ["${COUNT}"] >>\n"
+./train.py -i FontData/ -o ./result/001/ -b 30 -e 30 $FLAG_CHK
+./Tools/plot_diff.py ./result/001 --no
 
-echo -e "\n<< test ["${COUNT}"] >>\n"
-./train.py -i FontData/ -o ./result/001/ -b 30 -e 50 $FLAG_CHK
 COUNT=$(( COUNT + 1 ))
+echo -e "\n<< test ["${COUNT}"] >>\n"
+./train.py -i FontData/ -o ./result/001/ -b 50 -e 30 $FLAG_CHK
+./Tools/plot_diff.py ./result/001 --no
 
-echo -e "\n<< test ["${COUNT}"] >>\n"
-./train.py -i FontData/ -o ./result/001/ -b 50 -e 50 $FLAG_CHK
 COUNT=$(( COUNT + 1 ))
+echo -e "\n<< test ["${COUNT}"] >>\n"
+./train.py -i FontData/ -o ./result/001/ -b 70 -e 30 $FLAG_CHK
+./Tools/plot_diff.py ./result/001 --no
 
-echo -e "\n<< test ["${COUNT}"] >>\n"
-./train.py -i FontData/ -o ./result/001/ -b 70 -e 50 $FLAG_CHK
 COUNT=$(( COUNT + 1 ))
-
 echo -e "\n<< test ["${COUNT}"] >>\n"
-./train.py -i FontData/ -o ./result/001/ -b 100 -e 50 $FLAG_CHK
-COUNT=$(( COUNT + 1 ))
+./train.py -i FontData/ -o ./result/001/ -b 100 -e 30 $FLAG_CHK
+./Tools/plot_diff.py ./result/001
