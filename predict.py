@@ -101,7 +101,7 @@ def predict(model, args, img, ch, val):
         x = IMG.imgs2arr(comp[i:i + args.batch], gpu=args.gpu)
         y = model.predictor(x)
         y = to_cpu(y.array)
-        y = IMG.arr2imgs(y, ch, args.img_size * 2)
+        y = IMG.arr2imgs(y, 1, args.img_size * 2)
         imgs.extend(y)
 
     print('exec time: {0:.2f}[s]'.format(time.time() - st))

@@ -57,7 +57,7 @@ def getSnapshotAndParam(folder):
     for f in os.listdir(folder):
         name, ext = os.path.splitext(os.path.basename(f))
         full_path = os.path.join(folder, f)
-        #print(f, name, ext)
+        # print(f, name, ext)
         if('.snapshot' in ext):
             snapshot_path.append(full_path)
         elif('.json' in ext):
@@ -97,8 +97,11 @@ def stackImages(imgs, resize):
     [out] 結合画像
     """
 
-    img = np.hstack(imgs)
-    w, h = img.shape[:2]
+    [print(i.shape) for i in imgs]
+    img = np.hstack(
+        [cv2.cvtColor(img, cv2.COLOR_GRAY2RGB) if len(img.shape) < 3 else img
+         for img in imgs])
+    w, h = img.shape[: 2]
     return cv2.resize(
         img,
         (h * args.img_rate, w * args.img_rate),
@@ -115,7 +118,7 @@ def main(args):
     img = getImage(args.jpeg, ch, args.random_seed)
     # 学習モデルを生成する
     model = L.Classifier(JC(
-        n_unit=unit, n_out=ch, layer=layer, rate=sr,
+        n_unit=unit, n_out=1, layer=layer, rate=sr,
         actfun_1=af1, actfun_2=af2
     ))
     out_imgs = [img]
