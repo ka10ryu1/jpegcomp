@@ -205,7 +205,7 @@ def getActfun(actfun_str):
     elif(actfun_str.lower() == 'h_sigmoid'):
         actfun = F.hard_sigmoid
     elif(actfun_str.lower() == 'tanh'):
-        actfun = F.hard_sigmoid
+        actfun = F.tanh
     elif(actfun_str.lower() == 's_plus'):
         actfun = F.softplus
     else:
