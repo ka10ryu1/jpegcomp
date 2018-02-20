@@ -27,20 +27,22 @@ def command():
     parser = argparse.ArgumentParser(description=help)
     parser.add_argument('-i', '--in_path', default='./result/',
                         help='入力データセットのフォルダ [default: ./result/]')
-    parser.add_argument('-lf', '--lossfun', default='mse',
-                        help='損失関数 [default: mse, other: mae, ber, gauss_kl]')
-    parser.add_argument('-a1', '--actfun_1', default='relu',
-                        help='活性化関数(1) [default: relu, other: elu/c_relu/l_relu/sigmoid/h_sigmoid/tanh/s_plus]')
-    parser.add_argument('-a2', '--actfun_2', default='h_sigmoid',
-                        help='活性化関数(2) [default: h_sigmoid, other: relu/elu/c_relu/l_relu/sigmoid/tanh/s_plus]')
-    parser.add_argument('-opt', '--optimizer', default='adam',
-                        help='オプティマイザ [default: adam, other: ada_d/ada_g/m_sgd/n_ag/rmsp/rmsp_g/sgd/smorms]')
-    parser.add_argument('-ln', '--layer_num', type=int, default=2,
-                        help='ネットワーク層の数 [default: 2]')
     parser.add_argument('-u', '--unit', type=int, default=4,
                         help='ネットワークのユニット数 [default: 4]')
     parser.add_argument('-sr', '--shuffle_rate', type=int, default=2,
                         help='PSの拡大率 [default: 2]')
+    parser.add_argument('-ln', '--layer_num', type=int, default=2,
+                        help='ネットワーク層の数 [default: 2]')
+    parser.add_argument('-a1', '--actfun_1', default='relu',
+                        help='活性化関数(1) [default: relu, other: elu/c_relu/l_relu/sigmoid/h_sigmoid/tanh/s_plus]')
+    parser.add_argument('-a2', '--actfun_2', default='h_sigmoid',
+                        help='活性化関数(2) [default: h_sigmoid, other: relu/elu/c_relu/l_relu/sigmoid/tanh/s_plus]')
+    parser.add_argument('-d', '--dropout', type=float, default=0.2,
+                        help='ドロップアウト率（0〜0.9、0で不使用）[default: 0.2]')
+    parser.add_argument('-opt', '--optimizer', default='adam',
+                        help='オプティマイザ [default: adam, other: ada_d/ada_g/m_sgd/n_ag/rmsp/rmsp_g/sgd/smorms]')
+    parser.add_argument('-lf', '--lossfun', default='mse',
+                        help='損失関数 [default: mse, other: mae, ber, gauss_kl]')
     parser.add_argument('-b', '--batchsize', type=int, default=100,
                         help='ミニバッチサイズ [default: 100]')
     parser.add_argument('-e', '--epoch', type=int, default=10,
@@ -119,7 +121,7 @@ def main(args):
     # モデルを決定する
     model = L.Classifier(
         JC(n_unit=args.unit, layer=args.layer_num, rate=args.shuffle_rate,
-           actfun_1=actfun_1, actfun_2=actfun_2,
+           actfun_1=actfun_1, actfun_2=actfun_2, dropout=args.dropout,
            view=args.only_check),
         lossfun=IMG.getLossfun(args.lossfun)
     )
@@ -144,8 +146,9 @@ def main(args):
         'img_ch': train[0][0].shape[0],
         'layer': args.layer_num,
         'shuffle_rate': args.shuffle_rate,
+        'dropout': args.dropout,
         'actfun_1': args.actfun_1,
-        'actfun_2': args.actfun_2
+        'actfun_2': args.actfun_2,
     }
 
     train_iter = chainer.iterators.SerialIterator(train, args.batchsize)

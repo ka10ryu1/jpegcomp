@@ -28,13 +28,6 @@ def getCh(ch):
     [out] OpenCVの形式
     """
 
-    # np.shapeが代入された場合、shapeの数でチャンネル数を判断する
-    if isinstance(ch, list):
-        if len(ch) == 3:
-            ch = ch[2]
-        else:
-            ch = 1
-
     if(ch == 1):
         return cv2.IMREAD_GRAYSCALE
     elif(ch == 3):
@@ -110,7 +103,7 @@ def split(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
         return np.array(out_imgs), (v_split, h_split)
 
 
-def rotate(imgs):
+def rotate(imgs, num=2):
     """
     画像を回転させてデータ数を水増しする
     [in]  imgs:     入力画像リスト
@@ -119,8 +112,12 @@ def rotate(imgs):
 
     out_imgs = imgs.copy()
     [out_imgs.append(cv2.flip(i, 0)) for i in imgs]
-    [out_imgs.append(cv2.flip(i, 1)) for i in imgs]
-    #[out_imgs.append(cv2.flip(cv2.flip(i, 1), 0)) for i in imgs]
+    if(num > 1):
+        [out_imgs.append(cv2.flip(i, 1)) for i in imgs]
+
+    if(num > 2):
+        [out_imgs.append(cv2.flip(cv2.flip(i, 1), 0)) for i in imgs]
+
     return out_imgs
 
 
