@@ -4,7 +4,6 @@
 help = '画像を読み込んでデータセットを作成する'
 #
 
-import os
 import cv2
 import argparse
 import numpy as np
@@ -59,10 +58,10 @@ def main(args):
     print('shuffle images...')
     shuffle = np.random.permutation(range(len(x)))
     train_size = int(len(x) * args.train_per_all)
-    train_x = x[shuffle[:train_size]]
-    train_y = y[shuffle[:train_size]]
-    test_x = x[shuffle[train_size:]]
-    test_y = y[shuffle[train_size:]]
+    train_x = IMG.imgs2arr(x[shuffle[:train_size]])
+    train_y = IMG.imgs2arr(y[shuffle[:train_size]])
+    test_x = IMG.imgs2arr(x[shuffle[train_size:]])
+    test_y = IMG.imgs2arr(y[shuffle[train_size:]])
     print('train x/y:{0}/{1}'.format(train_x.shape, train_y.shape))
     print('test  x/y:{0}/{1}'.format(test_x.shape, test_y.shape))
 

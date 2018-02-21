@@ -8,25 +8,25 @@
 
 <img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/concat-final-10.jpg" width="640px">
 
-- Original: 圧縮なしの画像
-- Compression: Originalを圧縮した画像
-- Restoration: Compressionを学習によって復元した画像
+- **Original** : 圧縮なしの画像
+- **Compression** : Originalを圧縮した画像
+- **Restoration** : Compressionを学習によって復元した画像
 
 # 動作環境
 
-- Ubuntu 16.04.3 LTS ($ cat /etc/issue)
-- Python 3.5.2 ($ python3 -V)
-- chainer 3.2 ($ pip3 show chainer | grep Ver)
-- numpy 1.13.3 ($ pip3 show numpy | grep Ver)
-- cupy 2.2 ($ pip3 show cupy | grep Ver)
-- opencv-python 3.4.0.12 ($ pip3 show opencv-python | grep Ver)
+- **Ubuntu** 16.04.3 LTS ($ cat /etc/issue)
+- **Python** 3.5.2 ($ python3 -V)
+- **chainer** 3.2 ($ pip3 show chainer | grep Ver)
+- **numpy** 1.13.3 ($ pip3 show numpy | grep Ver)
+- **cupy 2.2** ($ pip3 show cupy | grep Ver)
+- **opencv-python** 3.4.0.12 ($ pip3 show opencv-python | grep Ver)
 
 # ファイル構成
 
 ## 生成方法
 
 ```console
-$ ls `find ./ -maxdepth 2 -type f -print` | xargs grep 'help = ' --include=*.py >& log.txt
+$ ls `find ./ -maxdepth 3 -type f -print` | xargs grep 'help = ' --include=*.py >& log.txt
 $ tree >& log.txt
 ```
 
@@ -41,6 +41,10 @@ $ tree >& log.txt
 │   └── train_32x32_007200.npz                   > 学習用データセット（サンプル）
 ├── LICENSE
 ├── Lib
+│   ├── Tests
+│   │   ├── Lenna.bmp       > テスト用画像
+│   │   ├── Mandrill.bmp    > テスト用画像
+│   │   └── test_imgfunc.py > imgfuncのテスト用コード
 │   ├── imgfunc.py  > 画像処理に関する便利機能
 │   ├── network.py  > jpegcompのネットワーク部分
 │   ├── network2.py > jpegcompのネットワーク部分その2
@@ -63,7 +67,7 @@ $ tree >& log.txt
 └── train.py                 > 学習メイン部
 ```
 
-FontDataはチュートリアル用のデータセットとテスト用の画像しかない。完全版データは非常に重いので別リポジトリにて管理している。
+FontDataはチュートリアル用のデータセットとテスト用の画像しかない。完全版データは非常に重いので[別リポジトリ](https://github.com/ka10ryu1/FontDataAll)にて管理している。
 
 # チュートリアル
 
@@ -83,11 +87,12 @@ not import cupy
 actfun_1:	relu
 actfun_2:	h_sigmoid
 batchsize:	100
+dropout:	0.1
 epoch:	10
 frequency:	-1
 gpu_id:	-1
 in_path:	FontData/
-layer_num:	3
+layer_num:	2
 lossfun:	mse
 only_check:	False
 optimizer:	adam
@@ -102,30 +107,31 @@ Activation func: hard_sigmoid
 [Network info]
   Unit:	4
   Out:	1
-  Layer:	3
-  Act Func:	relu, hard_sigmoid
+  Layer:	2
+  Drop out:	0.1
+Act Func:	relu, hard_sigmoid
 Loss func: mean_squared_error
 Optimizer: Adam optimizer
-train_32x32_007200.npz:	comp(7200, 32, 32),	raw(7200, 32, 32)
-test_32x32_000800.npz:	comp(800, 32, 32),	raw(800, 32, 32)
+train_32x32_010800.npz:	x(10800, 32, 32),	y(10800, 32, 32)
+test_32x32_001200.npz:	x(1200, 32, 32),	y(1200, 32, 32)
 epoch       main/loss   validation/main/loss  lr          elapsed_time
-1           0.190047    0.154506              0.000263767  49.161
-2           0.152926    0.140364              0.000366299  96.9835
-3           0.135191    0.127271              0.000440853  144.866
-4           0.12092     0.115146              0.000500346  192.593
-5           0.109097    0.101956              0.000549954  240.646
-6           0.0986757   0.0916473             0.000592394  288.918
-7           0.089213    0.0826343             0.000629319  336.551
-8           0.0805336   0.0763592             0.00066183  384.311
-9           0.0726175   0.0701154             0.000690709  432.948
-10          0.065501    0.0604349             0.000716535  481.537
+1           0.180935    0.145807              0.000320036  63.9726
+2           0.147242    0.130009              0.000440853  128.258
+3           0.127155    0.114856              0.000526182  191.622
+4           0.108269    0.0965278             0.000592394  255.361
+5           0.0925587   0.0828782             0.000646072  319.02
+6           0.0798688   0.0721286             0.000690709  382.199
+7           0.0691529   0.0619116             0.000728448  444.277
+8           0.0598662   0.0525341             0.000760729  508.985
+9           0.0518347   0.0449867             0.00078858  573.866
+10          0.0448583   0.0391221             0.000812766  637.006
 ```
 
 `not import cupy`はcupyをインストールしていない場合に表示される
 
 ### 生成物の確認
 
-resultフォルダ中に以下が生成されていればOK
+resultフォルダ中に以下が生成されていればOK。先頭の文字列は日付と時間から算出された値である。
 - `*.json`
 - `*.log`
 - `*.model`
@@ -153,34 +159,37 @@ img_size:	32
 jpeg[2]:
 	./FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG
 	./FontData/The_Nighthawk_Star_op.PNG
-model:	./result/ipl16vb.model
+model:	./result/iuj7l3s.model
 out_path:	./result/
-param:	./result/ipl16vb.json
+param:	./result/iuj7l3s.json
 quality:	5
 ------------------------------
-model param: ./result/ipl16vb.json
+model param: ./result/iuj7l3s.json
 Activation func: relu
 Activation func: hard_sigmoid
 [Network info]
   Unit:	4
   Out:	1
-  Layer:	3
-  Act Func:	relu, hard_sigmoid
-model read: ./result/ipl16vb.model
+  Layer:	2
+  Drop out:	0.0
+Act Func:	relu, hard_sigmoid
+model read: ./result/iuj7l3s.model
+exec time: 1.10[s]
 save: ./result/comp-001.jpg
+exec time: 0.78[s]
 save: ./result/comp-011.jpg
 ```
 
 ### 生成物の確認
 
-resultフォルダ中に`comp-*.jpg`ファイルが生成されていればOK
+resultフォルダ中に`comp-*.jpg`ファイルが生成されていればOK。
 
 ### 画像の比較
 
 `concat_3images.py`を利用することで、オリジナル画像と圧縮画像と生成画像の比較が簡単にできる。以下のように実行する。
 
 ```console
-$ ./concat_3_images.py ./FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG ./result/comp-00*  -r 1
+$ ./concat_3_images.py ./FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG ./result/comp-00*
 ```
 
 以下のような画像が生成される。
@@ -188,7 +197,7 @@ $ ./concat_3_images.py ./FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG ./res
 <img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/concat-00.jpg" width="320px">
 
 ```console
-$ ./concat_3_images.py ./FontData/The_Nighthawk_Star_op.PNG ./result/comp-01*  -r 1
+$ ./concat_3_images.py ./FontData/The_Nighthawk_Star_op.PNG ./result/comp-01*
 ```
 
 以下のような画像が生成される。
@@ -206,11 +215,15 @@ $ ./clean_all.sh
 
 ## ハイパーパラメータを変更して自動実行
 
+デフォルトではバッチサイズだけを変更した学習を複数回繰り返す。
+
 ```console
 $ ./auto_train.sh
 ```
 
 ## Dotファイルの画像化
+
+学習を実行すると`*graph.dot`というファイルが生成されるので、それを画像化する。
 
 ```console
 $ ./Tools/dot2png.py ./result/*.dot
@@ -222,6 +235,8 @@ $ ./Tools/dot2png.py ./result/*.dot
 
 
 ## NPZデータセットの中身をランダム表示
+
+学習用の画像を確認する。
 
 ```console
 $ ./Tools/npz2jpg.py ./FontData/test_32x32_000800.npz
@@ -235,7 +250,7 @@ $ ./Tools/npz2jpg.py ./FontData/test_32x32_000800.npz
 
 ### 学習を複数回実行する
 
-`auto_train.sh`等で複数回学習させておく。以下はエポック数50でバッチサイズを10から100まで変化させた結果が`result/`フォルダ直下に格納されている前提で話を進める。
+`auto_train.sh`等で複数回学習させておく。以下はデフォルトの`auto_train.sh`を実行した前提である。
 
 ### 可視化を実行
 
@@ -249,7 +264,7 @@ $ ./Tools/plot_diff.py ./result/ -l all
 
 <img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/plot_diff_lr.png" width="320px">
 
-※ファイルの作成日時準備表示される。
+※ファイルの作成日時順でソートされる。
 
 ## フォルダの監視
 
@@ -291,40 +306,16 @@ jpegcomp直下にいるものとする
 ### 実行
 
 ```console
-$ ./create_dataset.py ../FontDataAll/font_0[0-1]*
-```
-
-### 端末の確認
-以下のとおりであれば正常に実行できている
-
-```console
-not import cupy
-------------------------------
-channel:	1
-img_size:	32
-jpeg[2]:
-	../FontDataAll/font_00.bmp
-	../FontDataAll/font_01.bmp
-out_path:	./result/
-quality:	5
-round:	1000
-train_per_all:	0.9
-------------------------------
-read images...
-split images...
-shuffle images...
-train comp/raw:(7200, 32, 32)/(7200, 32, 32)
-test  comp/raw:(800, 32, 32)/(800, 32, 32)
-save npz...
+$ ./create_dataset.py ../FontDataAll/font_* -s 128 -r 2000 -t 0.95
 ```
 
 ### 生成物の確認
 
 resultフォルダが作成され、その中に以下のファイルが生成されていればOK
-- `test_32x32_000800.npz`
-- `train_32x32_007200.npz`
+- `test_128x128_******.npz`
+- `train_128x128_******.npz`
 
-※READMEの最上部にある結果は、`FontDataAll`全ての画像を使用している。
+※READMEの最上部にある結果は、このデータを使用している。
 
 ## スナップショットの進捗具合を可視化する
 

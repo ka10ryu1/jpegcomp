@@ -17,8 +17,8 @@ except ImportError:
 import chainer.functions as F
 import chainer.optimizers as O
 
-[sys.path.append(d) for d in ['./Tools/'] if os.path.isdir(d)]
-from Tools.func import fileFuncLine
+[sys.path.append(d) for d in ['./Tools/', '../Tools/'] if os.path.isdir(d)]
+from func import fileFuncLine
 
 
 def getCh(ch):
@@ -132,6 +132,11 @@ def size2x(imgs, flg=cv2.INTER_NEAREST):
     return [cv2.resize(i, size, flg) for i in imgs]
 
 
+def arr2x(arr, flg=cv2.INTER_NEAREST):
+    imgs = arr2imgs(arr)
+    return imgs2arr(size2x(imgs))
+
+
 def imgs2arr(imgs, norm=255, dtype=np.float32, gpu=-1):
     """
     入力画像リストをChainerで利用するために変換する
@@ -154,7 +159,7 @@ def imgs2arr(imgs, norm=255, dtype=np.float32, gpu=-1):
         return np.array(imgs, dtype=dtype).reshape((-1, ch, w, h)) / norm
 
 
-def arr2imgs(arr, ch, size, norm=255, dtype=np.uint8):
+def arr2imgs(arr, norm=255, dtype=np.uint8):
     """
     Chainerの出力をOpenCVで可視化するために変換する
     [in]  arr:   Chainerから出力された行列
@@ -165,6 +170,7 @@ def arr2imgs(arr, ch, size, norm=255, dtype=np.uint8):
     [out] OpenCV形式の画像に変換された行列
     """
 
+    ch, size = arr.shape[1], arr.shape[2]
     y = np.array(arr).reshape((-1, size, size, ch)) * 255
     return np.array(y, dtype=np.uint8)
 
