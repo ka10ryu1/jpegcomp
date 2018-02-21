@@ -255,7 +255,7 @@ $ ./Tools/npz2jpg.py ./FontData/test_32x32_000800.npz
 ### 可視化を実行
 
 ```console
-$ ./Tools/plot_diff.py ./result/ -l all
+$ ./Tools/plot_diff.py ./result/001 -l all
 ```
 
 以下のような画像が生成される。
