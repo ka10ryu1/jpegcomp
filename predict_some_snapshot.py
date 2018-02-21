@@ -97,7 +97,7 @@ def stackImages(imgs, resize):
     [out] 結合画像
     """
 
-    [print(i.shape) for i in imgs]
+    # [print(i.shape) for i in imgs]
     img = np.hstack(
         [cv2.cvtColor(img, cv2.COLOR_GRAY2RGB) if len(img.shape) < 3 else img
          for img in imgs])

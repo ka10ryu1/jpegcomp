@@ -37,8 +37,8 @@ def command():
                         help='活性化関数(1) [default: relu, other: elu/c_relu/l_relu/sigmoid/h_sigmoid/tanh/s_plus]')
     parser.add_argument('-a2', '--actfun_2', default='h_sigmoid',
                         help='活性化関数(2) [default: h_sigmoid, other: relu/elu/c_relu/l_relu/sigmoid/tanh/s_plus]')
-    parser.add_argument('-d', '--dropout', type=float, default=0.2,
-                        help='ドロップアウト率（0〜0.9、0で不使用）[default: 0.2]')
+    parser.add_argument('-d', '--dropout', type=float, default=0.1,
+                        help='ドロップアウト率（0〜0.9、0で不使用）[default: 0.1]')
     parser.add_argument('-opt', '--optimizer', default='adam',
                         help='オプティマイザ [default: adam, other: ada_d/ada_g/m_sgd/n_ag/rmsp/rmsp_g/sgd/smorms]')
     parser.add_argument('-lf', '--lossfun', default='mse',
@@ -77,10 +77,7 @@ def getImageData(folder):
             print('{0}:\tx{1},\ty{2}'.format(
                 l, np_arr['x'].shape, np_arr['y'].shape)
             )
-            train = tuple_dataset.TupleDataset(
-                IMG.imgs2arr(np_arr['x']),
-                IMG.imgs2arr(IMG.size2x(np_arr['y']))
-            )
+            train = tuple_dataset.TupleDataset(np_arr['x'], IMG.arr2x(np_arr['y']))
             if(train._length > 0):
                 train_flg = True
 
@@ -89,10 +86,7 @@ def getImageData(folder):
             print('{0}:\tx{1},\ty{2}'.format(
                 l, np_arr['x'].shape, np_arr['y'].shape)
             )
-            test = tuple_dataset.TupleDataset(
-                IMG.imgs2arr(np_arr['x']),
-                IMG.imgs2arr(IMG.size2x(np_arr['y']))
-            )
+            test = tuple_dataset.TupleDataset(np_arr['x'], IMG.arr2x(np_arr['y']))
             if(test._length > 0):
                 test_flg = True
 

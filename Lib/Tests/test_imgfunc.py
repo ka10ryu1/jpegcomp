@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*-coding: utf-8 -*-
 #
-help = '画像処理に関する便利機能'
+help = 'imgfuncのテスト用コード'
 #
 
 import cv2
