@@ -18,7 +18,7 @@
 - **Python** 3.5.2 ($ python3 -V)
 - **chainer** 3.2 ($ pip3 show chainer | grep Ver)
 - **numpy** 1.13.3 ($ pip3 show numpy | grep Ver)
-- **cupy 2.2** ($ pip3 show cupy | grep Ver)
+- **cupy** 2.2 ($ pip3 show cupy | grep Ver)
 - **opencv-python** 3.4.0.12 ($ pip3 show opencv-python | grep Ver)
 
 # ファイル構成
@@ -56,7 +56,7 @@ $ tree >& log.txt
 │   ├── dot2png.py        > dot言語で記述されたファイルをPNG形式に変換する
 │   ├── func.py           > 便利機能
 │   ├── npz2jpg.py        > 作成したデータセット（.npz）の中身を画像として出力する
-│   └── plot_diff.py      > logファイルの複数比較
+│   ├── plot_diff.py      > logファイルの複数比較
 │   └── png_monitoring.py > 任意のフォルダの監視
 ├── auto_train.sh
 ├── clean_all.sh
