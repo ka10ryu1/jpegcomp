@@ -6,7 +6,7 @@
 
 <img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/concat-final-00.jpg" width="640px">
 
-<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/concat-final-01.jpg" width="640px">
+<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/concat-final-10.jpg" width="640px">
 
 - Original: 圧縮なしの画像
 - Compression: Originalを圧縮した画像
