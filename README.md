@@ -4,9 +4,13 @@
 
 ## 学習結果（5%に圧縮した画像を復元）
 
-圧縮画像
+<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/concat-final-00.jpg" width="640px">
 
-復元画像
+<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/concat-final-01.jpg" width="640px">
+
+- Original: 圧縮なしの画像
+- Compression: Originalを圧縮した画像
+- Restoration: Compressionを学習によって復元した画像
 
 # 動作環境
 
