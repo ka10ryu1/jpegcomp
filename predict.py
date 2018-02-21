@@ -65,7 +65,7 @@ def getModelParam(path):
 
     af1 = IMG.getActfun(d['actfun_1'])
     af2 = IMG.getActfun(d['actfun_2'])
-    return d['unit'], d['img_ch'], d['layer'], d['shuffle_rate'], af1, af2
+    return d['unit'], d['img_ch'], d['layer_num'], d['shuffle_rate'], af1, af2
 
 
 def predict(model, args, img, ch, val):

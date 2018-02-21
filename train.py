@@ -141,15 +141,9 @@ def main(args):
     # Load dataset
     train, test = getImageData(args.in_path)
     # predict.pyでモデルを決定する際に必要なので記憶しておく
-    model_param = {
-        'unit':  args.unit,
-        'img_ch': train[0][0].shape[0],
-        'layer': args.layer_num,
-        'shuffle_rate': args.shuffle_rate,
-        'dropout': args.dropout,
-        'actfun_1': args.actfun_1,
-        'actfun_2': args.actfun_2,
-    }
+
+    model_param = {i: getattr(args, i) for i in dir(args) if not '_' in i[0]}
+    model_param['img_ch'] = train[0][0].shape[0]
 
     train_iter = chainer.iterators.SerialIterator(train, args.batchsize)
     test_iter = chainer.iterators.SerialIterator(test, args.batchsize,
@@ -216,7 +210,7 @@ def main(args):
     if args.only_check is False:
         # predict.pyでモデルのパラメータを読み込むjson形式で保存する
         with open(F.getFilePath(args.out_path, exec_time, '.json'), 'w') as f:
-            json.dump(model_param, f)
+            json.dump(model_param, f, indent=4, sort_keys=True)
 
     # Run the training
     trainer.run()

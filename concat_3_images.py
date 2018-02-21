@@ -20,8 +20,8 @@ def command():
                         help='入力データセットのフォルダ (default: ./result/)')
     parser.add_argument('-s', '--img_width', type=int, default=333,
                         help='入力データセットのフォルダ (default: ./result/)')
-    parser.add_argument('-r', '--img_rate', type=float, default=4,
-                        help='画像サイズの倍率（default: 4）')
+    parser.add_argument('-r', '--img_rate', type=float, default=1,
+                        help='画像サイズの倍率（default: 1）')
     parser.add_argument('--channel', '-c', type=int, default=1,
                         help='画像のチャンネル数（default: 1 channel）')
     parser.add_argument('-op', '--out_path', default='./result/',
