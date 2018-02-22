@@ -10,7 +10,7 @@ import chainer.links as L
 
 
 class DownSanpleBlock(Chain):
-    def __init__(self, n_unit, ksize, stride, pad, actfun, dropout=0):
+    def __init__(self, n_unit, ksize, stride, pad, actfun=None, dropout=0):
         super(DownSanpleBlock, self).__init__()
         with self.init_scope():
             self.cnv = L.Convolution2D(
@@ -22,14 +22,15 @@ class DownSanpleBlock(Chain):
         self.dropout_ratio = dropout
 
     def __call__(self, x):
-        return F.dropout(
-            self.actfun(self.brn(self.cnv(x))),
-            self.dropout_ratio
-        )
+        h = self.actfun(self.brn(self.cnv(x)))
+        if self.dropout_ratio > 0:
+            h = F.dropout(h, self.dropout_ratio)
+
+        return h
 
 
 class UpSampleBlock(Chain):
-    def __init__(self, n_unit_1, n_unit_2, ksize, stride, pad, actfun, rate=2):
+    def __init__(self, n_unit_1, n_unit_2, ksize, stride, pad, actfun=None, rate=2):
         super(UpSampleBlock, self).__init__()
         with self.init_scope():
             self.cnv = L.Convolution2D(
@@ -107,7 +108,7 @@ class JC(Chain):
         self.layer = layer
         self.view = view
 
-        print('[Network info]')
+        print('[Network info]', self.__class__.__name__)
         print('  Unit:\t{0}\n  Out:\t{1}\n  Layer:\t{2}\n  Drop out:\t{3}\nAct Func:\t{4}, {5}'.format(
             n_unit, n_out, layer, dropout, actfun_1.__name__, actfun_2.__name__)
         )

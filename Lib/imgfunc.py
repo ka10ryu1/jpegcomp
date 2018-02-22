@@ -194,6 +194,10 @@ def getLossfun(lossfun_str):
     return lossfun
 
 
+def F_None(x):
+    return x
+
+
 def getActfun(actfun_str):
     if(actfun_str.lower() == 'relu'):
         actfun = F.relu
@@ -211,6 +215,8 @@ def getActfun(actfun_str):
         actfun = F.tanh
     elif(actfun_str.lower() == 's_plus'):
         actfun = F.softplus
+    elif(actfun_str.lower() == 'none'):
+        actfun = F_None
     else:
         actfun = F.relu
         print('\n[Warning] {0}\n\t{1}->{2}\n'.format(

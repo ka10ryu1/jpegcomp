@@ -83,6 +83,7 @@ class TestImgFunc(unittest.TestCase):
         self.assertEqual(IMG.getActfun('h_sigmoid').__name__, 'hard_sigmoid')
         self.assertEqual(IMG.getActfun('tanh').__name__, 'tanh')
         self.assertEqual(IMG.getActfun('s_plus').__name__, 'softplus')
+        self.assertEqual(IMG.getActfun('none').__name__, 'F_None')
         self.assertEqual(IMG.getActfun('test').__name__, 'relu')
         self.assertEqual(IMG.getActfun('').__name__, 'relu')
 
