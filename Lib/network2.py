@@ -6,61 +6,10 @@ help = 'jpegcompのネットワーク部分その2'
 
 from chainer import Chain
 import chainer.functions as F
-import chainer.links as L
+from Lib.network import DownSanpleBlock, UpSampleBlock
 
 
-class DownSanpleBlock(Chain):
-    def __init__(self, n_unit, ksize, stride, pad, actfun=None, dropout=0):
-        super(DownSanpleBlock, self).__init__()
-        with self.init_scope():
-            self.cnv = L.Convolution2D(
-                None, n_unit, ksize=ksize, stride=stride, pad=pad
-            )
-            self.brn = L.BatchRenormalization(n_unit)
-
-        self.actfun = actfun
-        self.dropout_ratio = dropout
-
-    def __call__(self, x):
-        h = self.actfun(self.brn(self.cnv(x)))
-        if self.dropout_ratio > 0:
-            h = F.dropout(h, self.dropout_ratio)
-
-        return h
-
-
-class UpSampleBlock(Chain):
-    def __init__(self, n_unit_1, n_unit_2, ksize, stride, pad, actfun=None, rate=2):
-        super(UpSampleBlock, self).__init__()
-        with self.init_scope():
-            self.cnv = L.Convolution2D(
-                None, n_unit_1, ksize=ksize, stride=stride, pad=pad
-            )
-            self.brn = L.BatchRenormalization(n_unit_2)
-
-        self.actfun = actfun
-        self.rate = rate
-
-    def __call__(self, x):
-        return self.actfun(self.brn(self.PS(self.cnv(x), self.rate)))
-
-    def PS(self, h, r=2):
-        """
-        "P"ixcel"S"huffler
-        Deconvolutionの高速版
-        """
-
-        batchsize, in_ch, in_h, in_w = h.shape
-        out_ch = int(in_ch / (r ** 2))
-        out_h = in_h * r
-        out_w = in_w * r
-        out = F.reshape(h, (batchsize, r, r, out_ch, in_h, in_w))
-        out = F.transpose(out, (0, 3, 4, 1, 5, 2))
-        out = F.reshape(out, (batchsize, out_ch, out_h, out_w))
-        return out
-
-
-class JC(Chain):
+class JC_UDUD(Chain):
     def __init__(self, n_unit=128, n_out=1, rate=4,
                  layer=3, actfun_1=F.relu, actfun_2=F.sigmoid,
                  dropout=0.0, view=False):
@@ -73,36 +22,36 @@ class JC(Chain):
         """
 
         unit1 = n_unit
-        unit2 = n_unit//2
-        unit4 = n_unit//4
+        unit2 = n_unit*2
+        unit4 = n_unit*4
 
-        super(JC, self).__init__()
+        super(JC_UDUD, self).__init__()
         with self.init_scope():
-            self.block1a = DownSanpleBlock(unit2, 3, 1, 1, actfun_1)
-            self.block1b = DownSanpleBlock(unit1, 5, 2, 2, actfun_1, dropout)
-            self.block1c = UpSampleBlock(unit1, unit4, 5, 1, 2, actfun_2)
+            self.block1a = DownSanpleBlock(unit1, 5, 2, 2, actfun_1)
+            self.block1b = DownSanpleBlock(unit2, 5, 2, 2, actfun_1, dropout)
+            self.block1c = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2)
             if(layer > 2):
-                self.block2a = DownSanpleBlock(unit2, 3, 1, 1, actfun_1)
-                self.block2b = DownSanpleBlock(unit1, 5, 2, 2, actfun_1, dropout)
-                self.block2c = UpSampleBlock(unit1, unit4, 5, 1, 2, actfun_2)
+                self.block2a = DownSanpleBlock(unit1, 5, 2, 2, actfun_1)
+                self.block2b = DownSanpleBlock(unit2, 5, 2, 2, actfun_1, dropout)
+                self.block2c = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2)
 
             if(layer > 3):
-                self.block3a = DownSanpleBlock(unit2, 3, 1, 1, actfun_1)
-                self.block3b = DownSanpleBlock(unit1, 5, 2, 2, actfun_1, dropout)
-                self.block3c = UpSampleBlock(unit1, unit4, 5, 1, 2, actfun_2)
+                self.block3a = DownSanpleBlock(unit1, 5, 2, 2, actfun_1)
+                self.block3b = DownSanpleBlock(unit2, 5, 2, 2, actfun_1, dropout)
+                self.block3c = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2)
 
             if(layer > 4):
-                self.block4a = DownSanpleBlock(unit2, 3, 1, 1, actfun_1)
-                self.block4b = DownSanpleBlock(unit1, 5, 2, 2, actfun_1, dropout)
-                self.block4c = UpSampleBlock(unit1, unit4, 5, 1, 2, actfun_2)
+                self.block4a = DownSanpleBlock(unit1, 5, 2, 2, actfun_1)
+                self.block4b = DownSanpleBlock(unit2, 5, 2, 2, actfun_1, dropout)
+                self.block4c = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2)
 
             if(layer > 5):
-                self.block5a = DownSanpleBlock(unit2, 3, 1, 1, actfun_1)
-                self.block5b = DownSanpleBlock(unit1, 5, 2, 2, actfun_1, dropout)
-                self.block5c = UpSampleBlock(unit1, unit4, 5, 1, 2, actfun_2)
+                self.block5a = DownSanpleBlock(unit1, 5, 2, 2, actfun_1)
+                self.block5b = DownSanpleBlock(unit2, 5, 2, 2, actfun_1, dropout)
+                self.block5c = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2)
 
-            self.blockNa = DownSanpleBlock(unit1, 3, 1, 1, actfun_1)
-            self.blockNb = DownSanpleBlock(unit1, 3, 1, 1, actfun_1, dropout)
+            self.blockNa = DownSanpleBlock(unit4, 3, 1, 1, actfun_1)
+            self.blockNb = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2)
             self.blockNc = UpSampleBlock(rate**2, 1, 5, 1, 2, actfun_2, rate)
 
         self.layer = layer

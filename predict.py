@@ -15,7 +15,6 @@ import chainer
 import chainer.links as L
 from chainer.cuda import to_cpu
 
-from Lib.network2 import JC
 import Lib.imgfunc as IMG
 import Tools.func as F
 
@@ -65,7 +64,9 @@ def getModelParam(path):
 
     af1 = IMG.getActfun(d['actfun_1'])
     af2 = IMG.getActfun(d['actfun_2'])
-    return d['unit'], d['img_ch'], d['layer_num'], d['shuffle_rate'], af1, af2
+    return \
+        d['network'], d['unit'], d['img_ch'], \
+        d['layer_num'], d['shuffle_rate'], af1, af2
 
 
 def predict(model, args, img, ch, val):
@@ -168,11 +169,16 @@ def checkModelType(path):
 
 def main(args):
     # jsonファイルから学習モデルのパラメータを取得する
-    unit, ch, layer, sr, af1, af2 = getModelParam(args.param)
+    net, unit, ch, layer, sr, af1, af2 = getModelParam(args.param)
     # 学習モデルの出力画像のチャンネルに応じて画像を読み込む
     ch_flg = IMG.getCh(ch)
     imgs = [cv2.imread(name, ch_flg) for name in args.jpeg if isImage(name)]
     # 学習モデルを生成する
+    if net == 0:
+        from Lib.network2 import JC_UDUD as JC
+    else:
+        from Lib.network import JC_DDUU as JC
+
     model = L.Classifier(
         JC(n_unit=unit, n_out=ch, layer=layer,
            rate=sr, actfun_1=af1, actfun_2=af2)

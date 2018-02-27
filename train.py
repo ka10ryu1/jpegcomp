@@ -17,7 +17,6 @@ from chainer.training import extensions
 from chainer.datasets import tuple_dataset
 
 
-from Lib.network2 import JC
 from Lib.plot_report_log import PlotReportLog
 import Lib.imgfunc as IMG
 import Tools.func as F
@@ -27,6 +26,8 @@ def command():
     parser = argparse.ArgumentParser(description=help)
     parser.add_argument('-i', '--in_path', default='./result/',
                         help='入力データセットのフォルダ [default: ./result/]')
+    parser.add_argument('-n', '--network', type=int, default=0,
+                        help='ネットワーク層 [default: 0(UDUD), other: 1(DDUU)]')
     parser.add_argument('-u', '--unit', type=int, default=4,
                         help='ネットワークのユニット数 [default: 4]')
     parser.add_argument('-sr', '--shuffle_rate', type=int, default=2,
@@ -113,6 +114,11 @@ def main(args):
     actfun_1 = IMG.getActfun(args.actfun_1)
     actfun_2 = IMG.getActfun(args.actfun_2)
     # モデルを決定する
+    if args.network == 0:
+        from Lib.network2 import JC_UDUD as JC
+    else:
+        from Lib.network import JC_DDUU as JC
+
     model = L.Classifier(
         JC(n_unit=args.unit, layer=args.layer_num, rate=args.shuffle_rate,
            actfun_1=actfun_1, actfun_2=actfun_2, dropout=args.dropout,

@@ -5,69 +5,49 @@ help = 'jpegcompのネットワーク部分'
 #
 
 from chainer import Chain
+import chainer.initializers as I
 import chainer.functions as F
 import chainer.links as L
 
 
-class JC(Chain):
-    def __init__(self,
-                 n_unit=128, n_out=1,
-                 layer=3, actfun_1=F.relu, actfun_2=F.sigmoid, view=False):
-        """
-        [in] n_unit:    中間層のユニット数
-        [in] n_out:     出力チャンネル
-        [in] layer:     中間層の数
-        [in] actfun_1: 活性化関数
-        [in] actfun_2: 活性化関数（最終段に使用する）
-        """
+class DownSanpleBlock(Chain):
+    def __init__(self, n_unit, ksize, stride, pad,
+                 actfun=None, dropout=0, wd=0.02):
 
-        super(JC, self).__init__()
+        super(DownSanpleBlock, self).__init__()
         with self.init_scope():
-            self.conv1 = L.Convolution2D(
-                None, n_unit, ksize=3, stride=1, pad=1
+            self.cnv = L.Convolution2D(
+                None, n_unit, ksize=ksize, stride=stride, pad=pad, initialW=I.Normal(wd)
             )
-            self.brn1 = L.BatchRenormalization(n_unit)
-            self.conv2 = L.Convolution2D(
-                None, n_unit, ksize=7, stride=1, pad=3
-            )
-            self.brn2 = L.BatchRenormalization(n_unit)
-            if(layer > 3):
-                self.conv3 = L.Convolution2D(
-                    None, n_unit * 2, ksize=3, stride=1, pad=1
-                )
-                self.brn3 = L.BatchRenormalization(n_unit * 2)
+            self.brn = L.BatchRenormalization(n_unit)
 
-            if(layer > 4):
-                self.conv4 = L.Convolution2D(
-                    None, n_unit * 2, ksize=3, stride=1, pad=1
-                )
-                self.brn4 = L.BatchRenormalization(n_unit * 2)
-
-            self.convN = L.Convolution2D(
-                None, 4, ksize=5,  stride=1, pad=2
-            )
-            self.brnN = L.BatchRenormalization(1)
-
-        self.layer = layer
-        self.actfun_1 = actfun_1
-        self.actfun_2 = actfun_2
-
-        print('[Network info]')
-        print('  Unit:\t{0}\n  Out:\t{1}\n  Layer:\t{2}\n  Act Func:\t{3}, {4}'.format(
-            n_unit, n_out, layer, actfun_1.__name__, actfun_2.__name__)
-        )
+        self.actfun = actfun
+        self.dropout_ratio = dropout
 
     def __call__(self, x):
-        h = self.actfun_1(self.brn1(self.conv1(x)))
-        h = self.actfun_1(self.brn2(self.conv2(h)))
-        if(self.layer > 3):
-            h = self.actfun_1(self.brn3(self.conv3(h)))
+        h = self.actfun(self.brn(self.cnv(x)))
+        if self.dropout_ratio > 0:
+            h = F.dropout(h, self.dropout_ratio)
 
-        if(self.layer > 4):
-            h = self.actfun_1(self.brn4(self.conv4(h)))
+        return h
 
-        y = self.actfun_2(self.brnN(self.PS(self.convN(h))))
-        return y
+
+class UpSampleBlock(Chain):
+    def __init__(self, n_unit_1, n_unit_2, ksize, stride, pad,
+                 actfun=None, wd=0.02, rate=2):
+
+        super(UpSampleBlock, self).__init__()
+        with self.init_scope():
+            self.cnv = L.Convolution2D(
+                None, n_unit_1, ksize=ksize, stride=stride, pad=pad, initialW=I.Normal(wd)
+            )
+            self.brn = L.BatchRenormalization(n_unit_2)
+
+        self.actfun = actfun
+        self.rate = rate
+
+    def __call__(self, x):
+        return self.actfun(self.brn(self.PS(self.cnv(x), self.rate)))
 
     def PS(self, h, r=2):
         """
@@ -83,3 +63,77 @@ class JC(Chain):
         out = F.transpose(out, (0, 3, 4, 1, 5, 2))
         out = F.reshape(out, (batchsize, out_ch, out_h, out_w))
         return out
+
+
+class JC_DDUU(Chain):
+    def __init__(self, n_unit=128, n_out=1, rate=4,
+                 layer=3, actfun_1=F.relu, actfun_2=F.sigmoid,
+                 dropout=0.0, view=False):
+        """
+        [in] n_unit:    中間層のユニット数
+        [in] n_out:     出力チャンネル
+        [in] layer:     中間層の数
+        [in] actfun_1: 活性化関数（Layer A用）
+        [in] actfun_2: 活性化関数（Layer B用）
+        """
+
+        unit1 = n_unit
+        # unit2 = max([n_unit//2, 1])
+        # unit4 = max([n_unit//4, 1])
+        # unit8 = max([n_unit//8, 1])
+        unit2 = n_unit*2
+        unit4 = n_unit*4
+        unit8 = n_unit*8
+
+        super(JC_DDUU, self).__init__()
+        with self.init_scope():
+            # D: n_unit, ksize, stride, pad, actfun=None, dropout=0, wd=0.02
+            self.block1a = DownSanpleBlock(unit1, 5, 2, 2, actfun_1)
+            self.block1b = DownSanpleBlock(unit2, 5, 2, 2, actfun_1)
+            self.block1c = DownSanpleBlock(unit4, 5, 2, 2, actfun_1)
+            self.block1d = DownSanpleBlock(unit8, 5, 2, 2, actfun_1)
+            self.block1e = DownSanpleBlock(unit8, 3, 1, 1, actfun_1)
+
+            # U: n_unit_1, n_unit_2, ksize, stride, pad, actfun=None, rate=2
+            self.block2a = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2)
+            self.block2b = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2)
+            self.block2c = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2)
+            self.block2d = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2)
+
+            self.blockN = UpSampleBlock(rate**2, 1, 5, 1, 2, actfun_2, rate)
+
+        self.layer = layer
+        self.view = view
+
+        print('[Network info]', self.__class__.__name__)
+        print('  Unit:\t{0}\n  Out:\t{1}\n  Layer:\t{2}\n  Drop out:\t{3}\nAct Func:\t{4}, {5}'.format(
+            n_unit, n_out, layer, dropout, actfun_1.__name__, actfun_2.__name__)
+        )
+
+    def block(self, f, x):
+        if self.view:
+            print(x.shape)
+
+        return f(x)
+
+    def __call__(self, x):
+        hc = []
+
+        ha = self.block(self.block1a, x)
+        hb = self.block(self.block1b, ha)
+        hc = self.block(self.block1c, hb)
+        hd = self.block(self.block1d, hc)
+        he = self.block(self.block1e, hd)
+
+        h = self.block(self.block2a, F.concat([hd, he]))
+        h = self.block(self.block2b, F.concat([hc, h]))
+        h = self.block(self.block2c, F.concat([hb, h]))
+        h = self.block(self.block2d, F.concat([ha, h]))
+        y = self.block(self.blockN, h)
+
+        if self.view:
+            print(y.shape)
+            exit()
+
+        else:
+            return y
