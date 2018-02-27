@@ -64,11 +64,25 @@ def command():
 
 
 def getImageData(folder):
-    if not os.path.isdir(folder):
-        os.makedirs(folder)
+    """
+    フォルダにあるファイルから学習用データとテスト用データを取得する
+    [in]  folder: 探索するフォルダ
+    [out] train:  取得した学習用データ
+    [out] test:   取得したテスト用データ
+    """
 
+    # 探索するフォルダがなければ終了
+    if not os.path.isdir(folder):
+        print('[Error] folder not found:', folder)
+        print(F.fileFuncLine())
+        exit()
+
+    # 学習用データとテスト用データを発見したらTrueにする
     train_flg = False
     test_flg = False
+    # フォルダ内のファイルを探索していき、
+    # 1. ファイル名の頭がtrain_なら学習用データとして読み込む
+    # 2. ファイル名の頭がtest_ならテスト用データとして読み込む
     for l in os.listdir(folder):
         name, ext = os.path.splitext(os.path.basename(l))
         if os.path.isdir(l):
@@ -95,6 +109,7 @@ def getImageData(folder):
             if(test._length > 0):
                 test_flg = True
 
+    # 学習用データとテスト用データの両方が見つかった場合にのみ次のステップへ進める
     if(train_flg is True)and(test_flg is True):
         return train, test
     else:

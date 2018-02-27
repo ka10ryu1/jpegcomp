@@ -32,6 +32,15 @@ def command():
 
 
 def saveNPZ(x, y, name, folder, size):
+    """
+    入力データと正解データをNPZ形式で保存する
+    [in] x:      保存する入力データ
+    [in] y:      保存する正解データ
+    [in] name:   保存する名前
+    [in] folder: 保存するフォルダ
+    [in] size:   データ（正方形画像）のサイズ
+    """
+
     size_str = '_' + str(size).zfill(2) + 'x' + str(size).zfill(2)
     num_str = '_' + str(x.shape[0]).zfill(6)
     np.savez(F.getFilePath(folder, name + size_str + num_str), x=x, y=y)

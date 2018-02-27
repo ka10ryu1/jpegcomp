@@ -122,17 +122,38 @@ def rotate(imgs, num=2):
 
 
 def whiteCheck(imgs, val=245):
+    """
+    画像リストのうち、ほとんど白い画像を除去する
+    [in] imgs: 判定する画像リスト
+    [in] val:  除去するしきい値
+    [out] ほとんど白い画像を除去した画像リスト
+    """
+
     return [i for i in imgs
             if(val > np.sum(i) // (i.shape[0] * i.shape[1]))]
 
 
 def size2x(imgs, flg=cv2.INTER_NEAREST):
+    """
+    画像のサイズを2倍にする
+    [in] imgs: 2倍にする画像リスト
+    [in] flg:  2倍にする時のフラグ
+    [out] 2倍にされた画像リスト
+    """
+
     w, h = imgs[0].shape[:2]
     size = (w * 2, h * 2)
     return [cv2.resize(i, size, flg) for i in imgs]
 
 
 def arr2x(arr, flg=cv2.INTER_NEAREST):
+    """
+    行列を画像に変換し、サイズを2倍にする
+    [in] arr: 2倍にする行列
+    [in] flg:  2倍にする時のフラグ
+    [out] 2倍にされた行列
+    """
+
     imgs = arr2imgs(arr)
     return imgs2arr(size2x(imgs))
 
@@ -176,6 +197,10 @@ def arr2imgs(arr, norm=255, dtype=np.uint8):
 
 
 def getLossfun(lossfun_str):
+    """
+    入力文字列から損失関数を推定する
+    """
+
     if(lossfun_str.lower() == 'mse'):
         lossfun = F.mean_squared_error
     elif(lossfun_str.lower() == 'mae'):
@@ -199,6 +224,10 @@ def F_None(x):
 
 
 def getActfun(actfun_str):
+    """
+    入力文字列から活性化関数を推定する
+    """
+
     if(actfun_str.lower() == 'relu'):
         actfun = F.relu
     elif(actfun_str.lower() == 'elu'):
@@ -228,6 +257,10 @@ def getActfun(actfun_str):
 
 
 def getOptimizer(opt_str):
+    """
+    入力文字列からオプティマイザを推定する
+    """
+
     if(opt_str.lower() == 'adam'):
         opt = O.Adam()
     elif(opt_str.lower() == 'ada_d'):
