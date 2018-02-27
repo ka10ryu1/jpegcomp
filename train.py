@@ -78,7 +78,9 @@ def getImageData(folder):
             print('{0}:\tx{1},\ty{2}'.format(
                 l, np_arr['x'].shape, np_arr['y'].shape)
             )
-            train = tuple_dataset.TupleDataset(np_arr['x'], IMG.arr2x(np_arr['y']))
+            x = np.array(np_arr['x'], dtype=np.float32)
+            y = IMG.arr2x(np.array(np_arr['y'], dtype=np.float32))
+            train = tuple_dataset.TupleDataset(x, y)
             if(train._length > 0):
                 train_flg = True
 
@@ -87,7 +89,9 @@ def getImageData(folder):
             print('{0}:\tx{1},\ty{2}'.format(
                 l, np_arr['x'].shape, np_arr['y'].shape)
             )
-            test = tuple_dataset.TupleDataset(np_arr['x'], IMG.arr2x(np_arr['y']))
+            x = np.array(np_arr['x'], dtype=np.float32)
+            y = IMG.arr2x(np.array(np_arr['y'], dtype=np.float32))
+            test = tuple_dataset.TupleDataset(x, y)
             if(test._length > 0):
                 test_flg = True
 

@@ -31,6 +31,12 @@ def command():
     return parser.parse_args()
 
 
+def saveNPZ(x, y, name, folder, size):
+    size_str = '_' + str(size).zfill(2) + 'x' + str(size).zfill(2)
+    num_str = '_' + str(x.shape[0]).zfill(6)
+    np.savez(F.getFilePath(folder, name + size_str + num_str), x=x, y=y)
+
+
 def main(args):
     # OpenCV形式で画像を読み込むために
     # チャンネル数をOpenCVのフラグ形式に変換する
@@ -68,14 +74,8 @@ def main(args):
     # 生成したデータをnpz形式でデータセットとして保存する
     # ここで作成したデータの中身を確認する場合はnpz2jpg.pyを使用するとよい
     print('save npz...')
-    size_str = '_' + str(args.img_size).zfill(2) + 'x' + \
-        str(args.img_size).zfill(2)
-    num_str = '_' + str(train_x.shape[0]).zfill(6)
-    np.savez(F.getFilePath(args.out_path, 'train' + size_str + num_str),
-             x=train_x, y=train_y)
-    num_str = '_' + str(test_x.shape[0]).zfill(6)
-    np.savez(F.getFilePath(args.out_path, 'test' + size_str + num_str),
-             x=test_x, y=test_y)
+    saveNPZ(train_x, train_y, 'train', args.out_path, args.img_size)
+    saveNPZ(test_x, test_y, 'test', args.out_path, args.img_size)
 
 
 if __name__ == '__main__':
