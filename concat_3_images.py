@@ -30,11 +30,30 @@ def command():
 
 
 def getSize(img, rate):
+    """
+    cv2.resizeで使用するための縮尺後の画像サイズを取得する
+    [in] img: 使用する画像
+    [in] rate: 画像サイズの縮尺
+    [out] 縮尺後の画像サイズ (h,w)
+    """
+
     return (int(img.shape[1] * rate), int(img.shape[0] * rate))
 
 
 def titleInsert(img, text, header_size,
                 color=(255, 255, 255), org=(10, 20), scale=0.5, thick=1):
+    """
+    画像の上部にテキストを結合する
+    [in] img:         結合する画像
+    [in] text:        結合するテキスト
+    [in] header_size: テキストを書き込む場所のサイズ
+    [in] color:       テキストを書き込む場所の色
+    [in] org:         テキストを書き込む位置
+    [in] scale:       テキストのスケール
+    [in] thick:       テキストの太さ
+    [out] テキストが上部に結合された画像
+    """
+
     if(len(img.shape) == 2):
         header = np.zeros(header_size[:2], dtype=np.uint8)
     else:
@@ -45,7 +64,15 @@ def titleInsert(img, text, header_size,
                        scale, color, thick, cv2.LINE_AA)
 
 
-def concatImage(imgs, thick=1, color=(0, 0, 0)):
+def stackImages(imgs, thick=1, color=(0, 0, 0)):
+    """
+    画像を横に連結する
+    [in] imgs: 連結する画像のリスト
+    [in] thick: 画像を区切る線の太さ
+    [in] color: 画像を区切る線の色
+    [out] 連結された画像
+    """
+
     flg = cv2.BORDER_CONSTANT
     val = color
     imgs = [cv2.copyMakeBorder(img, 0, thick, 0, thick, flg, value=val)
@@ -53,24 +80,37 @@ def concatImage(imgs, thick=1, color=(0, 0, 0)):
     return np.hstack(imgs)
 
 
-def main(args):
-    ch = IMG.getCh(args.channel)
-    imgs = [cv2.imread(name, ch) for name in args.image]
+def concat3Images(imgs, start_pos, img_width, ch, rate,
+                  text=['[Original]', '[Compression]', '[Restoration]']):
+    """
+    3枚の画像を任意の部分切り抜き、その上部にテキストを追加し、連結する
+    [in] imgs:      連結する画像のリスト
+    [in] start_pos: 画像を切り抜く開始ピクセル
+    [in] img_width: 画像を切り抜く幅ピクセル
+    [in] ch:        画像のチャンネル数
+    [in] rate:      画像の縮尺
+    [in] text:      画像に挿入するテキスト
+    [out] 連結された画像
+    """
+
     height = np.min([i.shape[0] for i in imgs])
-    start_pos = args.offset
-    end_pos = start_pos + args.img_width
-    if(args.channel == 1):
+    end_pos = start_pos + img_width
+    if(ch == 1):
         imgs = [i[:height, start_pos:end_pos] for i in imgs]
     else:
         imgs = [i[:height, start_pos:end_pos, :] for i in imgs]
 
-    imgs = [cv2.resize(i, getSize(i, args.img_rate),
-                       cv2.INTER_NEAREST) for i in imgs]
-    text = ['[Original]', '[Compression]', '[Restoration]']
-    #text = ['[hitotsume]', '[futatsume]', '[mittsume]']
-    header_size = (30, int(args.img_width * args.img_rate), 3)
+    imgs = [cv2.resize(i, getSize(i, rate), cv2.INTER_NEAREST) for i in imgs]
+    header_size = (30, int(img_width * rate), 3)
     imgs = [titleInsert(i, t, header_size) for i, t in zip(imgs, text)]
-    img = concatImage(imgs, thick=1, color=(0, 0, 0))
+    return stackImages(imgs, thick=1, color=(0, 0, 0))
+
+
+def main(args):
+    ch = IMG.getCh(args.channel)
+    imgs = [cv2.imread(name, ch) for name in args.image]
+    #text = ['[hitotsume]', '[futatsume]', '[mittsume]']
+    img = concat3Images(imgs, args.offset, args.img_width, args.channel)
 
     cv2.imshow('test', img)
     cv2.waitKey()

@@ -17,6 +17,7 @@ from chainer.cuda import to_cpu
 
 import Lib.imgfunc as IMG
 import Tools.func as F
+from concat_3_images import concat3Images
 
 
 def command():
@@ -69,30 +70,31 @@ def getModelParam(path):
         d['layer_num'], d['shuffle_rate'], af1, af2
 
 
-def predict(model, args, img, ch, val):
+def encDecWrite(img, ch, quality, out_path='./result', val=-1):
+    # 入力画像を圧縮して劣化させる
+    comp = IMG.encodeDecode([img], IMG.getCh(ch), quality)
+    # 比較のため圧縮画像を保存する
+    if(val >= 0):
+        path = F.getFilePath(out_path, 'comp-' + str(val * 10).zfill(3), '.jpg')
+        cv2.imwrite(path, comp[0])
+
+    return comp[0]
+
+
+def predict(model, args, org, ch, val=-1):
     """
     推論実行メイン部
     [in]  model:  推論実行に使用するモデル
     [in]  args:   実行時のオプション引数情報
-    [in]  img:    入力画像
+    [in]  org:    入力画像
     [in]  ch:     入力画像のチャンネル数
     [in]  val:    画像保存時の連番情報
     [out] img:推論実行で得られた生成画像
     """
 
-    org_size = img.shape
-    # 入力画像を圧縮して劣化させる
-    comp = IMG.encodeDecode([img], IMG.getCh(ch), args.quality)
-    # 比較のため圧縮画像を保存する
-    if(val >= 0):
-        cv2.imwrite(
-            F.getFilePath(args.out_path, 'comp-' +
-                          str(val * 10).zfill(3), '.jpg'),
-            comp[0]
-        )
-
+    org_size = org.shape
     # 入力画像を分割する
-    comp, size = IMG.split(comp, args.img_size)
+    comp, size = IMG.split([org], args.img_size)
     imgs = []
 
     st = time.time()
@@ -172,7 +174,9 @@ def main(args):
     net, unit, ch, layer, sr, af1, af2 = getModelParam(args.param)
     # 学習モデルの出力画像のチャンネルに応じて画像を読み込む
     ch_flg = IMG.getCh(ch)
-    imgs = [cv2.imread(name, ch_flg) for name in args.jpeg if isImage(name)]
+    org_imgs = [cv2.imread(name, ch_flg) for name in args.jpeg if isImage(name)]
+    ed_imgs = [encDecWrite(img, ch, args.quality, args.out_path, i)
+               for i, img in enumerate(org_imgs)]
     # 学習モデルを生成する
     if net == 0:
         from Lib.network2 import JC_UDUD as JC
@@ -201,11 +205,15 @@ def main(args):
 
     # 学習モデルを入力画像ごとに実行する
     with chainer.using_config('train', False):
-        imgs = [predict(model, args, img, ch, i)
-                for i, img in enumerate(imgs)]
+        imgs = [predict(model, args, img, ch, i) for i, img in enumerate(ed_imgs)]
 
-    # 生成結果の表示
-    for i in imgs:
+    # オリジナル、高圧縮、推論実行結果を連結して保存・表示する
+    c3i = [concat3Images([i, j, k], 50, 333, ch, 1)
+           for i, j, k in zip(org_imgs, ed_imgs, imgs)]
+    path = [F.getFilePath(args.out_path, 'concat-' + str(i * 10).zfill(3), '.jpg')
+            for i in range(len(c3i))]
+    [cv2.imwrite(p, i) for p, i in zip(path, c3i)]
+    for i in c3i:
         cv2.imshow('test', i)
         cv2.waitKey()
 

@@ -14,7 +14,7 @@ import chainer.links as L
 
 import Lib.imgfunc as IMG
 import Tools.func as F
-from predict import getModelParam, predict, isImage, checkModelType
+from predict import getModelParam, encDecWrite, predict, isImage, checkModelType
 
 
 def command():
@@ -145,7 +145,8 @@ def main(args):
 
         # 学習モデルを入力画像ごとに実行する
         with chainer.using_config('train', False):
-            out_imgs.append(predict(model, args, img, ch, -1))
+            ed_img = encDecWrite(img, ch, args.quality)
+            out_imgs.append(predict(model, args, ed_img, ch, -1))
 
     # 推論実行した各画像を結合してサイズを調整する
     img = stackImages(out_imgs, args.img_rate)
