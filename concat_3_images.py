@@ -110,7 +110,9 @@ def main(args):
     ch = IMG.getCh(args.channel)
     imgs = [cv2.imread(name, ch) for name in args.image]
     #text = ['[hitotsume]', '[futatsume]', '[mittsume]']
-    img = concat3Images(imgs, args.offset, args.img_width, args.channel)
+    img = concat3Images(
+        imgs, args.offset, args.img_width, args.channel, args.img_rate
+    )
 
     cv2.imshow('test', img)
     cv2.waitKey()
