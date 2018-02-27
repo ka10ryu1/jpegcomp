@@ -12,7 +12,6 @@ import numpy as np
 import chainer
 import chainer.links as L
 
-from Lib.network2 import JC
 import Lib.imgfunc as IMG
 import Tools.func as F
 from predict import getModelParam, predict, isImage, checkModelType
@@ -113,14 +112,19 @@ def main(args):
     # スナップショットとモデルパラメータのパスを取得する
     snapshot_path, param = getSnapshotAndParam(args.snapshot_and_json)
     # jsonファイルから学習モデルのパラメータを取得する
-    unit, ch, layer, sr, af1, af2 = getModelParam(param)
+    net, unit, ch, layer, sr, af1, af2 = getModelParam(param)
     # 推論実行するために画像を読み込んで結合する
     img = getImage(args.jpeg, ch, args.random_seed)
     # 学習モデルを生成する
-    model = L.Classifier(JC(
-        n_unit=unit, n_out=1, layer=layer, rate=sr,
-        actfun_1=af1, actfun_2=af2
-    ))
+    if net == 0:
+        from Lib.network2 import JC_UDUD as JC
+    else:
+        from Lib.network import JC_DDUU as JC
+
+    model = L.Classifier(
+        JC(n_unit=unit, n_out=1, layer=layer, rate=sr,
+           actfun_1=af1, actfun_2=af2)
+    )
     out_imgs = [img]
     for s in snapshot_path:
         # load_npzのpath情報を取得する

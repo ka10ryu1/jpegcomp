@@ -94,6 +94,7 @@ gpu_id:	-1
 in_path:	FontData/
 layer_num:	2
 lossfun:	mse
+network:	0
 only_check:	False
 optimizer:	adam
 out_path:	./result/
@@ -104,7 +105,7 @@ unit:	4
 ------------------------------
 Activation func: relu
 Activation func: hard_sigmoid
-[Network info]
+[Network info] JC_UDUD
   Unit:	4
   Out:	1
   Layer:	2
@@ -112,19 +113,19 @@ Activation func: hard_sigmoid
 Act Func:	relu, hard_sigmoid
 Loss func: mean_squared_error
 Optimizer: Adam optimizer
-train_32x32_010800.npz:	x(10800, 32, 32),	y(10800, 32, 32)
-test_32x32_001200.npz:	x(1200, 32, 32),	y(1200, 32, 32)
+train_32x32_010800.npz:	x(10800, 1, 32, 32),	y(10800, 1, 32, 32)
+test_32x32_001200.npz:	x(1200, 1, 32, 32),	y(1200, 1, 32, 32)
 epoch       main/loss   validation/main/loss  lr          elapsed_time
-1           0.180935    0.145807              0.000320036  63.9726
-2           0.147242    0.130009              0.000440853  128.258
-3           0.127155    0.114856              0.000526182  191.622
-4           0.108269    0.0965278             0.000592394  255.361
-5           0.0925587   0.0828782             0.000646072  319.02
-6           0.0798688   0.0721286             0.000690709  382.199
-7           0.0691529   0.0619116             0.000728448  444.277
-8           0.0598662   0.0525341             0.000760729  508.985
-9           0.0518347   0.0449867             0.00078858  573.866
-10          0.0448583   0.0391221             0.000812766  637.006
+1           0.196914    0.16862               0.000320036  71.8684
+2           0.150186    0.125554              0.000440853  143.84
+3           0.129159    0.11788               0.000526182  215.605
+4           0.112982    0.104652              0.000592394  288.796
+5           0.0991207   0.080133              0.000646072  360.63
+6           0.0868689   0.0757443             0.000690709  433.136
+7           0.076087    0.0701974             0.000728448  505.424
+8           0.06665     0.0600353             0.000760729  578.232
+9           0.058436    0.0504703             0.00078858  650.912
+10          0.0513238   0.0471631             0.000812766  724.055
 ```
 
 `not import cupy`はcupyをインストールしていない場合に表示される
@@ -157,26 +158,26 @@ batch:	100
 gpu:	-1
 img_size:	32
 jpeg[2]:
-	./FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG
-	./FontData/The_Nighthawk_Star_op.PNG
-model:	./result/iuj7l3s.model
+	FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG
+	FontData/The_Nighthawk_Star_op.PNG
+model:	result/hc4nvb5.model
 out_path:	./result/
-param:	./result/iuj7l3s.json
+param:	result/hc4nvb5.json
 quality:	5
 ------------------------------
-model param: ./result/iuj7l3s.json
+model param: result/hc4nvb5.json
 Activation func: relu
 Activation func: hard_sigmoid
-[Network info]
+[Network info] JC_UDUD
   Unit:	4
   Out:	1
   Layer:	2
   Drop out:	0.0
 Act Func:	relu, hard_sigmoid
-model read: ./result/iuj7l3s.model
-exec time: 1.10[s]
+model read: result/hc4nvb5.model
+exec time: 1.39[s]
 save: ./result/comp-001.jpg
-exec time: 0.78[s]
+exec time: 0.98[s]
 save: ./result/comp-011.jpg
 ```
 
