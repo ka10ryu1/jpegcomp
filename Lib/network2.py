@@ -28,30 +28,30 @@ class JC_UDUD(Chain):
         super(JC_UDUD, self).__init__()
         with self.init_scope():
             self.block1a = DownSanpleBlock(unit1, 5, 2, 2, actfun_1)
-            self.block1b = DownSanpleBlock(unit2, 5, 2, 2, actfun_1, dropout)
+            self.block1b = DownSanpleBlock(unit2, 3, 1, 1, actfun_1, dropout)
             self.block1c = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2)
             if(layer > 2):
                 self.block2a = DownSanpleBlock(unit1, 5, 2, 2, actfun_1)
-                self.block2b = DownSanpleBlock(unit2, 5, 2, 2, actfun_1, dropout)
+                self.block2b = DownSanpleBlock(unit2, 3, 1, 1, actfun_1, dropout)
                 self.block2c = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2)
 
             if(layer > 3):
                 self.block3a = DownSanpleBlock(unit1, 5, 2, 2, actfun_1)
-                self.block3b = DownSanpleBlock(unit2, 5, 2, 2, actfun_1, dropout)
+                self.block3b = DownSanpleBlock(unit2, 3, 1, 1, actfun_1, dropout)
                 self.block3c = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2)
 
             if(layer > 4):
                 self.block4a = DownSanpleBlock(unit1, 5, 2, 2, actfun_1)
-                self.block4b = DownSanpleBlock(unit2, 5, 2, 2, actfun_1, dropout)
+                self.block4b = DownSanpleBlock(unit2, 3, 1, 1, actfun_1, dropout)
                 self.block4c = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2)
 
             if(layer > 5):
                 self.block5a = DownSanpleBlock(unit1, 5, 2, 2, actfun_1)
-                self.block5b = DownSanpleBlock(unit2, 5, 2, 2, actfun_1, dropout)
+                self.block5b = DownSanpleBlock(unit2, 3, 1, 1, actfun_1, dropout)
                 self.block5c = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2)
 
-            self.blockNa = DownSanpleBlock(unit4, 3, 1, 1, actfun_1)
-            self.blockNb = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2)
+            self.blockNa = DownSanpleBlock(unit4, 5, 2, 2, actfun_1)
+            self.blockNb = UpSampleBlock(unit4, unit1, 3, 1, 1, actfun_2)
             self.blockNc = UpSampleBlock(rate**2, 1, 5, 1, 2, actfun_2, rate)
 
         self.layer = layer
