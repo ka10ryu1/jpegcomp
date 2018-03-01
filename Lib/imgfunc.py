@@ -76,16 +76,17 @@ def split(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
     imgs = [cv2.copyMakeBorder(img, 0, size, 0, size, flg)
             for img in imgs]
     # 画像を分割しやすいように画像サイズを変更する
-    v_size = imgs[0].shape[0] // size * size
-    h_size = imgs[0].shape[1] // size * size
-    imgs = [i[:v_size, :h_size] for i in imgs]
+    v_size = [img.shape[0] // size * size for img in imgs]
+    h_size = [img.shape[1] // size * size for img in imgs]
+    imgs = [i[:v, :h] for i, v, h in zip(imgs, v_size, h_size)]
     # 画像の分割数を計算する
-    v_split = imgs[0].shape[0] // size
-    h_split = imgs[0].shape[1] // size
+    v_split = [img.shape[0] // size for img in imgs]
+    h_split = [img.shape[1] // size for img in imgs]
     # 画像を分割する
     out_imgs = []
-    [[out_imgs.extend(np.vsplit(h_img, v_split))
-      for h_img in np.hsplit(img, h_split)] for img in imgs]
+    [[out_imgs.extend(np.vsplit(hi, v))
+      for hi in np.hsplit(i, h)]
+     for i, h, v in zip(imgs, h_split, v_split)]
 
     # 切り捨てたい数よりも画像数が少ないと0枚になってしまうので注意
     if(round_num > len(out_imgs)):
@@ -98,9 +99,9 @@ def split(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
     # predict.pyなどで分割画像を復元したくなるので縦横の分割数も返す
     if(round_num > 0):
         round_len = len(out_imgs) // round_num * round_num
-        return np.array(out_imgs[:round_len]), (v_split, h_split)
+        return np.array(out_imgs[:round_len]), (v_split[0], h_split[0])
     else:
-        return np.array(out_imgs), (v_split, h_split)
+        return np.array(out_imgs), (v_split[0], h_split[0])
 
 
 def rotate(imgs, num=2):

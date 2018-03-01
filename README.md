@@ -85,7 +85,7 @@ $ ./train.py -i FontData/
 not import cupy
 ------------------------------
 actfun_1:	relu
-actfun_2:	h_sigmoid
+actfun_2:	sigmoid
 batchsize:	100
 dropout:	0.1
 epoch:	10
@@ -101,31 +101,31 @@ out_path:	./result/
 plot:	True
 resume:
 shuffle_rate:	2
-unit:	4
+unit:	2
 ------------------------------
 Activation func: relu
-Activation func: hard_sigmoid
-[Network info] JC_UDUD
-  Unit:	4
+Activation func: sigmoid
+[Network info] JC_DDUU
+  Unit:	2
   Out:	1
   Layer:	2
   Drop out:	0.1
-Act Func:	relu, hard_sigmoid
+Act Func:	relu, sigmoid
 Loss func: mean_squared_error
 Optimizer: Adam optimizer
 train_32x32_010800.npz:	x(10800, 1, 32, 32),	y(10800, 1, 32, 32)
 test_32x32_001200.npz:	x(1200, 1, 32, 32),	y(1200, 1, 32, 32)
 epoch       main/loss   validation/main/loss  lr          elapsed_time
-1           0.196914    0.16862               0.000320036  71.8684
-2           0.150186    0.125554              0.000440853  143.84
-3           0.129159    0.11788               0.000526182  215.605
-4           0.112982    0.104652              0.000592394  288.796
-5           0.0991207   0.080133              0.000646072  360.63
-6           0.0868689   0.0757443             0.000690709  433.136
-7           0.076087    0.0701974             0.000728448  505.424
-8           0.06665     0.0600353             0.000760729  578.232
-9           0.058436    0.0504703             0.00078858  650.912
-10          0.0513238   0.0471631             0.000812766  724.055
+1           0.201806    0.175782              0.000320036  22.9336
+2           0.157518    0.145553              0.000440853  47.8616
+3           0.136482    0.127626              0.000526182  72.3183
+4           0.119958    0.112415              0.000592394  97.2897
+5           0.10619     0.0987265             0.000646072  122.325
+6           0.0944588   0.0891305             0.000690709  146.864
+7           0.0841792   0.079238              0.000728448  171.068
+8           0.0751524   0.0699162             0.000760729  195.549
+9           0.0669822   0.0689321             0.00078858  220.218
+10          0.0571909   0.0512061             0.000812766  244.215
 ```
 
 `not import cupy`はcupyをインストールしていない場合に表示される
@@ -156,54 +156,33 @@ not import cupy
 ------------------------------
 batch:	100
 gpu:	-1
-img_size:	32
 jpeg[2]:
 	FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG
 	FontData/The_Nighthawk_Star_op.PNG
-model:	result/hc4nvb5.model
+model:	result/fff0ljg.model
 out_path:	./result/
-param:	result/hc4nvb5.json
+param:	result/fff0ljg.json
 quality:	5
 ------------------------------
-model param: result/hc4nvb5.json
+model param: result/fff0ljg.json
 Activation func: relu
-Activation func: hard_sigmoid
-[Network info] JC_UDUD
-  Unit:	4
+Activation func: sigmoid
+[Network info] JC_DDUU
+  Unit:	2
   Out:	1
   Layer:	2
   Drop out:	0.0
-Act Func:	relu, hard_sigmoid
-model read: result/hc4nvb5.model
-exec time: 1.39[s]
+Act Func:	relu, sigmoid
+model read: result/fff0ljg.model
+exec time: 0.48[s]
 save: ./result/comp-001.jpg
-exec time: 0.98[s]
-save: ./result/comp-011.jpg
+exec time: 0.34[s]
 ```
 
 ### 生成物の確認
 
-resultフォルダ中に`comp-*.jpg`ファイルが生成されていればOK。
+resultフォルダ中に`comp-*.jpg`と`concat-*.jpg`が生成されていればOK。
 
-### 画像の比較
-
-`concat_3images.py`を利用することで、オリジナル画像と圧縮画像と生成画像の比較が簡単にできる。以下のように実行する。
-
-```console
-$ ./concat_3_images.py ./FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG ./result/comp-00*
-```
-
-以下のような画像が生成される。
-
-<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/concat-00.jpg" width="320px">
-
-```console
-$ ./concat_3_images.py ./FontData/The_Nighthawk_Star_op.PNG ./result/comp-01*
-```
-
-以下のような画像が生成される。
-
-<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/concat-01.jpg" width="320px">
 
 
 # その他の機能
@@ -289,7 +268,8 @@ Exit: Ctrl-c
 
 ### 構成
 
-jpegcomp直下にいるものとする
+jpegcompにあるデータセットは最小構成であるため、完全版データを作成するためにはd[FontDataAllリポジトリ](https://github.com/ka10ryu1/FontDataAll)を持ってくる必要がある。
+以下ではFontDataAllとjpegcompを同じフォルダー内にcloneし、jpegcomp直下にいるものとする。
 
 ```console
 ├── FontDataAll
@@ -297,7 +277,10 @@ jpegcomp直下にいるものとする
 │   ├── The_Night_of_the_Milky_Way_Train_ch2.PNG
 │   ├── The_Nighthawk_Star_op.PNG
 │   ├── font_00.bmp
-│   └── font_01.bmp
+│   ├── font_01.bmp
+│   ├──
+│   ├──
+│   └── font_3f.bmp
 └── jpegcomp
      ├── FontData
      ├── Lib
@@ -341,3 +324,23 @@ $ ./predict_some_snapshot.py ./result/ ./FontData/The_Night_of_the_Milky_Way_Tra
 以下のような画像が生成される。一番左が正解画像で、右に行くほど新しいスナップショットの結果になる。
 
 <img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/snapshots.jpg" width="320px">
+
+### 画像の比較
+
+`concat_3images.py`を利用することで、`predict.py`と同様の`concat-*.jpg`を生成できる。推論実行したくない時やその環境でない時に使用する。以下のように実行する。
+
+```console
+$ ./concat_3_images.py ./FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG ./result/comp-00*
+```
+
+以下のような画像が生成される。
+
+<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/concat-00.jpg" width="320px">
+
+```console
+$ ./concat_3_images.py ./FontData/The_Nighthawk_Star_op.PNG ./result/comp-01*
+```
+
+以下のような画像が生成される。
+
+<img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/concat-01.jpg" width="320px">

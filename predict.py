@@ -28,8 +28,8 @@ def command():
                         help='使用するモデルパラメータ')
     parser.add_argument('jpeg', nargs='+',
                         help='使用する画像のパス')
-    parser.add_argument('--img_size', '-s', type=int, default=32,
-                        help='生成される画像サイズ [default: 32 pixel]')
+    # parser.add_argument('--img_size', '-s', type=int, default=32,
+    #                     help='生成される画像サイズ [default: 32 pixel]')
     parser.add_argument('--quality', '-q', type=int, default=5,
                         help='画像の圧縮率 [default: 5]')
     parser.add_argument('--batch', '-b', type=int, default=100,
@@ -65,8 +65,10 @@ def getModelParam(path):
 
     af1 = IMG.getActfun(d['actfun_1'])
     af2 = IMG.getActfun(d['actfun_2'])
+    ch = d['shape'][0]
+    size = d['shape'][1]
     return \
-        d['network'], d['unit'], d['img_ch'], \
+        d['network'], d['unit'], ch, size, \
         d['layer_num'], d['shuffle_rate'], af1, af2
 
 
@@ -81,7 +83,7 @@ def encDecWrite(img, ch, quality, out_path='./result', val=-1):
     return comp[0]
 
 
-def predict(model, args, org, ch, val=-1):
+def predict(model, args, org, ch, img_size, val=-1):
     """
     推論実行メイン部
     [in]  model:  推論実行に使用するモデル
@@ -94,7 +96,7 @@ def predict(model, args, org, ch, val=-1):
 
     org_size = org.shape
     # 入力画像を分割する
-    comp, size = IMG.split([org], args.img_size)
+    comp, size = IMG.split([org], img_size)
     imgs = []
 
     st = time.time()
@@ -104,7 +106,7 @@ def predict(model, args, org, ch, val=-1):
         x = IMG.imgs2arr(comp[i:i + args.batch], gpu=args.gpu)
         y = model.predictor(x)
         y = to_cpu(y.array)
-        y = IMG.arr2imgs(y, 1, args.img_size * 2)
+        y = IMG.arr2imgs(y, 1, img_size * 2)
         imgs.extend(y)
 
     print('exec time: {0:.2f}[s]'.format(time.time() - st))
@@ -171,7 +173,7 @@ def checkModelType(path):
 
 def main(args):
     # jsonファイルから学習モデルのパラメータを取得する
-    net, unit, ch, layer, sr, af1, af2 = getModelParam(args.param)
+    net, unit, ch, size, layer, sr, af1, af2 = getModelParam(args.param)
     # 学習モデルの出力画像のチャンネルに応じて画像を読み込む
     ch_flg = IMG.getCh(ch)
     org_imgs = [cv2.imread(name, ch_flg) for name in args.jpeg if isImage(name)]
@@ -179,9 +181,9 @@ def main(args):
                for i, img in enumerate(org_imgs)]
     # 学習モデルを生成する
     if net == 0:
-        from Lib.network2 import JC_UDUD as JC
-    else:
         from Lib.network import JC_DDUU as JC
+    else:
+        from Lib.network2 import JC_UDUD as JC
 
     model = L.Classifier(
         JC(n_unit=unit, n_out=ch, layer=layer,
@@ -205,7 +207,8 @@ def main(args):
 
     # 学習モデルを入力画像ごとに実行する
     with chainer.using_config('train', False):
-        imgs = [predict(model, args, img, ch, i) for i, img in enumerate(ed_imgs)]
+        imgs = [predict(model, args, img, ch, size, i)
+                for i, img in enumerate(ed_imgs)]
 
     # オリジナル、高圧縮、推論実行結果を連結して保存・表示する
     c3i = [concat3Images([i, j, k], 50, 333, ch, 1)

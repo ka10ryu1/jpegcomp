@@ -23,18 +23,18 @@ def command():
                         help='使用するスナップショットとモデルパラメータのあるフォルダ')
     parser.add_argument('jpeg', nargs='+',
                         help='使用する画像のパス')
-    parser.add_argument('--img_size', '-is', type=int, default=32,
-                        help='生成される画像サイズ [default: 32]')
+    # parser.add_argument('--img_size', '-is', type=int, default=32,
+    #                     help='生成される画像サイズ [default: 32]')
     parser.add_argument('--quality', '-q', type=int, default=5,
                         help='画像の圧縮率 [default: 5]')
     parser.add_argument('--batch', '-b', type=int, default=100,
                         help='ミニバッチサイズ [default: 100]')
-    parser.add_argument('--image_num', '-n', type=int, default=10,
+    parser.add_argument('--img_num', '-n', type=int, default=10,
                         help='切り出す画像数 [default: 10]')
     parser.add_argument('--random_seed', '-rs', type=int, default=25,
                         help='乱数シード [default: 25, random: -1]')
-    parser.add_argument('--img_rate', '-r', type=int, default=1,
-                        help='画像サイズの倍率 [default: 1]')
+    parser.add_argument('--img_rate', '-r', type=float, default=1,
+                        help='画像サイズの倍率 [default: 1.0]')
     parser.add_argument('--gpu', '-g', type=int, default=-1,
                         help='GPU ID [default -1]')
     parser.add_argument('--out_path', '-o', default='./result/',
@@ -68,7 +68,7 @@ def getSnapshotAndParam(folder):
     return snapshot_path, param_path
 
 
-def getImage(jpg_path, ch, seed):
+def getImage(jpg_path, ch, img_size, img_num, seed):
     """
     画像を読み込んでランダムに取得して連結する
     [in]  jpg_path: 入力画像のパス
@@ -79,20 +79,20 @@ def getImage(jpg_path, ch, seed):
 
     ch_flg = IMG.getCh(ch)
     imgs = [cv2.imread(jpg, ch_flg) for jpg in jpg_path if isImage(jpg)]
-    imgs, size = IMG.split(imgs, args.img_size)
+    imgs, size = IMG.split(imgs, img_size)
     imgs = np.array(IMG.whiteCheck(imgs))
-    if(args.random_seed >= 0):
+    if(seed >= 0):
         np.random.seed(seed)
 
     shuffle = np.random.permutation(range(len(imgs)))
-    return np.vstack(imgs[shuffle[:args.image_num]])
+    return np.vstack(imgs[shuffle[:img_num]])
 
 
-def stackImages(imgs, resize):
+def stackImages(imgs, rate):
     """
     推論実行で得られた 画像のリストを結合してサイズを調整する
     [in]  imgs:    入力画像リスト
-    [in]  resize: リサイズする倍率
+    [in]  rate: リサイズする倍率
     [out] 結合画像
     """
 
@@ -101,25 +101,22 @@ def stackImages(imgs, resize):
         [cv2.cvtColor(img, cv2.COLOR_GRAY2RGB) if len(img.shape) < 3 else img
          for img in imgs])
     w, h = img.shape[: 2]
-    return cv2.resize(
-        img,
-        (h * args.img_rate, w * args.img_rate),
-        cv2.INTER_NEAREST
-    )
+    size = (int(h * rate), int(w * rate))
+    return cv2.resize(img, size, cv2.INTER_NEAREST)
 
 
 def main(args):
     # スナップショットとモデルパラメータのパスを取得する
     snapshot_path, param = getSnapshotAndParam(args.snapshot_and_json)
     # jsonファイルから学習モデルのパラメータを取得する
-    net, unit, ch, layer, sr, af1, af2 = getModelParam(param)
+    net, unit, ch, size, layer, sr, af1, af2 = getModelParam(param)
     # 推論実行するために画像を読み込んで結合する
-    img = getImage(args.jpeg, ch, args.random_seed)
+    img = getImage(args.jpeg, ch, size, args.img_num, args.random_seed)
     # 学習モデルを生成する
     if net == 0:
-        from Lib.network2 import JC_UDUD as JC
-    else:
         from Lib.network import JC_DDUU as JC
+    else:
+        from Lib.network2 import JC_UDUD as JC
 
     model = L.Classifier(
         JC(n_unit=unit, n_out=1, layer=layer, rate=sr,
@@ -146,7 +143,7 @@ def main(args):
         # 学習モデルを入力画像ごとに実行する
         with chainer.using_config('train', False):
             ed_img = encDecWrite(img, ch, args.quality)
-            out_imgs.append(predict(model, args, ed_img, ch, -1))
+            out_imgs.append(predict(model, args, ed_img, ch, size, -1))
 
     # 推論実行した各画像を結合してサイズを調整する
     img = stackImages(out_imgs, args.img_rate)

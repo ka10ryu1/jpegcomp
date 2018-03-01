@@ -27,17 +27,17 @@ def command():
     parser.add_argument('-i', '--in_path', default='./result/',
                         help='入力データセットのフォルダ [default: ./result/]')
     parser.add_argument('-n', '--network', type=int, default=0,
-                        help='ネットワーク層 [default: 0(UDUD), other: 1(DDUU)]')
-    parser.add_argument('-u', '--unit', type=int, default=4,
-                        help='ネットワークのユニット数 [default: 4]')
+                        help='ネットワーク層 [default: 0(DDUU), other: 1(DUDU)]')
+    parser.add_argument('-u', '--unit', type=int, default=2,
+                        help='ネットワークのユニット数 [default: 2]')
     parser.add_argument('-sr', '--shuffle_rate', type=int, default=2,
                         help='PSの拡大率 [default: 2]')
     parser.add_argument('-ln', '--layer_num', type=int, default=2,
                         help='ネットワーク層の数 [default: 2]')
     parser.add_argument('-a1', '--actfun_1', default='relu',
                         help='活性化関数(1) [default: relu, other: elu/c_relu/l_relu/sigmoid/h_sigmoid/tanh/s_plus]')
-    parser.add_argument('-a2', '--actfun_2', default='h_sigmoid',
-                        help='活性化関数(2) [default: h_sigmoid, other: relu/elu/c_relu/l_relu/sigmoid/tanh/s_plus]')
+    parser.add_argument('-a2', '--actfun_2', default='sigmoid',
+                        help='活性化関数(2) [default: sigmoid, other: relu/elu/c_relu/l_relu/h_sigmoid/tanh/s_plus]')
     parser.add_argument('-d', '--dropout', type=float, default=0.1,
                         help='ドロップアウト率（0〜0.9、0で不使用）[default: 0.1]')
     parser.add_argument('-opt', '--optimizer', default='adam',
@@ -134,9 +134,9 @@ def main(args):
     actfun_2 = IMG.getActfun(args.actfun_2)
     # モデルを決定する
     if args.network == 0:
-        from Lib.network2 import JC_UDUD as JC
-    else:
         from Lib.network import JC_DDUU as JC
+    else:
+        from Lib.network2 import JC_UDUD as JC
 
     model = L.Classifier(
         JC(n_unit=args.unit, layer=args.layer_num, rate=args.shuffle_rate,
@@ -162,7 +162,7 @@ def main(args):
     # predict.pyでモデルを決定する際に必要なので記憶しておく
 
     model_param = {i: getattr(args, i) for i in dir(args) if not '_' in i[0]}
-    model_param['img_ch'] = train[0][0].shape[0]
+    model_param['shape'] = train[0][0].shape
 
     train_iter = chainer.iterators.SerialIterator(train, args.batchsize)
     test_iter = chainer.iterators.SerialIterator(test, args.batchsize,
