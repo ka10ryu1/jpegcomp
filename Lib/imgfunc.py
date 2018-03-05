@@ -62,7 +62,7 @@ def encodeDecode(in_imgs, ch, quality=5):
     return out_imgs
 
 
-def split(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
+def split(imgs: list, size: int, round_num=-1, flg=cv2.BORDER_REPLICATE):
     """
     入力された画像リストを正方形に分割する
     imgsに格納されている画像はサイズが同じであること
@@ -122,7 +122,7 @@ def rotate(imgs, num=2):
     return out_imgs
 
 
-def whiteCheck(imgs, val=245):
+def whiteCheck(imgs: list, val=245):
     """
     画像リストのうち、ほとんど白い画像を除去する
     [in] imgs: 判定する画像リスト

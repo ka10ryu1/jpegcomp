@@ -141,9 +141,11 @@ def main(args):
             model.to_gpu()
 
         # 学習モデルを入力画像ごとに実行する
+        ed = encDecWrite(img, ch, args.quality)
         with chainer.using_config('train', False):
-            ed_img = encDecWrite(img, ch, args.quality)
-            out_imgs.append(predict(model, args, ed_img, ch, size, -1))
+            out_imgs.append(
+                predict(model, IMG.split([ed], size), args.batch, ed.shape, args.gpu)
+            )
 
     # 推論実行した各画像を結合してサイズを調整する
     img = stackImages(out_imgs, args.img_rate)

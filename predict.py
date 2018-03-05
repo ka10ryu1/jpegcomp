@@ -83,34 +83,27 @@ def encDecWrite(img, ch, quality, out_path='./result', val=-1):
     return comp[0]
 
 
-def predict(model, args, org, ch, img_size, val=-1):
+def predict(model, data, batch, org_shape, gpu):
     """
     推論実行メイン部
-    [in]  model:  推論実行に使用するモデル
-    [in]  args:   実行時のオプション引数情報
-    [in]  org:    入力画像
-    [in]  ch:     入力画像のチャンネル数
-    [in]  val:    画像保存時の連番情報
-    [out] img:推論実行で得られた生成画像
+    [in]  model:     推論実行に使用するモデル
+    [in]  data:      分割（IMG.split）されたもの
+    [in]  batch:     バッチサイズ
+    [in]  org_shape: 分割前のshape
+    [in]  gpu:       GPU ID
+    [out] img:       推論実行で得られた生成画像
     """
 
-    org_size = org.shape
-    # 入力画像を分割する
-    comp, size = IMG.split([org], img_size)
+    comp, size = data
     imgs = []
-
     st = time.time()
-
     # バッチサイズごとに学習済みモデルに入力して画像を生成する
-    for i in range(0, len(comp), args.batch):
-        x = IMG.imgs2arr(comp[i:i + args.batch], gpu=args.gpu)
+    for i in range(0, len(comp), batch):
+        x = IMG.imgs2arr(comp[i:i + batch], gpu=gpu)
         y = model.predictor(x)
-        y = to_cpu(y.array)
-        y = IMG.arr2imgs(y, 1, img_size * 2)
-        imgs.extend(y)
+        imgs.extend(IMG.arr2imgs(to_cpu(y.array)))
 
     print('exec time: {0:.2f}[s]'.format(time.time() - st))
-
     # 生成された画像を結合する
     buf = [np.vstack(imgs[i * size[0]: (i + 1) * size[0]])
            for i in range(size[1])]
@@ -120,13 +113,7 @@ def predict(model, args, org, ch, img_size, val=-1):
     half_size = (int(img.shape[1] * h), int(img.shape[0] * h))
     flg = cv2.INTER_NEAREST
     img = cv2.resize(img, half_size, flg)
-    img = img[:org_size[0], :org_size[1]]
-    # 生成結果を保存する
-    if(val >= 0):
-        name = F.getFilePath(args.out_path, 'comp-' +
-                             str(val * 10 + 1).zfill(3), '.jpg')
-        print('save:', name)
-        cv2.imwrite(name, img)
+    img = img[:org_shape[0], :org_shape[1]]
 
     return img
 
@@ -174,11 +161,6 @@ def checkModelType(path):
 def main(args):
     # jsonファイルから学習モデルのパラメータを取得する
     net, unit, ch, size, layer, sr, af1, af2 = getModelParam(args.param)
-    # 学習モデルの出力画像のチャンネルに応じて画像を読み込む
-    ch_flg = IMG.getCh(ch)
-    org_imgs = [cv2.imread(name, ch_flg) for name in args.jpeg if isImage(name)]
-    ed_imgs = [encDecWrite(img, ch, args.quality, args.out_path, i)
-               for i, img in enumerate(org_imgs)]
     # 学習モデルを生成する
     if net == 0:
         from Lib.network import JC_DDUU as JC
@@ -189,9 +171,8 @@ def main(args):
         JC(n_unit=unit, n_out=ch, layer=layer,
            rate=sr, actfun_1=af1, actfun_2=af2)
     )
-    # load_npzのpath情報を取得する
+    # load_npzのpath情報を取得し、学習済みモデルを読み込む
     load_path = checkModelType(args.model)
-    # 学習済みモデルの読み込み
     try:
         chainer.serializers.load_npz(args.model, model, path=load_path)
     except:
@@ -206,9 +187,20 @@ def main(args):
         model.to_gpu()
 
     # 学習モデルを入力画像ごとに実行する
+    ch_flg = IMG.getCh(ch)
+    org_imgs = [cv2.imread(name, ch_flg) for name in args.jpeg if isImage(name)]
+    ed_imgs = [encDecWrite(img, ch, args.quality, args.out_path, i)
+               for i, img in enumerate(org_imgs)]
+    imgs = []
     with chainer.using_config('train', False):
-        imgs = [predict(model, args, img, ch, size, i)
-                for i, img in enumerate(ed_imgs)]
+        for i, ei in enumerate(ed_imgs):
+            img = predict(model, IMG.split([ei], size), args.batch, ei.shape, args.gpu)
+            # 生成結果を保存する
+            name = F.getFilePath(args.out_path, 'comp-' +
+                                 str(i * 10 + 1).zfill(3), '.jpg')
+            print('save:', name)
+            cv2.imwrite(name, img)
+            imgs.append(img)
 
     # オリジナル、高圧縮、推論実行結果を連結して保存・表示する
     c3i = [concat3Images([i, j, k], 50, 333, ch, 1)
