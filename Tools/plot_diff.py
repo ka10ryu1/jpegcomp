@@ -19,7 +19,7 @@ def command():
     parser.add_argument('--auto_ylim', action='store_true',
                         help='ylim自動設定')
     parser.add_argument('-l', '--label', default='loss',
-                        help='取得するラベル(default: loss, other: lr)')
+                        help='取得するラベル(default: loss, other: lr, all)')
     parser.add_argument('-o', '--out_path', default='./result/',
                         help='生成物の保存先(default: ./result/)')
     parser.add_argument('--no_show', action='store_true',
