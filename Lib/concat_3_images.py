@@ -4,12 +4,16 @@
 help = '3枚の画像を連結する（org, comp, restration）'
 #
 
+import os
+import sys
 import cv2
 import argparse
 import numpy as np
 
-from Tools.func import argsPrint, getFilePath
-import Lib.imgfunc as IMG
+[sys.path.append(d) for d in ['./Tools/', '../Tools/'] if os.path.isdir(d)]
+from func import argsPrint, getFilePath
+[sys.path.append(d) for d in ['./Lib/', '../Lib/'] if os.path.isdir(d)]
+import imgfunc as IMG
 
 
 def command():

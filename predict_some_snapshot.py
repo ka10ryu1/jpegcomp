@@ -125,7 +125,7 @@ def main(args):
     out_imgs = [img]
     for s in snapshot_path:
         # load_npzのpath情報を取得する
-        load_path = IMG.checkModelType(s)
+        load_path = F.checkModelType(s)
         # 学習済みモデルの読み込み
         try:
             chainer.serializers.load_npz(s, model, path=load_path)

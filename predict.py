@@ -99,7 +99,7 @@ def main(args):
            rate=sr, actfun_1=af1, actfun_2=af2)
     )
     # load_npzのpath情報を取得し、学習済みモデルを読み込む
-    load_path = IMG.checkModelType(args.model)
+    load_path = F.checkModelType(args.model)
     try:
         chainer.serializers.load_npz(args.model, model, path=load_path)
     except:
