@@ -7,6 +7,7 @@ help = '画像処理に関する便利機能'
 import os
 import sys
 import cv2
+import json
 import numpy as np
 
 try:
@@ -34,6 +35,22 @@ def getCh(ch):
         return cv2.IMREAD_COLOR
     else:
         return cv2.IMREAD_UNCHANGED
+
+
+def isImage(name):
+    """
+    入力されたパスが画像か判定する
+    [in]  name: 画像か判定したいパス
+    [out] 画像ならTrue
+    """
+
+    # cv2.imreadしてNoneが返ってきたら画像でないとする
+    if cv2.imread(name) is not None:
+        return True
+    else:
+        print('[{0}] is not Image'.format(name))
+        print(F.fileFuncLine())
+        return False
 
 
 def encodeDecode(in_imgs, ch, quality=5):
@@ -288,3 +305,34 @@ def getOptimizer(opt_str):
 
     print('Optimizer:', opt.__doc__.split('.')[0])
     return opt
+
+
+def getModelParam(path):
+    """
+    jsonで記述されたモデルパラメータ情報を読み込む
+    [in]  path:        jsonファイルのパス
+    [out] d['unut']:   中間層のユニット数
+    [out] d['img_ch']: 画像のチャンネル数
+    [out] d['layer']:  ネットワーク層の数
+    [out] af1:         活性化関数(1)
+    [out] af2:         活性化関数(2)
+    """
+
+    print('model param:', path)
+    try:
+        with open(path, 'r') as f:
+            d = json.load(f)
+
+    except:
+        import traceback
+        traceback.print_exc()
+        print(F.fileFuncLine())
+        exit()
+
+    af1 = getActfun(d['actfun_1'])
+    af2 = getActfun(d['actfun_2'])
+    ch = d['shape'][0]
+    size = d['shape'][1]
+    return \
+        d['network'], d['unit'], ch, size, \
+        d['layer_num'], d['shuffle_rate'], af1, af2

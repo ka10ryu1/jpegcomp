@@ -14,7 +14,7 @@ import chainer.links as L
 
 import Lib.imgfunc as IMG
 import Tools.func as F
-from predict import getModelParam, encDecWrite, predict, isImage, checkModelType
+from predict import encDecWrite, predict
 
 
 def command():
@@ -78,7 +78,7 @@ def getImage(jpg_path, ch, img_size, img_num, seed):
     """
 
     ch_flg = IMG.getCh(ch)
-    imgs = [cv2.imread(jpg, ch_flg) for jpg in jpg_path if isImage(jpg)]
+    imgs = [cv2.imread(jpg, ch_flg) for jpg in jpg_path if IMG.isImage(jpg)]
     imgs, size = IMG.split(imgs, img_size)
     imgs = np.array(IMG.whiteCheck(imgs))
     if(seed >= 0):
@@ -109,7 +109,7 @@ def main(args):
     # スナップショットとモデルパラメータのパスを取得する
     snapshot_path, param = getSnapshotAndParam(args.snapshot_and_json)
     # jsonファイルから学習モデルのパラメータを取得する
-    net, unit, ch, size, layer, sr, af1, af2 = getModelParam(param)
+    net, unit, ch, size, layer, sr, af1, af2 = IMG.getModelParam(param)
     # 推論実行するために画像を読み込んで結合する
     img = getImage(args.jpeg, ch, size, args.img_num, args.random_seed)
     # 学習モデルを生成する
@@ -125,7 +125,7 @@ def main(args):
     out_imgs = [img]
     for s in snapshot_path:
         # load_npzのpath情報を取得する
-        load_path = checkModelType(s)
+        load_path = IMG.checkModelType(s)
         # 学習済みモデルの読み込み
         try:
             chainer.serializers.load_npz(s, model, path=load_path)

@@ -4,9 +4,7 @@
 help = 'モデルとモデルパラメータを利用して推論実行する'
 #
 
-import os
 import cv2
-import json
 import time
 import argparse
 import numpy as np
@@ -16,8 +14,8 @@ import chainer.links as L
 from chainer.cuda import to_cpu
 
 import Lib.imgfunc as IMG
+from Lib.concat_3_images import concat3Images
 import Tools.func as F
-from concat_3_images import concat3Images
 
 
 def command():
@@ -39,37 +37,6 @@ def command():
     parser.add_argument('--out_path', '-o', default='./result/',
                         help='生成物の保存先[default: ./result/]')
     return parser.parse_args()
-
-
-def getModelParam(path):
-    """
-    jsonで記述されたモデルパラメータ情報を読み込む
-    [in]  path:        jsonファイルのパス
-    [out] d['unut']:   中間層のユニット数
-    [out] d['img_ch']: 画像のチャンネル数
-    [out] d['layer']:  ネットワーク層の数
-    [out] af1:         活性化関数(1)
-    [out] af2:         活性化関数(2)
-    """
-
-    print('model param:', path)
-    try:
-        with open(path, 'r') as f:
-            d = json.load(f)
-
-    except:
-        import traceback
-        traceback.print_exc()
-        print(F.fileFuncLine())
-        exit()
-
-    af1 = IMG.getActfun(d['actfun_1'])
-    af2 = IMG.getActfun(d['actfun_2'])
-    ch = d['shape'][0]
-    size = d['shape'][1]
-    return \
-        d['network'], d['unit'], ch, size, \
-        d['layer_num'], d['shuffle_rate'], af1, af2
 
 
 def encDecWrite(img, ch, quality, out_path='./result', val=-1):
@@ -118,49 +85,9 @@ def predict(model, data, batch, org_shape, gpu):
     return img
 
 
-def isImage(name):
-    """
-    入力されたパスが画像か判定する
-    [in]  name: 画像か判定したいパス
-    [out] 画像ならTrue
-    """
-
-    # cv2.imreadしてNoneが返ってきたら画像でないとする
-    if cv2.imread(name) is not None:
-        return True
-    else:
-        print('[{0}] is not Image'.format(name))
-        print(F.fileFuncLine())
-        return False
-
-
-def checkModelType(path):
-    """
-    入力されたパスが.modelか.snapshotかそれ以外か判定し、
-    load_npzのpathを設定する
-    [in]  path:      入力されたパス
-    [out] load_path: load_npzのpath
-    """
-
-    # 拡張子を正とする
-    name, ext = os.path.splitext(os.path.basename(path))
-    load_path = ''
-    if(ext == '.model'):
-        print('model read:', path)
-    elif(ext == '.snapshot'):
-        print('snapshot read', path)
-        load_path = 'updater/model:main/'
-    else:
-        print('model read error')
-        print(F.fileFuncLine())
-        exit()
-
-    return load_path
-
-
 def main(args):
     # jsonファイルから学習モデルのパラメータを取得する
-    net, unit, ch, size, layer, sr, af1, af2 = getModelParam(args.param)
+    net, unit, ch, size, layer, sr, af1, af2 = IMG.getModelParam(args.param)
     # 学習モデルを生成する
     if net == 0:
         from Lib.network import JC_DDUU as JC
@@ -172,7 +99,7 @@ def main(args):
            rate=sr, actfun_1=af1, actfun_2=af2)
     )
     # load_npzのpath情報を取得し、学習済みモデルを読み込む
-    load_path = checkModelType(args.model)
+    load_path = IMG.checkModelType(args.model)
     try:
         chainer.serializers.load_npz(args.model, model, path=load_path)
     except:
@@ -188,7 +115,7 @@ def main(args):
 
     # 学習モデルを入力画像ごとに実行する
     ch_flg = IMG.getCh(ch)
-    org_imgs = [cv2.imread(name, ch_flg) for name in args.jpeg if isImage(name)]
+    org_imgs = [cv2.imread(name, ch_flg) for name in args.jpeg if IMG.isImage(name)]
     ed_imgs = [encDecWrite(img, ch, args.quality, args.out_path, i)
                for i, img in enumerate(org_imgs)]
     imgs = []
