@@ -160,7 +160,6 @@ def main(args):
     # Load dataset
     train, test = getImageData(args.in_path)
     # predict.pyでモデルを決定する際に必要なので記憶しておく
-
     model_param = {i: getattr(args, i) for i in dir(args) if not '_' in i[0]}
     model_param['shape'] = train[0][0].shape
 
