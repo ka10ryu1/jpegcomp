@@ -34,7 +34,7 @@ class DownSanpleBlock(Chain):
 
 class UpSampleBlock(Chain):
     def __init__(self, n_unit_1, n_unit_2, ksize, stride, pad,
-                 actfun=None, wd=0.02, rate=2):
+                 actfun=None, dropout=0.0, wd=0.02, rate=2):
 
         super(UpSampleBlock, self).__init__()
         with self.init_scope():
@@ -44,10 +44,15 @@ class UpSampleBlock(Chain):
             self.brn = L.BatchRenormalization(n_unit_2)
 
         self.actfun = actfun
+        self.dropout_ratio = dropout
         self.rate = rate
 
     def __call__(self, x):
-        return self.actfun(self.brn(self.PS(self.cnv(x), self.rate)))
+        h = self.actfun(self.brn(self.PS(self.cnv(x), self.rate)))
+        if self.dropout_ratio > 0:
+            h = F.dropout(h, self.dropout_ratio)
+
+        return h
 
     def PS(self, h, r=2):
         """
@@ -78,9 +83,6 @@ class JC_DDUU(Chain):
         """
 
         unit1 = n_unit
-        # unit2 = max([n_unit//2, 1])
-        # unit4 = max([n_unit//4, 1])
-        # unit8 = max([n_unit//8, 1])
         unit2 = n_unit*2
         unit4 = n_unit*4
         unit8 = n_unit*8
@@ -88,17 +90,17 @@ class JC_DDUU(Chain):
         super(JC_DDUU, self).__init__()
         with self.init_scope():
             # D: n_unit, ksize, stride, pad, actfun=None, dropout=0, wd=0.02
-            self.block1a = DownSanpleBlock(unit1, 5, 2, 2, actfun_1)
-            self.block1b = DownSanpleBlock(unit2, 5, 2, 2, actfun_1)
-            self.block1c = DownSanpleBlock(unit4, 5, 2, 2, actfun_1)
-            self.block1d = DownSanpleBlock(unit8, 5, 2, 2, actfun_1)
-            self.block1e = DownSanpleBlock(unit8, 3, 1, 1, actfun_1)
+            self.block1a = DownSanpleBlock(unit1, 5, 2, 2, actfun_1, dropout)
+            self.block1b = DownSanpleBlock(unit2, 5, 2, 2, actfun_1, dropout)
+            self.block1c = DownSanpleBlock(unit4, 5, 2, 2, actfun_1, dropout)
+            self.block1d = DownSanpleBlock(unit8, 5, 2, 2, actfun_1, dropout)
+            self.block1e = DownSanpleBlock(unit8, 3, 1, 1, actfun_1, dropout)
 
             # U: n_unit_1, n_unit_2, ksize, stride, pad, actfun=None, rate=2
-            self.block2a = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2)
-            self.block2b = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2)
-            self.block2c = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2)
-            self.block2d = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2)
+            self.block2a = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2, dropout)
+            self.block2b = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2, dropout)
+            self.block2c = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2, dropout)
+            self.block2d = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2, dropout)
 
             self.blockN = UpSampleBlock(rate**2, 1, 5, 1, 2, actfun_2, rate)
 
