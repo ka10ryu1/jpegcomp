@@ -104,7 +104,7 @@ class JC_DDUU(Chain):
             self.block2c = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2, dropout)
             self.block2d = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2, dropout)
 
-            self.blockN = UpSampleBlock(rate**2, 1, 5, 1, 2, actfun_2, rate)
+            self.blockN = UpSampleBlock(rate**2, 1, 5, 1, 2, actfun_2, 0, rate)
 
         self.layer = layer
         self.view = view
