@@ -89,14 +89,16 @@ class JC_DDUU(Chain):
 
         super(JC_DDUU, self).__init__()
         with self.init_scope():
-            # D: n_unit, ksize, stride, pad, actfun=None, dropout=0, wd=0.02
+            # D: n_unit, ksize, stride, pad,
+            #    actfun=None, dropout=0, wd=0.02
             self.block1a = DownSanpleBlock(unit1, 5, 2, 2, actfun_1, dropout)
             self.block1b = DownSanpleBlock(unit2, 5, 2, 2, actfun_1, dropout)
             self.block1c = DownSanpleBlock(unit4, 5, 2, 2, actfun_1, dropout)
             self.block1d = DownSanpleBlock(unit8, 5, 2, 2, actfun_1, dropout)
             self.block1e = DownSanpleBlock(unit8, 3, 1, 1, actfun_1, dropout)
 
-            # U: n_unit_1, n_unit_2, ksize, stride, pad, actfun=None, rate=2
+            # U: n_unit_1, n_unit_2, ksize, stride, pad,
+            #    actfun=None, dropout=0, rate=2
             self.block2a = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2, dropout)
             self.block2b = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2, dropout)
             self.block2c = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2, dropout)
