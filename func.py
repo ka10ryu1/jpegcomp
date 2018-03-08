@@ -29,6 +29,30 @@ def argsPrint(p, bar=30):
     print('-' * bar)
 
 
+def checkModelType(path):
+    """
+    入力されたパスが.modelか.snapshotかそれ以外か判定し、
+    load_npzのpathを設定する
+    [in]  path:      入力されたパス
+    [out] load_path: load_npzのpath
+    """
+
+    # 拡張子を正とする
+    name, ext = os.path.splitext(os.path.basename(path))
+    load_path = ''
+    if(ext == '.model'):
+        print('model read:', path)
+    elif(ext == '.snapshot'):
+        print('snapshot read', path)
+        load_path = 'updater/model:main/'
+    else:
+        print('model read error')
+        print(fileFuncLine())
+        exit()
+
+    return load_path
+
+
 def getFilePath(folder, name, ext=''):
     if not os.path.isdir(folder):
         os.makedirs(folder)
