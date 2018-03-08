@@ -38,8 +38,8 @@ def command():
                         help='活性化関数(1) [default: relu, other: elu/c_relu/l_relu/sigmoid/h_sigmoid/tanh/s_plus]')
     parser.add_argument('-a2', '--actfun_2', default='sigmoid',
                         help='活性化関数(2) [default: sigmoid, other: relu/elu/c_relu/l_relu/h_sigmoid/tanh/s_plus]')
-    parser.add_argument('-d', '--dropout', type=float, default=0.1,
-                        help='ドロップアウト率（0〜0.9、0で不使用）[default: 0.1]')
+    parser.add_argument('-d', '--dropout', type=float, default=0.0,
+                        help='ドロップアウト率（0〜0.9、0で不使用）[default: 0.0]')
     parser.add_argument('-opt', '--optimizer', default='adam',
                         help='オプティマイザ [default: adam, other: ada_d/ada_g/m_sgd/n_ag/rmsp/rmsp_g/sgd/smorms]')
     parser.add_argument('-lf', '--lossfun', default='mse',
