@@ -4,13 +4,13 @@
 help = '任意のフォルダの監視'
 #
 
-from watchdog.events import FileSystemEventHandler
-from watchdog.observers import Observer
-
 import os
 import time
 import argparse
 import shutil
+
+from func import ChangeHandler
+from watchdog.observers import Observer
 
 
 def command():
@@ -20,37 +20,21 @@ def command():
     return parser.parse_args()
 
 
-class ChangeHandler(FileSystemEventHandler):
-
+class PNGMonitor(ChangeHandler):
     def __init__(self, copy):
         self.copy = copy
 
-    # def on_created(self, event):
-    #     filepath = event.src_path
-    #     filename = os.path.basename(filepath)
-    #     print('%sができました' % filename)
-
     def on_modified(self, event):
-        filepath1 = event.src_path
-        filename1 = os.path.basename(filepath1)
-        # print('%sを変更しました' % filename)
-
-        name, ext = os.path.splitext(filename1)
-        if('png' in ext):
+        path1, name1, ext = super().on_modified(event)
+        if('png' in ext.lower()):
             time.sleep(1)
-            filepath2 = os.path.join(self.copy, filename1)
-            # print('{0} copy to {1}'.format(filepath1, filepath2))
-            shutil.copy2(filepath1, filepath2)
-
-    # def on_deleted(self, event):
-    #     filepath = event.src_path
-    #     filename = os.path.basename(filepath)
-    #     print('%sを削除しました' % filename)
+            path2 = os.path.join(self.copy, name1)
+            shutil.copy2(path1, path2)
 
 
 def main(monitor, copy):
     while 1:
-        event_handler = ChangeHandler(copy)
+        event_handler = PNGMonitor(copy)
         observer = Observer()
         observer.schedule(event_handler, monitor, recursive=True)
         observer.start()
