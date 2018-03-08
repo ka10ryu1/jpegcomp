@@ -49,7 +49,7 @@ def isImage(name):
         return True
     else:
         print('[{0}] is not Image'.format(name))
-        print(F.fileFuncLine())
+        print(fileFuncLine())
         return False
 
 
@@ -326,7 +326,7 @@ def getModelParam(path):
     except:
         import traceback
         traceback.print_exc()
-        print(F.fileFuncLine())
+        print(fileFuncLine())
         exit()
 
     af1 = getActfun(d['actfun_1'])
