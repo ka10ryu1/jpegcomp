@@ -33,17 +33,6 @@ def command():
     return parser.parse_args()
 
 
-def getSize(img, rate):
-    """
-    cv2.resizeで使用するための縮尺後の画像サイズを取得する
-    [in] img: 使用する画像
-    [in] rate: 画像サイズの縮尺
-    [out] 縮尺後の画像サイズ (h,w)
-    """
-
-    return (int(img.shape[1] * rate), int(img.shape[0] * rate))
-
-
 def titleInsert(img, text, header_size,
                 color=(255, 255, 255), org=(10, 20), scale=0.5, thick=1):
     """
@@ -104,7 +93,7 @@ def concat3Images(imgs, start_pos, img_width, ch, rate,
     else:
         imgs = [i[:height, start_pos:end_pos, :] for i in imgs]
 
-    imgs = [cv2.resize(i, getSize(i, rate), cv2.INTER_NEAREST) for i in imgs]
+    imgs = [IMG.resize(i, rate) for i in imgs]
     header_size = (30, int(img_width * rate), 3)
     imgs = [titleInsert(i, t, header_size) for i, t in zip(imgs, text)]
     return stackImages(imgs, thick=1, color=(0, 0, 0))

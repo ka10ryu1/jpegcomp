@@ -79,7 +79,7 @@ def encodeDecode(in_imgs, ch, quality=5):
     return out_imgs
 
 
-def split(imgs: list, size: int, round_num=-1, flg=cv2.BORDER_REPLICATE):
+def split(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
     """
     入力された画像リストを正方形に分割する
     imgsに格納されている画像はサイズが同じであること
@@ -139,7 +139,7 @@ def rotate(imgs, num=2):
     return out_imgs
 
 
-def whiteCheck(imgs: list, val=245):
+def whiteCheck(imgs, val=245):
     """
     画像リストのうち、ほとんど白い画像を除去する
     [in] imgs: 判定する画像リスト
@@ -151,6 +151,20 @@ def whiteCheck(imgs: list, val=245):
             if(val > np.sum(i) // (i.shape[0] * i.shape[1]))]
 
 
+def resize(img, rate, flg=cv2.INTER_NEAREST):
+    """
+    画像サイズを変更する
+    [in] img:  N倍にする画像
+    [in] rate: 倍率
+    [in] flg:  N倍にする時のフラグ
+    [out] N倍にされた画像リスト
+    """
+
+    size = (int(img.shape[1] * rate),
+            int(img.shape[0] * rate))
+    return cv2.resize(img, size, flg)
+
+
 def size2x(imgs, flg=cv2.INTER_NEAREST):
     """
     画像のサイズを2倍にする
@@ -159,9 +173,7 @@ def size2x(imgs, flg=cv2.INTER_NEAREST):
     [out] 2倍にされた画像リスト
     """
 
-    w, h = imgs[0].shape[:2]
-    size = (w * 2, h * 2)
-    return [cv2.resize(i, size, flg) for i in imgs]
+    return [resize(i, 2, flg) for i in imgs]
 
 
 def arr2x(arr, flg=cv2.INTER_NEAREST):

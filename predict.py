@@ -44,7 +44,8 @@ def encDecWrite(img, ch, quality, out_path='./result', val=-1):
     comp = IMG.encodeDecode([img], IMG.getCh(ch), quality)
     # 比較のため圧縮画像を保存する
     if(val >= 0):
-        path = F.getFilePath(out_path, 'comp-' + str(val * 10).zfill(3), '.jpg')
+        path = F.getFilePath(out_path, 'comp-' +
+                             str(val * 10).zfill(3), '.jpg')
         cv2.imwrite(path, comp[0])
 
     return comp[0]
@@ -76,10 +77,7 @@ def predict(model, data, batch, org_shape, gpu):
            for i in range(size[1])]
     img = np.hstack(buf)
     # 生成された画像は入力画像の2倍の大きさになっているので縮小する
-    h = 0.5
-    half_size = (int(img.shape[1] * h), int(img.shape[0] * h))
-    flg = cv2.INTER_NEAREST
-    img = cv2.resize(img, half_size, flg)
+    img = IMG.resize(img, 0.5)
     img = img[:org_shape[0], :org_shape[1]]
 
     return img
@@ -115,13 +113,15 @@ def main(args):
 
     # 学習モデルを入力画像ごとに実行する
     ch_flg = IMG.getCh(ch)
-    org_imgs = [cv2.imread(name, ch_flg) for name in args.jpeg if IMG.isImage(name)]
+    org_imgs = [cv2.imread(name, ch_flg)
+                for name in args.jpeg if IMG.isImage(name)]
     ed_imgs = [encDecWrite(img, ch, args.quality, args.out_path, i)
                for i, img in enumerate(org_imgs)]
     imgs = []
     with chainer.using_config('train', False):
         for i, ei in enumerate(ed_imgs):
-            img = predict(model, IMG.split([ei], size), args.batch, ei.shape, args.gpu)
+            img = predict(model, IMG.split(
+                [ei], size), args.batch, ei.shape, args.gpu)
             # 生成結果を保存する
             name = F.getFilePath(args.out_path, 'comp-' +
                                  str(i * 10 + 1).zfill(3), '.jpg')

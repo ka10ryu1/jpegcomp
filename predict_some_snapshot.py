@@ -100,9 +100,7 @@ def stackImages(imgs, rate):
     img = np.hstack(
         [cv2.cvtColor(img, cv2.COLOR_GRAY2RGB) if len(img.shape) < 3 else img
          for img in imgs])
-    w, h = img.shape[: 2]
-    size = (int(h * rate), int(w * rate))
-    return cv2.resize(img, size, cv2.INTER_NEAREST)
+    return IMG.resize(img, rate)
 
 
 def main(args):
@@ -144,7 +142,8 @@ def main(args):
         ed = encDecWrite(img, ch, args.quality)
         with chainer.using_config('train', False):
             out_imgs.append(
-                predict(model, IMG.split([ed], size), args.batch, ed.shape, args.gpu)
+                predict(model, IMG.split([ed], size),
+                        args.batch, ed.shape, args.gpu)
             )
 
     # 推論実行した各画像を結合してサイズを調整する
