@@ -147,7 +147,7 @@ def main(args):
     for i, img in enumerate(c3i):
         path = F.getFilePath(args.out_path, 'concat-' + str(i * 10).zfill(3), '.jpg')
         cv2.imwrite(path, img)
-        cv2.imshow('test', img)
+        cv2.imshow(path, img)
         cv2.waitKey()
 
 
