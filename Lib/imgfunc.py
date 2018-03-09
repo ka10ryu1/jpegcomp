@@ -122,6 +122,30 @@ def split(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
         return np.array(out_imgs), (v_split[0], h_split[0])
 
 
+def random_rotate(imgs, num, level=[-10, 10], scale=1.2):
+
+    def getCenter(img):
+        return (img.shape[0]//2, img.shape[1]//2)
+
+    def getRandAngle(level):
+        return np.random.randint(level[0], level[1])
+
+    out_imgs = []
+    out_angle = []
+    for n in range(num):
+        size = [i.shape for i in imgs]
+        angles = [getRandAngle(level) for i in imgs]
+        rot_mat = [cv2.getRotationMatrix2D(getCenter(i), a, scale)
+                   for i, a in zip(imgs, angles)]
+        rot_imgs = [cv2.warpAffine(img, rot, img.shape[:2], flags=cv2.INTER_CUBIC)
+                    for img, rot in zip(imgs, rot_mat)]
+
+        out_imgs.extend([r[:s[0], :s[1]] for r, s in zip(rot_imgs, size)])
+        out_angle.extend(angles)
+
+    return out_imgs, out_angle
+
+
 def rotate(imgs, num=2):
     """
     画像を回転させてデータ数を水増しする
