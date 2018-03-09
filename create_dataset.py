@@ -70,13 +70,15 @@ def main(args):
     # 画像の並び順をシャッフルするための配列を作成する
     # compとrawの対応を崩さないようにシャッフルしなければならない
     # また、train_sizeで端数を切り捨てる
+    # データをint8からfloat16に変えるとデータ数が大きくなるので注意
     print('shuffle images...')
+    dtype = np.float16
     shuffle = np.random.permutation(range(len(x)))
     train_size = int(len(x) * args.train_per_all)
-    train_x = IMG.imgs2arr(x[shuffle[:train_size]], dtype=np.float16)
-    train_y = IMG.imgs2arr(y[shuffle[:train_size]], dtype=np.float16)
-    test_x = IMG.imgs2arr(x[shuffle[train_size:]], dtype=np.float16)
-    test_y = IMG.imgs2arr(y[shuffle[train_size:]], dtype=np.float16)
+    train_x = IMG.imgs2arr(x[shuffle[:train_size]], dtype=dtype)
+    train_y = IMG.imgs2arr(y[shuffle[:train_size]], dtype=dtype)
+    test_x = IMG.imgs2arr(x[shuffle[train_size:]], dtype=dtype)
+    test_y = IMG.imgs2arr(y[shuffle[train_size:]], dtype=dtype)
     print('train x/y:{0}/{1}'.format(train_x.shape, train_y.shape))
     print('test  x/y:{0}/{1}'.format(test_x.shape, test_y.shape))
 

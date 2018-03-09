@@ -23,8 +23,6 @@ def command():
                         help='使用するスナップショットとモデルパラメータのあるフォルダ')
     parser.add_argument('jpeg', nargs='+',
                         help='使用する画像のパス')
-    # parser.add_argument('--img_size', '-is', type=int, default=32,
-    #                     help='生成される画像サイズ [default: 32]')
     parser.add_argument('--quality', '-q', type=int, default=5,
                         help='画像の圧縮率 [default: 5]')
     parser.add_argument('--batch', '-b', type=int, default=100,
@@ -73,18 +71,25 @@ def getImage(jpg_path, ch, img_size, img_num, seed):
     画像を読み込んでランダムに取得して連結する
     [in]  jpg_path: 入力画像のパス
     [in]  ch:       画像を読み込むチャンネル数
+    [in]  img_size: 画像を分割するサイズ
+    [in]  img_num:  使用する画像の数
     [in]  seed:     乱数シード
     [out] 連結された画像（縦長）
     """
 
     ch_flg = IMG.getCh(ch)
+    # 画像を読み込み
     imgs = [cv2.imread(jpg, ch_flg) for jpg in jpg_path if IMG.isImage(jpg)]
+    # 画像を分割し
     imgs, size = IMG.split(imgs, img_size)
+    # ほとんど白い画像を除去し
     imgs = np.array(IMG.whiteCheck(imgs))
     if(seed >= 0):
         np.random.seed(seed)
 
+    # ランダムに取得する
     shuffle = np.random.permutation(range(len(imgs)))
+
     return np.vstack(imgs[shuffle[:img_num]])
 
 
@@ -96,10 +101,10 @@ def stackImages(imgs, rate):
     [out] 結合画像
     """
 
-    # [print(i.shape) for i in imgs]
     img = np.hstack(
         [cv2.cvtColor(img, cv2.COLOR_GRAY2RGB) if len(img.shape) < 3 else img
-         for img in imgs])
+         for img in imgs]
+    )
     return IMG.resize(img, rate)
 
 

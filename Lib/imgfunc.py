@@ -86,6 +86,7 @@ def split(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
     [in]  imgs:      入力画像リスト
     [in]  size:      正方形のサイズ（size x size）
     [in]  round_num: 丸める画像数
+    [in]  flg:       境界線のフラグ
     [out] 分割されたnp.array形式の正方形画像リスト
     """
 
@@ -125,15 +126,20 @@ def rotate(imgs, num=2):
     """
     画像を回転させてデータ数を水増しする
     [in]  imgs:     入力画像リスト
-    [out] out_imgs: 出力画像リスト（4倍）
+    [in]  num:      水増しする数（最大4倍）
+    [out] out_imgs: 出力画像リスト
     """
 
+    # ベース
     out_imgs = imgs.copy()
+    # 上下反転を追加
     [out_imgs.append(cv2.flip(i, 0)) for i in imgs]
     if(num > 1):
+        # 左右反転を追加
         [out_imgs.append(cv2.flip(i, 1)) for i in imgs]
 
     if(num > 2):
+        # 上下左右反転を追加
         [out_imgs.append(cv2.flip(cv2.flip(i, 1), 0)) for i in imgs]
 
     return out_imgs
@@ -180,7 +186,7 @@ def arr2x(arr, flg=cv2.INTER_NEAREST):
     """
     行列を画像に変換し、サイズを2倍にする
     [in] arr: 2倍にする行列
-    [in] flg:  2倍にする時のフラグ
+    [in] flg: 2倍にする時のフラグ
     [out] 2倍にされた行列
     """
 
@@ -214,8 +220,6 @@ def arr2imgs(arr, norm=255, dtype=np.uint8):
     """
     Chainerの出力をOpenCVで可視化するために変換する
     [in]  arr:   Chainerから出力された行列
-    [in]  ch:    画像に変換する際のチャンネル数
-    [in]  size:  画像に変換する際の画像サイズ
     [in]  norm:  正規化をもとに戻す数（255であれば、0-1を0-255に変換する）
     [in]  dtype: 変換するデータタイプ
     [out] OpenCV形式の画像に変換された行列
@@ -322,12 +326,15 @@ def getOptimizer(opt_str):
 def getModelParam(path):
     """
     jsonで記述されたモデルパラメータ情報を読み込む
-    [in]  path:        jsonファイルのパス
-    [out] d['unut']:   中間層のユニット数
-    [out] d['img_ch']: 画像のチャンネル数
-    [out] d['layer']:  ネットワーク層の数
-    [out] af1:         活性化関数(1)
-    [out] af2:         活性化関数(2)
+    [in]  path:              jsonファイルのパス
+    [out] d['network']:      ネットワークの種類
+    [out] d['unut']:         中間層のユニット数
+    [out] ch:                画像のチャンネル数
+    [out] size:              画像の分割サイズ
+    [out] d['layer_num']:    ネットワーク層の数
+    [out] d['shuffle_rate']: PSのshuffle rate
+    [out] af1:               活性化関数(1)
+    [out] af2:               活性化関数(2)
     """
 
     print('model param:', path)

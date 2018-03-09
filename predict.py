@@ -26,8 +26,6 @@ def command():
                         help='使用するモデルパラメータ')
     parser.add_argument('jpeg', nargs='+',
                         help='使用する画像のパス')
-    # parser.add_argument('--img_size', '-s', type=int, default=32,
-    #                     help='生成される画像サイズ [default: 32 pixel]')
     parser.add_argument('--quality', '-q', type=int, default=5,
                         help='画像の圧縮率 [default: 5]')
     parser.add_argument('--batch', '-b', type=int, default=100,
@@ -40,6 +38,16 @@ def command():
 
 
 def encDecWrite(img, ch, quality, out_path='./result', val=-1):
+    """
+    画像の圧縮と保存を実行する
+    [in] img:      圧縮したい画像
+    [in] ch:       圧縮したい画像のチャンネル数
+    [in] quality:  圧縮率（低いほど高圧縮）
+    [in] out_path: 出力先フォルダ
+    [in] val:      保存時の連番（負数で保存しない）
+    [out] 圧縮済み画像
+    """
+
     # 入力画像を圧縮して劣化させる
     comp = IMG.encodeDecode([img], IMG.getCh(ch), quality)
     # 比較のため圧縮画像を保存する
@@ -62,6 +70,7 @@ def predict(model, data, batch, org_shape, gpu):
     [out] img:       推論実行で得られた生成画像
     """
 
+    # dataには圧縮画像と分割情報が含まれているので、分離する
     comp, size = data
     imgs = []
     st = time.time()
@@ -72,15 +81,14 @@ def predict(model, data, batch, org_shape, gpu):
         imgs.extend(IMG.arr2imgs(to_cpu(y.array)))
 
     print('exec time: {0:.2f}[s]'.format(time.time() - st))
-    # 生成された画像を結合する
+    # 生成された画像を分割情報をもとに結合する
     buf = [np.vstack(imgs[i * size[0]: (i + 1) * size[0]])
            for i in range(size[1])]
     img = np.hstack(buf)
-    # 生成された画像は入力画像の2倍の大きさになっているので縮小する
+    # 出力画像は入力画像の2倍の大きさになっているので半分に縮小する
     img = IMG.resize(img, 0.5)
-    img = img[:org_shape[0], :org_shape[1]]
-
-    return img
+    # 結合しただけでは画像サイズがオリジナルと異なるので切り取る
+    return img[:org_shape[0], :org_shape[1]]
 
 
 def main(args):
@@ -96,6 +104,7 @@ def main(args):
         JC(n_unit=unit, n_out=ch,
            rate=sr, actfun_1=af1, actfun_2=af2)
     )
+
     # load_npzのpath情報を取得し、学習済みモデルを読み込む
     load_path = F.checkModelType(args.model)
     try:
@@ -111,7 +120,7 @@ def main(args):
         chainer.cuda.get_device_from_id(args.gpu).use()
         model.to_gpu()
 
-    # 学習モデルを入力画像ごとに実行する
+    # 高圧縮画像の生成
     ch_flg = IMG.getCh(ch)
     org_imgs = [cv2.imread(name, ch_flg)
                 for name in args.jpeg if IMG.isImage(name)]
@@ -119,12 +128,14 @@ def main(args):
                for i, img in enumerate(org_imgs)]
     imgs = []
     with chainer.using_config('train', False):
+        # 学習モデルを入力画像ごとに実行する
         for i, ei in enumerate(ed_imgs):
             img = predict(model, IMG.split(
                 [ei], size), args.batch, ei.shape, args.gpu)
             # 生成結果を保存する
-            name = F.getFilePath(args.out_path, 'comp-' +
-                                 str(i * 10 + 1).zfill(3), '.jpg')
+            name = F.getFilePath(
+                args.out_path, 'comp-' + str(i * 10 + 1).zfill(3), '.jpg'
+            )
             print('save:', name)
             cv2.imwrite(name, img)
             imgs.append(img)

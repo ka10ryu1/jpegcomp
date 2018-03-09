@@ -57,18 +57,17 @@ def titleInsert(img, text, header_size,
                        scale, color, thick, cv2.LINE_AA)
 
 
-def stackImages(imgs, thick=1, color=(0, 0, 0)):
+def stackImages(imgs, thick=1, color=(0, 0, 0), flg=cv2.BORDER_CONSTANT):
     """
     画像を横に連結する
-    [in] imgs: 連結する画像のリスト
+    [in] imgs:  連結する画像のリスト
     [in] thick: 画像を区切る線の太さ
     [in] color: 画像を区切る線の色
+    [in] flg:   境界線のフラグ
     [out] 連結された画像
     """
 
-    flg = cv2.BORDER_CONSTANT
-    val = color
-    imgs = [cv2.copyMakeBorder(img, 0, thick, 0, thick, flg, value=val)
+    imgs = [cv2.copyMakeBorder(img, 0, thick, 0, thick, flg, value=color)
             for img in imgs]
     return np.hstack(imgs)
 

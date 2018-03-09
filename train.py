@@ -169,9 +169,11 @@ def main(args):
 
     # Set up a trainer
     updater = training.StandardUpdater(
-        train_iter, optimizer, device=args.gpu_id)
+        train_iter, optimizer, device=args.gpu_id
+    )
     trainer = training.Trainer(
-        updater, (args.epoch, 'epoch'), out=args.out_path)
+        updater, (args.epoch, 'epoch'), out=args.out_path
+    )
 
     # Evaluate the model with the test dataset for each epoch
     trainer.extend(extensions.Evaluator(test_iter, model, device=args.gpu_id))
