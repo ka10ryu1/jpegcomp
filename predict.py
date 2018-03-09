@@ -144,11 +144,10 @@ def main(args):
     # オリジナル、高圧縮、推論実行結果を連結して保存・表示する
     c3i = [concat3Images([i, j, k], 50, 333, ch, 1)
            for i, j, k in zip(org_imgs, ed_imgs, imgs)]
-    path = [F.getFilePath(args.out_path, 'concat-' + str(i * 10).zfill(3), '.jpg')
-            for i in range(len(c3i))]
-    [cv2.imwrite(p, i) for p, i in zip(path, c3i)]
-    for i in c3i:
-        cv2.imshow('test', i)
+    for i, img in enumerate(c3i):
+        path = F.getFilePath(args.out_path, 'concat-' + str(i * 10).zfill(3), '.jpg')
+        cv2.imwrite(path, img)
+        cv2.imshow('test', img)
         cv2.waitKey()
 
 
