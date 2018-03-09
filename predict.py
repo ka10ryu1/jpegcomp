@@ -130,8 +130,9 @@ def main(args):
     with chainer.using_config('train', False):
         # 学習モデルを入力画像ごとに実行する
         for i, ei in enumerate(ed_imgs):
-            img = predict(model, IMG.split(
-                [ei], size), args.batch, ei.shape, args.gpu)
+            img = predict(
+                model, IMG.split([ei], size), args.batch, ei.shape, args.gpu
+            )
             # 生成結果を保存する
             name = F.getFilePath(
                 args.out_path, 'comp-' + str(i * 10 + 1).zfill(3), '.jpg'
