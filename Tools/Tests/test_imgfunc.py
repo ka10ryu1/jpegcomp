@@ -7,7 +7,10 @@ help = 'imgfuncのテスト用コード'
 import cv2
 import unittest
 
-import Lib.imgfunc as IMG
+import Tools.imgfunc as IMG
+
+lenna_path = './Tools/Tests/Lenna.bmp'
+mandrill_path = './Tools/Tests/Mandrill.bmp'
 
 
 class TestImgFunc(unittest.TestCase):
@@ -22,8 +25,8 @@ class TestImgFunc(unittest.TestCase):
         self.assertEqual(IMG.getCh(2.5), cv2.IMREAD_UNCHANGED)
 
     def test_resize(self):
-        lenna = cv2.imread('./Lib/Tests/Lenna.bmp')
-        mandrill = cv2.imread('./Lib/Tests/Mandrill.bmp')
+        lenna = cv2.imread(lenna_path)
+        mandrill = cv2.imread(mandrill_path)
         imgs = IMG.size2x([lenna, mandrill])
         self.assertEqual(imgs[0].shape, (512, 512, 3))
         self.assertEqual(imgs[1].shape, (512, 512, 3))
@@ -32,20 +35,20 @@ class TestImgFunc(unittest.TestCase):
         self.assertEqual(IMG.resize(lenna, 0.5).shape, (128, 128, 3))
 
     def test_isImage(self):
-        self.assertTrue(IMG.isImage('./Lib/Tests/Lenna.bmp'))
-        self.assertFalse(IMG.isImage('./Lib/Tests/Lenno.bmp'))
+        self.assertTrue(IMG.isImage(lenna_path))
+        self.assertFalse(IMG.isImage('./Tools/Tests/Lenno.bmp'))
 
     def test_encodeDecode(self):
-        lenna = cv2.imread('./Lib/Tests/Lenna.bmp')
-        mandrill = cv2.imread('./Lib/Tests/Mandrill.bmp')
+        lenna = cv2.imread(lenna_path)
+        mandrill = cv2.imread(mandrill_path)
         self.assertEqual(len(IMG.encodeDecode([lenna, mandrill], 3)), 2)
-        lenna = cv2.imread('./Lib/Tests/Lenna.bmp', IMG.getCh(1))
-        mandrill = cv2.imread('./Lib/Tests/Mandrill.bmp', IMG.getCh(1))
+        lenna = cv2.imread(lenna_path, IMG.getCh(1))
+        mandrill = cv2.imread(mandrill_path, IMG.getCh(1))
         self.assertEqual(len(IMG.encodeDecode([lenna, mandrill], 1)), 2)
 
     def test_split(self):
-        lenna = cv2.imread('./Lib/Tests/Lenna.bmp')
-        mandrill = cv2.imread('./Lib/Tests/Mandrill.bmp')
+        lenna = cv2.imread(lenna_path)
+        mandrill = cv2.imread(mandrill_path)
         split = IMG.split([lenna, mandrill], 32)
         self.assertEqual(split[0].shape, (162, 32, 32, 3))
 
@@ -56,14 +59,14 @@ class TestImgFunc(unittest.TestCase):
         with self.assertRaises(SystemExit):
             IMG.split([lenna, mandrill], 32, 1000)
 
-        lenna = cv2.imread('./Lib/Tests/Lenna.bmp', IMG.getCh(1))
-        mandrill = cv2.imread('./Lib/Tests/Mandrill.bmp', IMG.getCh(1))
+        lenna = cv2.imread(lenna_path, IMG.getCh(1))
+        mandrill = cv2.imread(mandrill_path, IMG.getCh(1))
         split = IMG.split([lenna, mandrill], 32)
         self.assertEqual(split[0].shape, (162, 32, 32))
 
     def test_rotate(self):
-        lenna = cv2.imread('./Lib/Tests/Lenna.bmp')
-        mandrill = cv2.imread('./Lib/Tests/Mandrill.bmp')
+        lenna = cv2.imread(lenna_path)
+        mandrill = cv2.imread(mandrill_path)
         self.assertEqual(len(IMG.rotate([lenna, mandrill])), 6)
         self.assertEqual(len(IMG.rotate([lenna, mandrill], num=-1)), 4)
         self.assertEqual(len(IMG.rotate([lenna, mandrill], num=0)), 4)
@@ -72,13 +75,13 @@ class TestImgFunc(unittest.TestCase):
         self.assertEqual(len(IMG.rotate([lenna, mandrill], num=3)), 8)
 
     def test_imgs2arr(self):
-        lenna = cv2.imread('./Lib/Tests/Lenna.bmp')
-        mandrill = cv2.imread('./Lib/Tests/Mandrill.bmp')
+        lenna = cv2.imread(lenna_path)
+        mandrill = cv2.imread(mandrill_path)
         self.assertEqual(IMG.imgs2arr(
             [lenna, mandrill]).shape, (2, 3, 256, 256))
 
-        lenna = cv2.imread('./Lib/Tests/Lenna.bmp', IMG.getCh(1))
-        mandrill = cv2.imread('./Lib/Tests/Mandrill.bmp', IMG.getCh(1))
+        lenna = cv2.imread(lenna_path, IMG.getCh(1))
+        mandrill = cv2.imread(mandrill_path, IMG.getCh(1))
         self.assertEqual(IMG.imgs2arr(
             [lenna, mandrill]).shape, (2, 1, 256, 256))
 
