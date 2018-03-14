@@ -145,6 +145,9 @@ def rotate(imgs, num=2):
     [out] out_imgs: 出力画像リスト
     """
 
+    if(num < 1):
+        return imgs
+
     # ベース
     out_imgs = imgs.copy()
     # 上下反転を追加

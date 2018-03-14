@@ -15,7 +15,7 @@ import chainer.optimizers as O
 from func import fileFuncLine
 
 
-def getLossfun(lossfun_str):
+def lossfun(lossfun_str):
     """
     入力文字列から損失関数を推定する
     """
@@ -42,7 +42,7 @@ def F_None(x):
     return x
 
 
-def getActfun(actfun_str):
+def actfun(actfun_str):
     """
     入力文字列から活性化関数を推定する
     """
@@ -75,7 +75,7 @@ def getActfun(actfun_str):
     return actfun
 
 
-def getOptimizer(opt_str):
+def optimizer(opt_str):
     """
     入力文字列からオプティマイザを推定する
     """
@@ -108,7 +108,7 @@ def getOptimizer(opt_str):
     return opt
 
 
-def getModelParam(path):
+def modelParam(path):
     """
     jsonで記述されたモデルパラメータ情報を読み込む
     [in]  path:              jsonファイルのパス
@@ -133,8 +133,8 @@ def getModelParam(path):
         print(fileFuncLine())
         exit()
 
-    af1 = getActfun(d['actfun_1'])
-    af2 = getActfun(d['actfun_2'])
+    af1 = actfun(d['actfun_1'])
+    af2 = actfun(d['actfun_2'])
     ch = d['shape'][0]
     size = d['shape'][1]
     return \
