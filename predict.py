@@ -13,8 +13,9 @@ import chainer
 import chainer.links as L
 from chainer.cuda import to_cpu
 
-import Lib.imgfunc as IMG
 from Lib.concat_3_images import concat3Images
+import Tools.imgfunc as IMG
+import Tools.getfunc as GET
 import Tools.func as F
 
 
@@ -93,7 +94,7 @@ def predict(model, data, batch, org_shape, gpu):
 
 def main(args):
     # jsonファイルから学習モデルのパラメータを取得する
-    net, unit, ch, size, layer, sr, af1, af2 = IMG.getModelParam(args.param)
+    net, unit, ch, size, layer, sr, af1, af2 = GET.modelParam(args.param)
     # 学習モデルを生成する
     if net == 0:
         from Lib.network import JC_DDUU as JC

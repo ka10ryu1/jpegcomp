@@ -12,7 +12,8 @@ import numpy as np
 import chainer
 import chainer.links as L
 
-import Lib.imgfunc as IMG
+import Tools.imgfunc as IMG
+import Tools.getfunc as GET
 import Tools.func as F
 from predict import encDecWrite, predict
 
@@ -112,7 +113,7 @@ def main(args):
     # スナップショットとモデルパラメータのパスを取得する
     snapshot_path, param = getSnapshotAndParam(args.snapshot_and_json)
     # jsonファイルから学習モデルのパラメータを取得する
-    net, unit, ch, size, layer, sr, af1, af2 = IMG.getModelParam(param)
+    net, unit, ch, size, layer, sr, af1, af2 = GET.modelParam(param)
     # 推論実行するために画像を読み込んで結合する
     img = getImage(args.jpeg, ch, size, args.img_num, args.random_seed)
     # 学習モデルを生成する

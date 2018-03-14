@@ -18,7 +18,8 @@ from chainer.datasets import tuple_dataset
 
 
 from Lib.plot_report_log import PlotReportLog
-import Lib.imgfunc as IMG
+import Tools.imgfunc as IMG
+import Tools.getfunc as GET
 import Tools.func as F
 
 
@@ -130,8 +131,8 @@ def main(args):
     # iteration, which will be used by the PrintReport extension below.
 
     # 活性化関数を取得する
-    actfun_1 = IMG.getActfun(args.actfun_1)
-    actfun_2 = IMG.getActfun(args.actfun_2)
+    actfun_1 = GET.actfun(args.actfun_1)
+    actfun_2 = GET.actfun(args.actfun_2)
     # モデルを決定する
     if args.network == 0:
         from Lib.network import JC_DDUU as JC
@@ -142,7 +143,7 @@ def main(args):
         JC(n_unit=args.unit, layer=args.layer_num, rate=args.shuffle_rate,
            actfun_1=actfun_1, actfun_2=actfun_2, dropout=args.dropout,
            view=args.only_check),
-        lossfun=IMG.getLossfun(args.lossfun)
+        lossfun=GET.lossfun(args.lossfun)
     )
     # Accuracyは今回使用しないのでFalseにする
     # もしも使用したいのであれば、自分でAccuracyを評価する関数を作成する必要あり？
@@ -154,7 +155,7 @@ def main(args):
         model.to_gpu()  # Copy the model to the GPU
 
     # Setup an optimizer
-    optimizer = IMG.getOptimizer(args.optimizer)
+    optimizer = GET.optimizer(args.optimizer)
     optimizer.setup(model)
 
     # Load dataset
