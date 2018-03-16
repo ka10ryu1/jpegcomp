@@ -33,7 +33,7 @@ def getCh(ch):
         return cv2.IMREAD_UNCHANGED
 
 
-def isImage(name):
+def isImgPath(name):
     """
     入力されたパスが画像か判定する
     [in]  name: 画像か判定したいパス
@@ -75,7 +75,7 @@ def encodeDecode(in_imgs, ch, quality=5):
     return out_imgs
 
 
-def cut(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
+def cutN(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
 
     out_imgs = []
     for img in imgs:
@@ -98,7 +98,7 @@ def cut(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
         return np.array(out_imgs)
 
 
-def split(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
+def splitN(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
     """
     入力された画像リストを正方形に分割する
     imgsに格納されている画像はサイズが同じであること
@@ -141,26 +141,29 @@ def split(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
         return np.array(out_imgs), (v_split[0], h_split[0])
 
 
-def random_rotate(imgs, num, level=[-10, 10], scale=1.2):
+def rotate(img, angle, scale):
+    size = img.shape
+    mat = cv2.getRotationMatrix2D((img.shape[0]//2, img.shape[1]//2), angle, scale)
+    return cv2.warpAffine(img, mat, size[:2], flags=cv2.INTER_CUBIC)
 
-    def getCenter(img):
-        return (img.shape[0]//2, img.shape[1]//2)
 
+def rotateR(img, level=[-10, 10]):
+    angle = np.random.randint(level[0], level[1])
+    return rotate(img, angle), angle
+
+
+def rotateRN(img, num, level=[-10, 10], scale=1.2):
     out_imgs = []
     out_angle = []
     for n in range(num):
-        for img in imgs:
-            size = img.shape
-            angle = np.random.randint(level[0], level[1])
-            rot_mat = cv2.getRotationMatrix2D(getCenter(img), angle, scale)
-            rot_img = cv2.warpAffine(img, rot_mat, size[:2], flags=cv2.INTER_CUBIC)
-            out_imgs.append(rot_img[:size[0], :size[1]])
-            out_angle.append(angle)
+        angle, img = rotateR(img, level)
+        out_imgs.append(img)
+        out_angle.append(angle)
 
     return np.array(out_imgs), np.array(out_angle)
 
 
-def rotate(imgs, num=2):
+def flipN(imgs, num=2):
     """
     画像を回転させてデータ数を水増しする
     [in]  imgs:     入力画像リスト
@@ -186,7 +189,7 @@ def rotate(imgs, num=2):
     return out_imgs
 
 
-def whiteCheck(imgs, val=245):
+def whiteCheckN(imgs, val=245):
     """
     画像リストのうち、ほとんど白い画像を除去する
     [in] imgs: 判定する画像リスト
