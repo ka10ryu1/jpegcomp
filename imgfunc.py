@@ -75,6 +75,29 @@ def encodeDecode(in_imgs, ch, quality=5):
     return out_imgs
 
 
+def cut(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
+
+    out_imgs = []
+    for img in imgs:
+        ch, cw = img.shape[0]//2, img.shape[1]//2
+        out_imgs.append(img[ch-size//2:ch+size//2, cw-size//2:cw+size//2])
+
+    # 切り捨てたい数よりも画像数が少ないと0枚になってしまうので注意
+    if(round_num > len(out_imgs)):
+        print('[Error] round({0}) > split images({1})'.format(
+            round_num, len(out_imgs)))
+        print(fileFuncLine())
+        exit()
+
+    # バッチサイズの関係などで、画像の数を調整したい時はここで調整する
+    # predict.pyなどで分割画像を復元したくなるので縦横の分割数も返す
+    if(round_num > 0):
+        round_len = len(out_imgs) // round_num * round_num
+        return np.array(out_imgs[:round_len])
+    else:
+        return np.array(out_imgs)
+
+
 def split(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
     """
     入力された画像リストを正方形に分割する
@@ -134,7 +157,7 @@ def random_rotate(imgs, num, level=[-10, 10], scale=1.2):
             out_imgs.append(rot_img[:size[0], :size[1]])
             out_angle.append(angle)
 
-    return out_imgs, out_angle
+    return np.array(out_imgs), np.array(out_angle)
 
 
 def rotate(imgs, num=2):
@@ -187,6 +210,18 @@ def resize(img, rate, flg=cv2.INTER_NEAREST):
     size = (int(img.shape[1] * rate),
             int(img.shape[0] * rate))
     return cv2.resize(img, size, flg)
+
+
+def resizeP(img, pixel, flg=cv2.INTER_NEAREST):
+    """
+    画像サイズを変更する
+    [in] img:  N倍にする画像
+    [in] rate: 倍率
+    [in] flg:  N倍にする時のフラグ
+    [out] N倍にされた画像リスト
+    """
+
+    return resize(img, pixel/np.min(img.shape[:2]), flg)
 
 
 def size2x(imgs, flg=cv2.INTER_NEAREST):
@@ -243,6 +278,12 @@ def arr2imgs(arr, norm=255, dtype=np.uint8):
     [out] OpenCV形式の画像に変換された行列
     """
 
-    ch, size = arr.shape[1], arr.shape[2]
+    try:
+        ch, size = arr.shape[1], arr.shape[2]
+    except:
+        print('[ERROR] input data is not img arr')
+        print(fileFuncLine())
+        exit()
+
     y = np.array(arr).reshape((-1, size, size, ch)) * 255
     return np.array(y, dtype=np.uint8)

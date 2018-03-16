@@ -8,6 +8,7 @@ import cv2
 import unittest
 
 import Tools.imgfunc as IMG
+import Tools.getfunc as GET
 
 lenna_path = './Tools/Tests/Lenna.bmp'
 mandrill_path = './Tools/Tests/Mandrill.bmp'
@@ -68,8 +69,8 @@ class TestImgFunc(unittest.TestCase):
         lenna = cv2.imread(lenna_path)
         mandrill = cv2.imread(mandrill_path)
         self.assertEqual(len(IMG.rotate([lenna, mandrill])), 6)
-        self.assertEqual(len(IMG.rotate([lenna, mandrill], num=-1)), 4)
-        self.assertEqual(len(IMG.rotate([lenna, mandrill], num=0)), 4)
+        self.assertEqual(len(IMG.rotate([lenna, mandrill], num=-1)), 2)
+        self.assertEqual(len(IMG.rotate([lenna, mandrill], num=0)), 2)
         self.assertEqual(len(IMG.rotate([lenna, mandrill], num=1)), 4)
         self.assertEqual(len(IMG.rotate([lenna, mandrill], num=2)), 6)
         self.assertEqual(len(IMG.rotate([lenna, mandrill], num=3)), 8)
@@ -85,94 +86,94 @@ class TestImgFunc(unittest.TestCase):
         self.assertEqual(IMG.imgs2arr(
             [lenna, mandrill]).shape, (2, 1, 256, 256))
 
-    def test_getLossfun(self):
+    def test_lossfun(self):
         self.assertEqual(
-            IMG.getLossfun('mse').__name__, 'mean_squared_error'
+            GET.lossfun('mse').__name__, 'mean_squared_error'
         )
         self.assertEqual(
-            IMG.getLossfun('mae').__name__, 'mean_absolute_error'
+            GET.lossfun('mae').__name__, 'mean_absolute_error'
         )
         self.assertEqual(
-            IMG.getLossfun('ber').__name__, 'bernoulli_nll'
+            GET.lossfun('ber').__name__, 'bernoulli_nll'
         )
         self.assertEqual(
-            IMG.getLossfun('gauss_kl').__name__, 'gaussian_kl_divergence'
+            GET.lossfun('gauss_kl').__name__, 'gaussian_kl_divergence'
         )
         self.assertEqual(
-            IMG.getLossfun('test').__name__, 'mean_squared_error'
+            GET.lossfun('test').__name__, 'mean_squared_error'
         )
         self.assertEqual(
-            IMG.getLossfun('').__name__, 'mean_squared_error'
-        )
-
-    def test_getActfun(self):
-        self.assertEqual(
-            IMG.getActfun('relu').__name__, 'relu'
-        )
-        self.assertEqual(
-            IMG.getActfun('elu').__name__, 'elu'
-        )
-        self.assertEqual(
-            IMG.getActfun('c_relu').__name__, 'clipped_relu'
-        )
-        self.assertEqual(
-            IMG.getActfun('l_relu').__name__, 'leaky_relu'
-        )
-        self.assertEqual(
-            IMG.getActfun('sigmoid').__name__, 'sigmoid'
-        )
-        self.assertEqual(
-            IMG.getActfun('h_sigmoid').__name__, 'hard_sigmoid'
-        )
-        self.assertEqual(
-            IMG.getActfun('tanh').__name__, 'tanh'
-        )
-        self.assertEqual(
-            IMG.getActfun('s_plus').__name__, 'softplus'
-        )
-        self.assertEqual(
-            IMG.getActfun('none').__name__, 'F_None'
-        )
-        self.assertEqual(
-            IMG.getActfun('test').__name__, 'relu'
-        )
-        self.assertEqual(
-            IMG.getActfun('').__name__, 'relu'
+            GET.lossfun('').__name__, 'mean_squared_error'
         )
 
-    def test_getOptimizer(self):
+    def test_actfun(self):
         self.assertEqual(
-            IMG.getOptimizer('adam').__class__.__name__, 'Adam'
+            GET.actfun('relu').__name__, 'relu'
         )
         self.assertEqual(
-            IMG.getOptimizer('ada_d').__class__.__name__, 'AdaDelta'
+            GET.actfun('elu').__name__, 'elu'
         )
         self.assertEqual(
-            IMG.getOptimizer('ada_g').__class__.__name__, 'AdaGrad'
+            GET.actfun('c_relu').__name__, 'clipped_relu'
         )
         self.assertEqual(
-            IMG.getOptimizer('m_sgd').__class__.__name__, 'MomentumSGD'
+            GET.actfun('l_relu').__name__, 'leaky_relu'
         )
         self.assertEqual(
-            IMG.getOptimizer('n_ag').__class__.__name__, 'NesterovAG'
+            GET.actfun('sigmoid').__name__, 'sigmoid'
         )
         self.assertEqual(
-            IMG.getOptimizer('rmsp').__class__.__name__, 'RMSprop'
+            GET.actfun('h_sigmoid').__name__, 'hard_sigmoid'
         )
         self.assertEqual(
-            IMG.getOptimizer('rmsp_g').__class__.__name__, 'RMSpropGraves'
+            GET.actfun('tanh').__name__, 'tanh'
         )
         self.assertEqual(
-            IMG.getOptimizer('sgd').__class__.__name__, 'SGD'
+            GET.actfun('s_plus').__name__, 'softplus'
         )
         self.assertEqual(
-            IMG.getOptimizer('smorms').__class__.__name__, 'SMORMS3'
+            GET.actfun('none').__name__, 'F_None'
         )
         self.assertEqual(
-            IMG.getOptimizer('test').__class__.__name__, 'Adam'
+            GET.actfun('test').__name__, 'relu'
         )
         self.assertEqual(
-            IMG.getOptimizer('').__class__.__name__, 'Adam'
+            GET.actfun('').__name__, 'relu'
+        )
+
+    def test_optimizer(self):
+        self.assertEqual(
+            GET.optimizer('adam').__class__.__name__, 'Adam'
+        )
+        self.assertEqual(
+            GET.optimizer('ada_d').__class__.__name__, 'AdaDelta'
+        )
+        self.assertEqual(
+            GET.optimizer('ada_g').__class__.__name__, 'AdaGrad'
+        )
+        self.assertEqual(
+            GET.optimizer('m_sgd').__class__.__name__, 'MomentumSGD'
+        )
+        self.assertEqual(
+            GET.optimizer('n_ag').__class__.__name__, 'NesterovAG'
+        )
+        self.assertEqual(
+            GET.optimizer('rmsp').__class__.__name__, 'RMSprop'
+        )
+        self.assertEqual(
+            GET.optimizer('rmsp_g').__class__.__name__, 'RMSpropGraves'
+        )
+        self.assertEqual(
+            GET.optimizer('sgd').__class__.__name__, 'SGD'
+        )
+        self.assertEqual(
+            GET.optimizer('smorms').__class__.__name__, 'SMORMS3'
+        )
+        self.assertEqual(
+            GET.optimizer('test').__class__.__name__, 'Adam'
+        )
+        self.assertEqual(
+            GET.optimizer('').__class__.__name__, 'Adam'
         )
 
 

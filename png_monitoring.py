@@ -17,6 +17,8 @@ def command():
     parser = argparse.ArgumentParser(description=help)
     parser.add_argument('monitor', help='監視するフォルダ')
     parser.add_argument('copy', help='コピーするフォルダ')
+    parser.add_argument('--force', action='store_true',
+                        help='monotorとcopyのフォルダがない場合に強制的に作成する')
     return parser.parse_args()
 
 
@@ -54,11 +56,17 @@ if __name__ in '__main__':
     print('Exit: Ctrl-c')
 
     if not os.path.isdir(args.monitor):
-        print('[Error] monitor folder not found:', args.monitor)
-        exit()
+        if args.force:
+            os.makedirs(args.monitor)
+        else:
+            print('[Error] monitor folder not found:', args.monitor)
+            exit()
 
     if not os.path.isdir(args.copy):
-        print('[Error] copy folder not found:', args.copy)
-        exit()
+        if args.force:
+            os.makedirs(args.copy)
+        else:
+            print('[Error] copy folder not found:', args.copy)
+            exit()
 
     main(args.monitor, args.copy)

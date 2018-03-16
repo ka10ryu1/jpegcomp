@@ -27,6 +27,8 @@ def command():
                         help='画像サイズの倍率 [default: 1]')
     parser.add_argument('-o', '--out_path', default='./result/',
                         help='画像の出力先 [default: ./result/]')
+    parser.add_argument('--only_x', action='store_true',
+                        help='xだけを表示する')
     return parser.parse_args()
 
 
@@ -34,15 +36,16 @@ def main(args):
     # NPZ形式のファイルを読み込む
     np_arr = np.load(args.npz)
     x = IMG.arr2imgs(np_arr['x'])
-    y = IMG.arr2imgs(np_arr['y'])
-    ch = 3
-    if(x.shape[ch] > y.shape[ch]):
-        y = [cv2.cvtColor(i, cv2.COLOR_GRAY2RGB) for i in y]
-        y = np.array(y)
+    if not args.only_x:
+        y = IMG.arr2imgs(np_arr['y'])
+        ch = 3
+        if(x.shape[ch] > y.shape[ch]):
+            y = [cv2.cvtColor(i, cv2.COLOR_GRAY2RGB) for i in y]
+            y = np.array(y)
 
-    if(x.shape[ch] > y.shape[ch]):
-        x = [cv2.cvtColor(i, cv2.COLOR_GRAY2RGB) for i in x]
-        x = np.array(x)
+        if(x.shape[ch] > y.shape[ch]):
+            x = [cv2.cvtColor(i, cv2.COLOR_GRAY2RGB) for i in x]
+            x = np.array(x)
 
     # 全てを画像化するのは無駄なのでランダムに抽出する
     if(args.random_seed >= 0):
@@ -52,12 +55,14 @@ def main(args):
     # ランダムに抽出した画像を結合する
     # 上半分にはxの画像をimg_numの数だけ
     # 下半分にはyの画像をimg_numの数だけ結合した画像を作成する
-    img = np.vstack((np.hstack(x[shuffle[:args.img_num]]),
-                     np.hstack(y[shuffle[:args.img_num]])))
+    if not args.only_x:
+        img = np.vstack((np.hstack(x[shuffle[:args.img_num]]),
+                         np.hstack(y[shuffle[:args.img_num]])))
+    else:
+        img = np.hstack(x[shuffle[:args.img_num]])
+
     # そのままのサイズでは画像が小さいので、拡大する
-    size = (int(img.shape[1] * args.img_rate),
-            int(img.shape[0] * args.img_rate))
-    img = cv2.resize(img, size, cv2.INTER_NEAREST)
+    img = IMG.resize(img, args.img_rate, cv2.INTER_NEAREST)
     # 作成した画像を表示・保存する
     cv2.imshow('test', img)
     cv2.waitKey(0)
