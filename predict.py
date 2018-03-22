@@ -50,14 +50,14 @@ def encDecWrite(img, ch, quality, out_path='./result', val=-1):
     """
 
     # 入力画像を圧縮して劣化させる
-    comp = IMG.encodeDecode([img], IMG.getCh(ch), quality)
+    comp = IMG.encodeDecode(img, IMG.getCh(ch), quality)
     # 比較のため圧縮画像を保存する
     if(val >= 0):
         path = F.getFilePath(out_path, 'comp-' +
                              str(val * 10).zfill(3), '.jpg')
         cv2.imwrite(path, comp[0])
 
-    return comp[0]
+    return comp
 
 
 def predict(model, data, batch, org_shape, gpu):
@@ -124,7 +124,7 @@ def main(args):
     # 高圧縮画像の生成
     ch_flg = IMG.getCh(ch)
     org_imgs = [cv2.imread(name, ch_flg)
-                for name in args.jpeg if IMG.isImage(name)]
+                for name in args.jpeg if IMG.isImgPath(name)]
     ed_imgs = [encDecWrite(img, ch, args.quality, args.out_path, i)
                for i, img in enumerate(org_imgs)]
     imgs = []
@@ -132,7 +132,7 @@ def main(args):
         # 学習モデルを入力画像ごとに実行する
         for i, ei in enumerate(ed_imgs):
             img = predict(
-                model, IMG.split([ei], size), args.batch, ei.shape, args.gpu
+                model, IMG.splitSQ(ei, size), args.batch, ei.shape, args.gpu
             )
             # 生成結果を保存する
             name = F.getFilePath(

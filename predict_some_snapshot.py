@@ -80,11 +80,11 @@ def getImage(jpg_path, ch, img_size, img_num, seed):
 
     ch_flg = IMG.getCh(ch)
     # 画像を読み込み
-    imgs = [cv2.imread(jpg, ch_flg) for jpg in jpg_path if IMG.isImage(jpg)]
+    imgs = [cv2.imread(jpg, ch_flg) for jpg in jpg_path if IMG.isImgPath(jpg)]
     # 画像を分割し
-    imgs, size = IMG.split(imgs, img_size)
+    imgs, size = IMG.splitSQN(imgs, img_size)
     # ほとんど白い画像を除去し
-    imgs = np.array(IMG.whiteCheck(imgs))
+    imgs = np.array(IMG.whiteCheckN(imgs))
     if(seed >= 0):
         np.random.seed(seed)
 
@@ -148,8 +148,7 @@ def main(args):
         ed = encDecWrite(img, ch, args.quality)
         with chainer.using_config('train', False):
             out_imgs.append(
-                predict(model, IMG.split([ed], size),
-                        args.batch, ed.shape, args.gpu)
+                predict(model, IMG.splitSQ(ed, size), args.batch, ed.shape, args.gpu)
             )
 
     # 推論実行した各画像を結合してサイズを調整する

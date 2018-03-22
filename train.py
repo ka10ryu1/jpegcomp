@@ -194,7 +194,7 @@ def main(args):
 
     # Write a log of evaluation statistics for each epoch
     trainer.extend(extensions.LogReport(log_name=exec_time + '.log'))
-    trainer.extend(extensions.observe_lr())
+    # trainer.extend(extensions.observe_lr())
 
     # Save two plot images to the result dir
     if args.plot and extensions.PlotReport.available():
@@ -203,10 +203,10 @@ def main(args):
                           'epoch', file_name='loss.png')
         )
 
-        trainer.extend(
-            PlotReportLog(['lr'],
-                          'epoch', file_name='lr.png', val_pos=(-80, -60))
-        )
+        # trainer.extend(
+        #     PlotReportLog(['lr'],
+        #                   'epoch', file_name='lr.png', val_pos=(-80, -60))
+        # )
 
     # Print selected entries of the log to stdout
     # Here "main" refers to the target link of the "main" optimizer again, and
@@ -217,7 +217,7 @@ def main(args):
         'epoch',
         'main/loss',
         'validation/main/loss',
-        'lr',
+        # 'lr',
         'elapsed_time'
     ]))
 
