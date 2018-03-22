@@ -81,7 +81,7 @@ def encodeDecodeN(imgs, ch, quality=5):
     [out] 出力画像リスト
     """
 
-    return np.array([encodeDecode(img, ch, quality) for img in imgs])
+    return [encodeDecode(img, ch, quality) for img in imgs]
 
 
 def cut(img, size):
