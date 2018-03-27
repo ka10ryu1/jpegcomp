@@ -33,12 +33,15 @@ def getCh(ch):
         return cv2.IMREAD_UNCHANGED
 
 
-def isImage(name):
+def isImgPath(name):
     """
     入力されたパスが画像か判定する
     [in]  name: 画像か判定したいパス
     [out] 画像ならTrue
     """
+
+    if not type(name) is str:
+        return False
 
     # cv2.imreadしてNoneが返ってきたら画像でないとする
     if cv2.imread(name) is not None:
@@ -49,39 +52,66 @@ def isImage(name):
         return False
 
 
-def encodeDecode(in_imgs, ch, quality=5):
+def encodeDecode(img, ch, quality=5):
     """
-    入力された画像リストを圧縮する
-    [in]  in_imgs:  入力画像リスト
-    [in]  ch:       出力画像リストのチャンネル数 （OpenCV形式）
-    [in]  quality:  圧縮する品質 (1-100)
-    [out] out_imgs: 出力画像リスト
+    入力された画像を圧縮する
+    [in]  img:     入力画像
+    [in]  ch:      圧縮画像のチャンネル数
+    [in]  quality: 圧縮する品質 (1-100)
+    [out] 圧縮画像
     """
 
     encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
-    out_imgs = []
+    result, encimg = cv2.imencode('.jpg', img, encode_param)
+    if False == result:
+        print(
+            '[Error] {0}\n\tcould not encode image!'.format(fileFuncLine())
+        )
+        exit()
 
-    for img in in_imgs:
-        result, encimg = cv2.imencode('.jpg', img, encode_param)
-        if False == result:
-            print('[Error] {0}\n\tcould not encode image!'.format(
-                fileFuncLine())
-            )
-            exit()
-
-        decimg = cv2.imdecode(encimg, ch)
-        out_imgs.append(decimg)
-
-    return out_imgs
+    return cv2.imdecode(encimg, getCh(ch))
 
 
-def cut(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
+def encodeDecodeN(imgs, ch, quality=5):
+    """
+    入力された画像リストを圧縮する
+    [in]  imgs:    入力画像リスト
+    [in]  ch:      出力画像リストのチャンネル数
+    [in]  quality: 圧縮する品質 (1-100)
+    [out] 出力画像リスト
+    """
 
-    out_imgs = []
-    for img in imgs:
-        ch, cw = img.shape[0]//2, img.shape[1]//2
-        out_imgs.append(img[ch-size//2:ch+size//2, cw-size//2:cw+size//2])
+    return [encodeDecode(img, ch, quality) for img in imgs]
 
+
+def cut(img, size):
+    """
+    画像を中心から任意のサイズで切り取る
+    [in]  img:カットする画像
+    [in]  size:カットするサイズ（正方形）
+    [out] カットされた画像
+    """
+
+    if size <= 1:
+        return img
+
+    ch, cw = img.shape[0] // 2, img.shape[1] // 2
+    return img[ch - size // 2:ch + size // 2, cw - size // 2:cw + size // 2]
+
+
+def cutN(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
+    """
+    画像リストの画像を中心から任意のサイズで切り取る
+    [in]  img:カットする画像
+    [in]  size:カットするサイズ（正方形）
+    [out] カットされた画像
+    """
+
+    if size <= 1:
+        return np.array(imgs)
+
+    # 画像のカットを実行
+    out_imgs = [cut(img, size) for img in imgs]
     # 切り捨てたい数よりも画像数が少ないと0枚になってしまうので注意
     if(round_num > len(out_imgs)):
         print('[Error] round({0}) > split images({1})'.format(
@@ -98,7 +128,35 @@ def cut(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
         return np.array(out_imgs)
 
 
-def split(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
+def splitSQ(img, size, flg=cv2.BORDER_REPLICATE):
+    """
+    入力された画像を正方形に分割する
+    [in]  img:   入力画像
+    [in]  size:  正方形のサイズ [size x size]
+    [in]  flg:   境界線のフラグ
+    [out] imgs:  分割された正方形画像リスト
+    [out] split: 縦横の分割情報
+    """
+
+    if size <= 1:
+        print('[Error] img.shape({0}), size({1})'.format(img.shape, size))
+        print(fileFuncLine())
+        exit()
+
+    # 画像を分割する際に端が切れてしまうのを防ぐために余白を追加する
+    img = cv2.copyMakeBorder(img, 0, size, 0, size, flg)
+    # 画像を分割しやすいように画像サイズを変更する
+    img = img[:(img.shape[0] // size * size), :(img.shape[1] // size * size)]
+    # 縦横の分割数を計算する
+    split = (img.shape[0] // size, img.shape[1] // size)
+    # 画像を分割する
+    imgs_2d = [np.vsplit(i, split[0])
+               for i in np.hsplit(img, split[1])]
+    imgs_1d = [x for l in imgs_2d for x in l]
+    return imgs_1d, split
+
+
+def splitSQN(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
     """
     入力された画像リストを正方形に分割する
     imgsに格納されている画像はサイズが同じであること
@@ -106,24 +164,22 @@ def split(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
     [in]  size:      正方形のサイズ（size x size）
     [in]  round_num: 丸める画像数
     [in]  flg:       境界線のフラグ
-    [out] 分割されたnp.array形式の正方形画像リスト
+    [out] out_imgs:  分割されたnp.array形式の正方形画像リスト
+    [out] split:     縦横の分割情報
     """
 
-    # 画像を分割する際に端が切れてしまうのを防ぐために余白を追加する
-    imgs = [cv2.copyMakeBorder(img, 0, size, 0, size, flg)
-            for img in imgs]
-    # 画像を分割しやすいように画像サイズを変更する
-    v_size = [img.shape[0] // size * size for img in imgs]
-    h_size = [img.shape[1] // size * size for img in imgs]
-    imgs = [i[:v, :h] for i, v, h in zip(imgs, v_size, h_size)]
-    # 画像の分割数を計算する
-    v_split = [img.shape[0] // size for img in imgs]
-    h_split = [img.shape[1] // size for img in imgs]
-    # 画像を分割する
+    if size <= 1:
+        print('[Error] imgs[0].shape({0}), size({1})'.format(
+            imgs[0].shape, size))
+        print(fileFuncLine())
+        exit()
+
     out_imgs = []
-    [[out_imgs.extend(np.vsplit(hi, v))
-      for hi in np.hsplit(i, h)]
-     for i, h, v in zip(imgs, h_split, v_split)]
+    split = []
+    for img in imgs:
+        i, s = splitSQ(img, size, flg)
+        out_imgs.extend(i)
+        split.extend(s)
 
     # 切り捨てたい数よりも画像数が少ないと0枚になってしまうので注意
     if(round_num > len(out_imgs)):
@@ -136,31 +192,90 @@ def split(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
     # predict.pyなどで分割画像を復元したくなるので縦横の分割数も返す
     if(round_num > 0):
         round_len = len(out_imgs) // round_num * round_num
-        return np.array(out_imgs[:round_len]), (v_split[0], h_split[0])
+        return np.array(out_imgs[:round_len]), (split[0], split[1])
     else:
-        return np.array(out_imgs), (v_split[0], h_split[0])
+        return np.array(out_imgs), (split[0], split[0])
 
 
-def random_rotate(imgs, num, level=[-10, 10], scale=1.2):
+def rotate(img, angle, scale):
+    """
+    画像を回転（反転）させる
+    [in]  img:   回転させる画像
+    [in]  angle: 回転させる角度
+    [in]  scale: 拡大率
+    [out] 回転させた画像
+    """
 
-    def getCenter(img):
-        return (img.shape[0]//2, img.shape[1]//2)
+    size = img.shape[:2]
+    mat = cv2.getRotationMatrix2D((size[0] // 2, size[1] // 2), angle, scale)
+    return cv2.warpAffine(img, mat, size, flags=cv2.INTER_CUBIC)
+
+
+def rotateR(img, level=[-10, 10], scale=1.2):
+    """
+    ランダムに画像を回転させる
+    [in]  img:   回転させる画像
+    [in]  level: 回転させる角度の範囲
+    [out] 回転させた画像
+    [out] 回転させた角度
+    """
+
+    angle = np.random.randint(level[0], level[1])
+    return rotate(img, angle, scale), angle
+
+
+def rotateRN(imgs, num, level=[-10, 10], scale=1.2):
+    """
+    画像リストをランダムに画像を回転させる
+    [in]  img:   回転させる画像
+    [in]  num:   繰り返し数
+    [in]  level: 回転させる角度の範囲
+    [in]  scale: 拡大率
+    [out] 回転させた画像リスト
+    [out] 回転させた角度リスト
+    """
 
     out_imgs = []
     out_angle = []
     for n in range(num):
         for img in imgs:
-            size = img.shape
-            angle = np.random.randint(level[0], level[1])
-            rot_mat = cv2.getRotationMatrix2D(getCenter(img), angle, scale)
-            rot_img = cv2.warpAffine(img, rot_mat, size[:2], flags=cv2.INTER_CUBIC)
-            out_imgs.append(rot_img[:size[0], :size[1]])
-            out_angle.append(angle)
+            i, a = rotateR(img, level, scale)
+            out_imgs.append(i)
+            out_angle.append(a)
 
     return np.array(out_imgs), np.array(out_angle)
 
 
-def rotate(imgs, num=2):
+def flip(img, num=2):
+    """
+    画像を回転させてデータ数を水増しする
+    [in]  img:     入力画像
+    [in]  num:     水増しする数（最大4倍）
+    [out] out_img: 出力画像
+    """
+
+    if(num < 1):
+        return img
+
+    # ベース
+    out_img = [img.copy()]
+    # 上下反転を追加
+    f = cv2.flip(img, 0)
+    out_img.extend(f)
+    if(num > 1):
+        # 左右反転を追加
+        f = cv2.flip(img, 1)
+        out_img.extend(f)
+
+    if(num > 2):
+        # 上下左右反転を追加
+        f = cv2.flip(cv2.flip(img, 1), 0)
+        out_img.extend(f)
+
+    return out_img
+
+
+def flipN(imgs, num=2):
     """
     画像を回転させてデータ数を水増しする
     [in]  imgs:     入力画像リスト
@@ -169,24 +284,27 @@ def rotate(imgs, num=2):
     """
 
     if(num < 1):
-        return imgs
+        return np.array(imgs)
 
     # ベース
     out_imgs = imgs.copy()
     # 上下反転を追加
-    [out_imgs.append(cv2.flip(i, 0)) for i in imgs]
+    f = [cv2.flip(i, 0) for i in imgs]
+    out_imgs.extend(f)
     if(num > 1):
         # 左右反転を追加
-        [out_imgs.append(cv2.flip(i, 1)) for i in imgs]
+        f = [cv2.flip(i, 1) for i in imgs]
+        out_imgs.extend(f)
 
     if(num > 2):
         # 上下左右反転を追加
-        [out_imgs.append(cv2.flip(cv2.flip(i, 1), 0)) for i in imgs]
+        f = [cv2.flip(cv2.flip(i, 1), 0) for i in imgs]
+        out_imgs.extend(f)
 
-    return out_imgs
+    return np.array(out_imgs)
 
 
-def whiteCheck(imgs, val=245):
+def whiteCheckN(imgs, val=245):
     """
     画像リストのうち、ほとんど白い画像を除去する
     [in] imgs: 判定する画像リスト
@@ -194,8 +312,9 @@ def whiteCheck(imgs, val=245):
     [out] ほとんど白い画像を除去した画像リスト
     """
 
-    return [i for i in imgs
-            if(val > np.sum(i) // (i.shape[0] * i.shape[1]))]
+    return np.array(
+        [i for i in imgs if(val > np.sum(i) // (i.shape[0] * i.shape[1]))]
+    )
 
 
 def resize(img, rate, flg=cv2.INTER_NEAREST):
@@ -215,13 +334,30 @@ def resize(img, rate, flg=cv2.INTER_NEAREST):
 def resizeP(img, pixel, flg=cv2.INTER_NEAREST):
     """
     画像サイズを変更する
+    [in] img:   サイズを変更する画像
+    [in] pixel: 短辺の幅
+    [in] flg:   サイズを変更する時のフラグ
+    [out] サイズを変更した画像リスト
+    """
+
+    r_img = resize(img, pixel / np.min(img.shape[:2]), flg)
+    b_img = cv2.copyMakeBorder(
+        r_img, 0, 2, 0, 2, cv2.BORDER_CONSTANT, value=(0, 0, 0)
+    )
+
+    return b_img[:pixel, :pixel]
+
+
+def resizeN(imgs, rate, flg=cv2.INTER_NEAREST):
+    """
+    画像リストの画像を全てサイズ変更する
     [in] img:  N倍にする画像
     [in] rate: 倍率
     [in] flg:  N倍にする時のフラグ
     [out] N倍にされた画像リスト
     """
 
-    return resize(img, pixel/np.min(img.shape[:2]), flg)
+    return np.array([resize(img, rate, flg) for img in imgs])
 
 
 def size2x(imgs, flg=cv2.INTER_NEAREST):
@@ -233,6 +369,60 @@ def size2x(imgs, flg=cv2.INTER_NEAREST):
     """
 
     return [resize(i, 2, flg) for i in imgs]
+
+
+def paste(fg, bg, mask_flg=True, random_flg=True):
+    """
+    背景に前景を重ね合せる
+    [in]  fg:         重ね合せる背景
+    [in]  bg:         重ね合せる前景
+    [in]  mask_flg:   マスク処理を大きめにするフラグ
+    [in]  random_flg: 前景をランダムに配置するフラグ
+    [out] 重ね合せた画像
+    """
+
+    # Load two images
+    img1 = bg.copy()
+    if random_flg:
+        img2, _ = rotateR(fg, [-90, 90], 1.0)
+    else:
+        img2 = fg.copy()
+
+    # I want to put logo on top-left corner, So I create a ROI
+    w1, h1 = img1.shape[:2]
+    w2, h2 = img2.shape[:2]
+    if random_flg:
+        x = np.random.randint(0, w1 - w2 + 1)
+        y = np.random.randint(0, w1 - w2 + 1)
+    else:
+        x = 0
+        y = 0
+
+    roi = img1[x:x + w2, y:y + h2]
+
+    # Now create a mask of logo and create its inverse mask also
+    mask = img2[:, :, 3]
+    ret, mask_inv = cv2.threshold(
+        cv2.bitwise_not(mask),
+        200, 255, cv2.THRESH_BINARY
+    )
+
+    if mask_flg:
+        kernel1 = np.ones((5, 5), np.uint8)
+        kernel2 = np.ones((3, 3), np.uint8)
+        mask_inv = cv2.dilate(mask_inv, kernel1, iterations=1)
+        mask_inv = cv2.erode(mask_inv, kernel2, iterations=1)
+
+    # Now black-out the area of logo in ROI
+    img1_bg = cv2.bitwise_and(roi, roi, mask=mask_inv)
+
+    # Take only region of logo from logo image.
+    img2_fg = cv2.bitwise_and(img2, img2, mask=mask)
+
+    # Put logo in ROI and modify the main image
+    dst = cv2.add(img1_bg, img2_fg)
+    img1[x:x + w2, y:y + h2] = dst
+    return img1
 
 
 def arr2x(arr, flg=cv2.INTER_NEAREST):
