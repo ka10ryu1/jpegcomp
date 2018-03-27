@@ -133,8 +133,8 @@ def modelParam(path):
         print(fileFuncLine())
         exit()
 
-    af1 = actfun(d['actfun_1'])
-    af2 = actfun(d['actfun_2'])
+    af1 = actfun(d['actfun1'])
+    af2 = actfun(d['actfun2'])
     ch = d['shape'][0]
     size = d['shape'][1]
     return \

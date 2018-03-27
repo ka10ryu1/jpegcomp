@@ -43,12 +43,12 @@ class TestImgFunc(unittest.TestCase):
     def test_encodeDecode(self):
         l = cv2.imread(lenna_path)
         m = cv2.imread(mandrill_path)
-        self.assertEqual(IMG.encodeDecodeN([l, m], 3).shape, (2, 256, 256, 3))
-        self.assertEqual(IMG.encodeDecodeN([l, m], 1).shape, (2, 256, 256))
+        self.assertEqual(len(IMG.encodeDecodeN([l, m], 3)), 2)
+        self.assertEqual(len(IMG.encodeDecodeN([l, m], 1)), 2)
         l = cv2.imread(lenna_path, IMG.getCh(1))
         m = cv2.imread(mandrill_path, IMG.getCh(1))
-        self.assertEqual(IMG.encodeDecodeN([l, m], 3).shape, (2, 256, 256, 3))
-        self.assertEqual(IMG.encodeDecodeN([l, m], 1).shape, (2, 256, 256))
+        self.assertEqual(len(IMG.encodeDecodeN([l, m], 3)), 2)
+        self.assertEqual(len(IMG.encodeDecodeN([l, m], 1)), 2)
 
     def test_cut(self):
         l = cv2.imread(lenna_path)
