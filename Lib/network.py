@@ -83,30 +83,29 @@ class JC_DDUU(Chain):
         """
 
         unit1 = n_unit
-        unit2 = n_unit*2
-        unit4 = n_unit*4
-        unit8 = n_unit*8
+        unit2 = n_unit * 2
+        unit4 = n_unit * 4
+        unit8 = n_unit * 8
+        nout = (rate**2) * 3
 
         super(JC_DDUU, self).__init__()
         with self.init_scope():
             # D: n_unit, ksize, stride, pad,
             #    actfun=None, dropout=0, wd=0.02
-            self.block1a = DownSanpleBlock(unit1, 5, 2, 2, actfun_1, dropout)
-            self.block1b = DownSanpleBlock(unit2, 5, 2, 2, actfun_1, dropout)
-            self.block1c = DownSanpleBlock(unit4, 5, 2, 2, actfun_1, dropout)
-            self.block1d = DownSanpleBlock(unit8, 5, 2, 2, actfun_1, dropout)
-            self.block1e = DownSanpleBlock(unit8, 3, 1, 1, actfun_1, dropout)
+            self.d1 = DownSanpleBlock(unit1, 5, 2, 2, actfun_1, dropout)
+            self.d2 = DownSanpleBlock(unit2, 5, 2, 2, actfun_1, dropout)
+            self.d3 = DownSanpleBlock(unit4, 5, 2, 2, actfun_1, dropout)
+            self.d4 = DownSanpleBlock(unit8, 5, 2, 2, actfun_1, dropout)
+            self.d5 = DownSanpleBlock(unit8, 3, 1, 1, actfun_1, dropout)
 
             # U: n_unit_1, n_unit_2, ksize, stride, pad,
             #    actfun=None, dropout=0, rate=2
-            self.block2a = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2, dropout)
-            self.block2b = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2, dropout)
-            self.block2c = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2, dropout)
-            self.block2d = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2, dropout)
+            self.u1 = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2, dropout)
+            self.u2 = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2, dropout)
+            self.u3 = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2, dropout)
+            self.u4 = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun_2, dropout)
+            self.u5 = UpSampleBlock(nout, 3, 5, 1, 2, actfun_2, 0, rate)
 
-            self.blockN = UpSampleBlock(rate**2, 1, 5, 1, 2, actfun_2, 0, rate)
-
-        self.layer = layer
         self.view = view
 
         print('[Network info]', self.__class__.__name__)
@@ -123,17 +122,17 @@ class JC_DDUU(Chain):
     def __call__(self, x):
         hc = []
 
-        ha = self.block(self.block1a, x)
-        hb = self.block(self.block1b, ha)
-        hc = self.block(self.block1c, hb)
-        hd = self.block(self.block1d, hc)
-        he = self.block(self.block1e, hd)
+        ha = self.block(self.d1, x)
+        hb = self.block(self.d2, ha)
+        hc = self.block(self.d3, hb)
+        hd = self.block(self.d4, hc)
+        he = self.block(self.d5, hd)
 
-        h = self.block(self.block2a, F.concat([hd, he]))
-        h = self.block(self.block2b, F.concat([hc, h]))
-        h = self.block(self.block2c, F.concat([hb, h]))
-        h = self.block(self.block2d, F.concat([ha, h]))
-        y = self.block(self.blockN, h)
+        h = self.block(self.u1, F.concat([hd, he]))
+        h = self.block(self.u2, F.concat([hc, h]))
+        h = self.block(self.u3, F.concat([hb, h]))
+        h = self.block(self.u4, F.concat([ha, h]))
+        y = self.block(self.u5, h)
 
         if self.view:
             print(y.shape)
