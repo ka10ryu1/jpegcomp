@@ -35,9 +35,9 @@ def command():
                         help='PSの拡大率 [default: 2]')
     parser.add_argument('-ln', '--layer_num', type=int, default=2,
                         help='ネットワーク層の数 [default: 2]')
-    parser.add_argument('-a1', '--actfun_1', default='relu',
+    parser.add_argument('-a1', '--actfun1', default='relu',
                         help='活性化関数(1) [default: relu, other: elu/c_relu/l_relu/sigmoid/h_sigmoid/tanh/s_plus]')
-    parser.add_argument('-a2', '--actfun_2', default='sigmoid',
+    parser.add_argument('-a2', '--actfun2', default='sigmoid',
                         help='活性化関数(2) [default: sigmoid, other: relu/elu/c_relu/l_relu/h_sigmoid/tanh/s_plus]')
     parser.add_argument('-d', '--dropout', type=float, default=0.0,
                         help='ドロップアウト率（0〜0.9、0で不使用）[default: 0.0]')
@@ -131,8 +131,8 @@ def main(args):
     # iteration, which will be used by the PrintReport extension below.
 
     # 活性化関数を取得する
-    actfun_1 = GET.actfun(args.actfun_1)
-    actfun_2 = GET.actfun(args.actfun_2)
+    actfun1 = GET.actfun(args.actfun1)
+    actfun2 = GET.actfun(args.actfun2)
     # モデルを決定する
     if args.network == 0:
         from Lib.network import JC_DDUU as JC
@@ -141,7 +141,7 @@ def main(args):
 
     model = L.Classifier(
         JC(n_unit=args.unit, layer=args.layer_num, rate=args.shuffle_rate,
-           actfun_1=actfun_1, actfun_2=actfun_2, dropout=args.dropout,
+           actfun1=actfun1, actfun2=actfun2, dropout=args.dropout,
            view=args.only_check),
         lossfun=GET.lossfun(args.lossfun)
     )
