@@ -55,7 +55,7 @@ def encDecWrite(img, ch, quality, out_path='./result', val=-1):
     if(val >= 0):
         path = F.getFilePath(out_path, 'comp-' +
                              str(val * 10).zfill(3), '.jpg')
-        cv2.imwrite(path, comp[0])
+        cv2.imwrite(path, comp)
 
     return comp
 
@@ -102,8 +102,7 @@ def main(args):
         from Lib.network2 import JC_UDUD as JC
 
     model = L.Classifier(
-        JC(n_unit=unit, n_out=ch,
-           rate=sr, actfun_1=af1, actfun_2=af2)
+        JC(n_unit=unit, n_out=ch, rate=sr, actfun1=af1, actfun2=af2)
     )
 
     # load_npzのpath情報を取得し、学習済みモデルを読み込む

@@ -123,8 +123,7 @@ def main(args):
         from Lib.network2 import JC_UDUD as JC
 
     model = L.Classifier(
-        JC(n_unit=unit, n_out=1, layer=layer, rate=sr,
-           actfun_1=af1, actfun_2=af2)
+        JC(n_unit=unit, n_out=1, layer=layer, rate=sr, actfun1=af1, actfun2=af2)
     )
     out_imgs = [img]
     for s in snapshot_path:

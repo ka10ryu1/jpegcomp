@@ -87,7 +87,7 @@ class JC_DDUU(Chain):
         unit2 = n_unit * 2
         unit4 = n_unit * 4
         unit8 = n_unit * 8
-        nout = (rate**2) * 3
+        nout = (rate**2) * n_out
 
         super(JC_DDUU, self).__init__()
         with self.init_scope():
@@ -105,7 +105,7 @@ class JC_DDUU(Chain):
             self.u2 = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun2, dropout)
             self.u3 = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun2, dropout)
             self.u4 = UpSampleBlock(unit4, unit1, 5, 1, 2, actfun2, dropout)
-            self.u5 = UpSampleBlock(nout, 3, 5, 1, 2, actfun2, 0, 0.02, rate)
+            self.u5 = UpSampleBlock(nout, n_out, 5, 1, 2, actfun2, 0, 0.02, rate)
 
         self.view = view
         self.cnt = 0

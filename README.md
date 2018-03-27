@@ -37,30 +37,32 @@ $ tree >& log.txt
 ├── FontData
 │   ├── The_Night_of_the_Milky_Way_Train_ch2.PNG > predict用画像
 │   ├── The_Nighthawk_Star_op.PNG                > predict用画像
-│   ├── test_32x32_000800.npz                    > 学習用データセット（サンプル）
-│   └── train_32x32_007200.npz                   > 学習用データセット（サンプル）
+│   ├── test_32x32_001200.npz                    > テスト用データセットサンプル
+│   └── train_32x32_010800.npz                   > 学習用データセットサンプル
 ├── LICENSE
 ├── Lib
-│   ├── Tests
-│   │   ├── Lenna.bmp       > テスト用画像
-│   │   ├── Mandrill.bmp    > テスト用画像
-│   │   └── test_imgfunc.py > imgfuncのテスト用コード
-│   ├── imgfunc.py  > 画像処理に関する便利機能
-│   ├── network.py  > jpegcompのネットワーク部分
-│   ├── network2.py > jpegcompのネットワーク部分その2
+│   ├── concat_3_images.py > 3枚の画像を連結する（org, comp, restration）
+│   ├── network.py         > jpegcompのネットワーク部分
+│   ├── network2.py        > jpegcompのネットワーク部分その2
 │   └── plot_report_log.py
 ├── README.md
 ├── Tools
 │   ├── LICENSE
 │   ├── README.md
-│   ├── dot2png.py        > dot言語で記述されたファイルをPNG形式に変換する
-│   ├── func.py           > 便利機能
-│   ├── npz2jpg.py        > 作成したデータセット（.npz）の中身を画像として出力する
-│   ├── plot_diff.py      > logファイルの複数比較
-│   └── png_monitoring.py > 任意のフォルダの監視
+│   ├── Tests
+│   │   ├── Lenna.bmp       > テスト用画像
+│   │   ├── Mandrill.bmp    > テスト用画像
+│   │   ├── test_getfunc.py > getfuncのテスト用コード
+│   │   └── test_imgfunc.py > imgfuncのテスト用コード'
+│   ├── dot2png.py         > dot言語で記述されたファイルをPNG形式に変換する
+│   ├── func.py            > 便利機能
+│   ├── getfunc.py         > 画像処理に関する便利機能
+│   ├── imgfunc.py         > 画像処理に関する便利機能
+│   ├── npz2jpg.py         > 作成したデータセット（.npz）の中身を画像として出力する
+│   ├── plot_diff.py       > logファイルの複数比較
+│   └── png_monitoring.py  > 任意のフォルダの監視
 ├── auto_train.sh
 ├── clean_all.sh
-├── concat_3_images.py       > 3枚の画像を連結する（org, comp, restration）
 ├── create_dataset.py        > 画像を読み込んでデータセットを作成する
 ├── predict.py               > モデルとモデルパラメータを利用して推論実行する
 ├── predict_some_snapshot.py > 複数のsnapshotoとひとつのモデルパラメータを利用してsnapshotの推移を可視化する
@@ -84,10 +86,10 @@ $ ./train.py -i FontData/
 ```console
 not import cupy
 ------------------------------
-actfun_1:	relu
-actfun_2:	sigmoid
+actfun1:	relu
+actfun2:	sigmoid
 batchsize:	100
-dropout:	0.1
+dropout:	0.0
 epoch:	10
 frequency:	-1
 gpu_id:	-1
@@ -108,38 +110,37 @@ Activation func: sigmoid
 [Network info] JC_DDUU
   Unit:	2
   Out:	1
-  Layer:	2
-  Drop out:	0.1
+  Drop out:	0.0
 Act Func:	relu, sigmoid
 Loss func: mean_squared_error
 Optimizer: Adam optimizer
 train_32x32_010800.npz:	x(10800, 1, 32, 32),	y(10800, 1, 32, 32)
 test_32x32_001200.npz:	x(1200, 1, 32, 32),	y(1200, 1, 32, 32)
-epoch       main/loss   validation/main/loss  lr          elapsed_time
-1           0.201806    0.175782              0.000320036  22.9336
-2           0.157518    0.145553              0.000440853  47.8616
-3           0.136482    0.127626              0.000526182  72.3183
-4           0.119958    0.112415              0.000592394  97.2897
-5           0.10619     0.0987265             0.000646072  122.325
-6           0.0944588   0.0891305             0.000690709  146.864
-7           0.0841792   0.079238              0.000728448  171.068
-8           0.0751524   0.0699162             0.000760729  195.549
-9           0.0669822   0.0689321             0.00078858  220.218
-10          0.0571909   0.0512061             0.000812766  244.215
+epoch       main/loss   validation/main/loss  elapsed_time
+1           0.169036    0.13139               25.8497
+2           0.122518    0.098375              53.0986
+3           0.101484    0.0843139             79.0314
+4           0.0862844   0.0765259             106.593
+5           0.0748267   0.0708797             132.969
+6           0.0656074   0.060168              159.378
+7           0.0579955   0.0562111             186.852
+8           0.0516015   0.0475406             213.704
+9           0.0461395   0.041615              241.675
+10          0.0415356   0.0376565             268.658
 ```
 
 `not import cupy`はcupyをインストールしていない場合に表示される
 
 ### 生成物の確認
 
-resultフォルダ中に以下が生成されていればOK。先頭の文字列は日付と時間から算出された値である。
+resultフォルダ中に以下が生成されていればOK。先頭の文字列は日付と時間から算出された値であるため実行ごとに異なる。
+
 - `*.json`
 - `*.log`
 - `*.model`
 - `*_10.snapshot`
 - `*_graph.dot`
 - `loss.png`
-- `lr.png`
 
 ## 2. 学習で作成されたモデルを使用する
 
@@ -153,36 +154,36 @@ $  ./predict.py ./result/*.model ./result/*.json ./FontData/The_Night*
 
 ```console
 not import cupy
+not import cupy
 ------------------------------
 batch:	100
 gpu:	-1
 jpeg[2]:
 	FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG
 	FontData/The_Nighthawk_Star_op.PNG
-model:	result/fff0ljg.model
+model:	result/k7l5q0e.model
 out_path:	./result/
-param:	result/fff0ljg.json
+param:	result/k7l5q0e.json
 quality:	5
 ------------------------------
-model param: result/fff0ljg.json
+model param: result/k7l5q0e.json
 Activation func: relu
 Activation func: sigmoid
 [Network info] JC_DDUU
   Unit:	2
   Out:	1
-  Layer:	2
   Drop out:	0.0
 Act Func:	relu, sigmoid
-model read: result/fff0ljg.model
-exec time: 0.48[s]
+model read: result/k7l5q0e.model
+exec time: 0.52[s]
 save: ./result/comp-001.jpg
-exec time: 0.34[s]
+exec time: 0.35[s]
+save: ./result/comp-011.jpg
 ```
 
 ### 生成物の確認
 
 resultフォルダ中に`comp-*.jpg`と`concat-*.jpg`が生成されていればOK。
-
 
 
 # その他の機能
@@ -195,7 +196,8 @@ $ ./clean_all.sh
 
 ## ハイパーパラメータを変更して自動実行
 
-デフォルトではバッチサイズだけを変更した学習を複数回繰り返す。
+デフォルトではバッチサイズだけを変更した学習を複数回繰り返す。`-c`オプションを付けることでネットワークの中間層の数などを可視化もできる。
+
 
 ```console
 $ ./auto_train.sh
@@ -226,7 +228,7 @@ $ ./Tools/npz2jpg.py ./FontData/test_32x32_000800.npz
 
 <img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/npz2jpg.jpg" width="320px">
 
-## lossやlrの比較をする
+## lossの比較をする
 
 ### 学習を複数回実行する
 
@@ -245,10 +247,11 @@ $ ./Tools/plot_diff.py ./result/001 -l all
 <img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/plot_diff_lr.png" width="320px">
 
 ※ファイルの作成日時順でソートされる。
+※lrの計算は現在していない（train.pyにてコメントアウト中）
 
 ## フォルダの監視
 
-学習が更新されたら（loss.pngとlr.pngが更新されたら）Dropboxにコピーする場合
+学習が更新されたら（loss.pngまたはlr.pngが更新されたら）Dropboxにコピーする場合
 
 ### 監視の実行
 
@@ -264,7 +267,7 @@ Copy to : /home/aaaa/Dropbox/temp/
 Exit: Ctrl-c
 ```
 
-## データセットを作成する
+## データセットの作成
 
 ### 構成
 
@@ -319,7 +322,7 @@ $ ./train.py -i FontData/ -f 1
 $ ./predict_some_snapshot.py ./result/ ./FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG -r 3 -n 8 -rs 8
 ```
 
-### 生成物
+### 生成物の確認
 
 以下のような画像が生成される。一番左が正解画像で、右に行くほど新しいスナップショットの結果になる。
 
