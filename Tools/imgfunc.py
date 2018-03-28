@@ -434,7 +434,7 @@ def arr2x(arr, flg=cv2.INTER_NEAREST):
     """
 
     imgs = arr2imgs(arr)
-    return imgs2arr(size2x(imgs))
+    return imgs2arr(size2x(imgs, flg))
 
 
 def arrNx(arr, rate, flg=cv2.INTER_NEAREST):
@@ -447,7 +447,7 @@ def arrNx(arr, rate, flg=cv2.INTER_NEAREST):
     """
 
     imgs = arr2imgs(arr)
-    return imgs2arr(resizeN(imgs, rate))
+    return imgs2arr(resizeN(imgs, rate, flg))
 
 
 def imgs2arr(imgs, norm=255, dtype=np.float32, gpu=-1):
