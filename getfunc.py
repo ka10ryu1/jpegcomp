@@ -133,10 +133,20 @@ def modelParam(path):
         print(fileFuncLine())
         exit()
 
+    if 'network' in d:
+        net = d['network']
+    else:
+        net = 'None'
+
+    if 'layer_num' in d:
+        layer = d['layer_num']
+    else:
+        layer = 0
+
     af1 = actfun(d['actfun1'])
     af2 = actfun(d['actfun2'])
     ch = d['shape'][0]
     size = d['shape'][1]
     return \
-        d['network'], d['unit'], ch, size, \
-        d['layer_num'], d['shuffle_rate'], af1, af2
+        net, d['unit'], ch, size, \
+        layer, d['shuffle_rate'], af1, af2
