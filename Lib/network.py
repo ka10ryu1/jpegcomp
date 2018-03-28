@@ -109,7 +109,7 @@ class JC_DDUU(Chain):
 
         self.view = view
         self.cnt = 0
-        self.timer = time.time()
+        self.timer = 0
 
         print('[Network info]', self.__class__.__name__)
         print('  Unit:\t{0}\n  Out:\t{1}\n  Drop out:\t{2}\nAct Func:\t{3}, {4}'.format(
@@ -121,13 +121,14 @@ class JC_DDUU(Chain):
             print('{0:2}: {1}\t{2:5.3f} s\t{3} '.format(
                 self.cnt, f.__class__.__name__, time.time()-self.timer, x.shape))
             self.cnt += 1
-            self.timer = time.time()
 
         return f(x)
 
     def __call__(self, x):
-        hc = []
+        if self.view:
+            self.timer = time.time()
 
+        hc = []
         ha = self.block(self.d1, x)
         hb = self.block(self.d2, ha)
         hc = self.block(self.d3, hb)
@@ -141,7 +142,7 @@ class JC_DDUU(Chain):
         y = self.block(self.u5, h)
 
         if self.view:
-            print('Output:', y.shape)
+            print('Output {0:5.3f} s: {1}'.format(time.time()-self.timer, y.shape))
             exit()
         else:
             return y
