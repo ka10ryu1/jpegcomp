@@ -434,7 +434,20 @@ def arr2x(arr, flg=cv2.INTER_NEAREST):
     """
 
     imgs = arr2imgs(arr)
-    return imgs2arr(size2x(imgs))
+    return imgs2arr(size2x(imgs, flg))
+
+
+def arrNx(arr, rate, flg=cv2.INTER_NEAREST):
+    """
+    行列を画像に変換し、サイズをN倍にする
+    [in] arr:  N倍にする行列
+    [in] rate: 倍率
+    [in] flg:  N倍にする時のフラグ
+    [out] N倍にされた行列
+    """
+
+    imgs = arr2imgs(arr)
+    return imgs2arr(resizeN(imgs, rate, flg))
 
 
 def arrNx(arr, rate, flg=cv2.INTER_NEAREST):
