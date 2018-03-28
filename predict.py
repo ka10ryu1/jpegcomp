@@ -60,13 +60,14 @@ def encDecWrite(img, ch, quality, out_path='./result', val=-1):
     return comp
 
 
-def predict(model, data, batch, org_shape, gpu):
+def predict(model, data, batch, org_shape, rate, gpu):
     """
     推論実行メイン部
     [in]  model:     推論実行に使用するモデル
     [in]  data:      分割（IMG.split）されたもの
     [in]  batch:     バッチサイズ
     [in]  org_shape: 分割前のshape
+    [in]  rate:      出力画像の拡大率
     [in]  gpu:       GPU ID
     [out] img:       推論実行で得られた生成画像
     """
@@ -87,7 +88,7 @@ def predict(model, data, batch, org_shape, gpu):
            for i in range(size[1])]
     img = np.hstack(buf)
     # 出力画像は入力画像の2倍の大きさになっているので半分に縮小する
-    img = IMG.resize(img, 0.5)
+    img = IMG.resize(img, 1/rate)
     # 結合しただけでは画像サイズがオリジナルと異なるので切り取る
     return img[:org_shape[0], :org_shape[1]]
 
@@ -131,7 +132,7 @@ def main(args):
         # 学習モデルを入力画像ごとに実行する
         for i, ei in enumerate(ed_imgs):
             img = predict(
-                model, IMG.splitSQ(ei, size), args.batch, ei.shape, args.gpu
+                model, IMG.splitSQ(ei, size), args.batch, ei.shape, sr, args.gpu
             )
             # 生成結果を保存する
             name = F.getFilePath(

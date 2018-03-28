@@ -147,7 +147,7 @@ def main(args):
         ed = encDecWrite(img, ch, args.quality)
         with chainer.using_config('train', False):
             out_imgs.append(
-                predict(model, IMG.splitSQ(ed, size), args.batch, ed.shape, args.gpu)
+                predict(model, IMG.splitSQ(ed, size), args.batch, ed.shape, sr, args.gpu)
             )
 
     # 推論実行した各画像を結合してサイズを調整する
