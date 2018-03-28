@@ -64,7 +64,7 @@ def command():
     return parser.parse_args()
 
 
-def getImageData(folder):
+def getImageData(folder, rate):
     """
     フォルダにあるファイルから学習用データとテスト用データを取得する
     [in]  folder: 探索するフォルダ
@@ -90,22 +90,18 @@ def getImageData(folder):
             pass
         elif('train_' in name)and('.npz' in ext)and(train_flg is False):
             np_arr = np.load(os.path.join(folder, l))
-            print('{0}:\tx{1},\ty{2}'.format(
-                l, np_arr['x'].shape, np_arr['y'].shape)
-            )
             x = np.array(np_arr['x'], dtype=np.float32)
-            y = IMG.arr2x(np.array(np_arr['y'], dtype=np.float32))
+            y = IMG.arrNx(np.array(np_arr['y'], dtype=np.float32), rate)
+            print('{0}:\tx{1},\ty{2}'.format(l, x.shape, y.shape))
             train = tuple_dataset.TupleDataset(x, y)
             if(train._length > 0):
                 train_flg = True
 
         elif('test_' in name)and('.npz' in ext)and(test_flg is False):
             np_arr = np.load(os.path.join(folder, l))
-            print('{0}:\tx{1},\ty{2}'.format(
-                l, np_arr['x'].shape, np_arr['y'].shape)
-            )
             x = np.array(np_arr['x'], dtype=np.float32)
-            y = IMG.arr2x(np.array(np_arr['y'], dtype=np.float32))
+            y = IMG.arrNx(np.array(np_arr['y'], dtype=np.float32), rate)
+            print('{0}:\tx{1},\ty{2}'.format(l, x.shape, y.shape))
             test = tuple_dataset.TupleDataset(x, y)
             if(test._length > 0):
                 test_flg = True
@@ -159,7 +155,7 @@ def main(args):
     optimizer.setup(model)
 
     # Load dataset
-    train, test = getImageData(args.in_path)
+    train, test = getImageData(args.in_path, args.shuffle_rate)
     # predict.pyでモデルを決定する際に必要なので記憶しておく
     model_param = {i: getattr(args, i) for i in dir(args) if not '_' in i[0]}
     model_param['shape'] = train[0][0].shape
