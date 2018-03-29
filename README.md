@@ -2,13 +2,13 @@
 
 圧縮されたJpeg画像の復元
 
-## 学習結果その2（5%に圧縮した画像を復元）
+## 学習結果その1（5%に圧縮した画像を復元）
 
 <img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/concat-100.jpg" width="640px">
 
 <img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/concat-110.jpg" width="640px">
 
-## 学習結果その1（20%に圧縮した画像を復元）
+## 学習結果その2（20%に圧縮した画像を復元）
 
 <img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/concat-000.jpg" width="640px">
 
