@@ -1,18 +1,34 @@
 #!/usr/bin/env python3
 # -*-coding: utf-8 -*-
 #
-help = '画像処理に関する便利機能'
+help = '各種パラメータ取得に関する便利機能'
 #
 
 import os
 import sys
 import json
+import numpy as np
+from datetime import datetime
 
+from chainer.datasets import tuple_dataset
 import chainer.functions as F
 import chainer.optimizers as O
 
 [sys.path.append(d) for d in ['./Tools/', '../Tools/'] if os.path.isdir(d)]
 from func import fileFuncLine
+from imgfunc import arrNx
+
+
+def datetime32():
+    """
+    時刻情報を元に衝突しにくい名前を自動で生成する
+    [out] 生成された名前
+    """
+
+    now = datetime.today()
+    exec_time1 = int(now.strftime('%y%m%d'))
+    exec_time2 = int(now.strftime('%H%M%S'))
+    return np.base_repr(exec_time1 * exec_time2, 32).lower()
 
 
 def lossfun(lossfun_str):
@@ -150,3 +166,58 @@ def modelParam(path):
     return \
         net, d['unit'], ch, size, \
         layer, d['shuffle_rate'], af1, af2
+
+
+def imgData(folder, rate):
+    """
+    フォルダにあるファイルから学習用データとテスト用データを取得する
+    [in]  folder: 探索するフォルダ
+    [in]  rate:   正解画像の倍率
+    [out] train:  取得した学習用データ
+    [out] test:   取得したテスト用データ
+    """
+
+    # 探索するフォルダがなければ終了
+    if not os.path.isdir(folder):
+        print('[Error] folder not found:', folder)
+        print(F.fileFuncLine())
+        exit()
+
+    # 学習用データとテスト用データを発見したらTrueにする
+    train_flg = False
+    test_flg = False
+    # フォルダ内のファイルを探索していき、
+    # 1. ファイル名の頭がtrain_なら学習用データとして読み込む
+    # 2. ファイル名の頭がtest_ならテスト用データとして読み込む
+    for l in os.listdir(folder):
+        name, ext = os.path.splitext(os.path.basename(l))
+        if os.path.isdir(l):
+            pass
+        elif('train_' in name)and('.npz' in ext)and(train_flg is False):
+            np_arr = np.load(os.path.join(folder, l))
+            print('{0}:\tx{1},\ty{2}'.format(
+                l, np_arr['x'].shape, np_arr['y'].shape)
+            )
+            x = np.array(np_arr['x'], dtype=np.float32)
+            y = arrNx(np.array(np_arr['y'], dtype=np.float32), rate)
+            train = tuple_dataset.TupleDataset(x, y)
+            if(train._length > 0):
+                train_flg = True
+
+        elif('test_' in name)and('.npz' in ext)and(test_flg is False):
+            np_arr = np.load(os.path.join(folder, l))
+            print('{0}:\tx{1},\ty{2}'.format(
+                l, np_arr['x'].shape, np_arr['y'].shape)
+            )
+            x = np.array(np_arr['x'], dtype=np.float32)
+            y = arrNx(np.array(np_arr['y'], dtype=np.float32), rate)
+            test = tuple_dataset.TupleDataset(x, y)
+            if(test._length > 0):
+                test_flg = True
+
+    # 学習用データとテスト用データの両方が見つかった場合にのみ次のステップへ進める
+    if(train_flg is True)and(test_flg is True):
+        return train, test
+    else:
+        print('[Error] dataset not found in this folder:', folder)
+        exit()
