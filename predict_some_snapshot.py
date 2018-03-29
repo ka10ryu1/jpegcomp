@@ -26,8 +26,8 @@ def command():
                         help='使用する画像のパス')
     parser.add_argument('--quality', '-q', type=int, default=5,
                         help='画像の圧縮率 [default: 5]')
-    parser.add_argument('--batch', '-b', type=int, default=100,
-                        help='ミニバッチサイズ [default: 100]')
+    parser.add_argument('--batch', '-b', type=int, default=20,
+                        help='ミニバッチサイズ [default: 20]')
     parser.add_argument('--img_num', '-n', type=int, default=10,
                         help='切り出す画像数 [default: 10]')
     parser.add_argument('--random_seed', '-rs', type=int, default=25,

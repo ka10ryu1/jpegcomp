@@ -29,8 +29,8 @@ def command():
                         help='使用する画像のパス')
     parser.add_argument('--quality', '-q', type=int, default=5,
                         help='画像の圧縮率 [default: 5]')
-    parser.add_argument('--batch', '-b', type=int, default=100,
-                        help='ミニバッチサイズ [default: 100]')
+    parser.add_argument('--batch', '-b', type=int, default=20,
+                        help='ミニバッチサイズ [default: 20]')
     parser.add_argument('--gpu', '-g', type=int, default=-1,
                         help='GPU ID [default -1]')
     parser.add_argument('--out_path', '-o', default='./result/',
