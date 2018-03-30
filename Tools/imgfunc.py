@@ -446,8 +446,26 @@ def arrNx(arr, rate, flg=cv2.INTER_NEAREST):
     [out] N倍にされた行列
     """
 
-    imgs = arr2imgs(arr)
-    return imgs2arr(resizeN(imgs, rate, flg))
+    if(len(arr.shape) == 3):
+        img = arr2img(arr)
+        return img2arr(resize(img, rate, flg))
+
+    if(len(arr.shape) == 4):
+        imgs = arr2imgs(arr)
+        return imgs2arr(resizeN(imgs, rate, flg))
+
+
+def img2arr(img, norm=255, dtype=np.float32, gpu=-1):
+    try:
+        w, h, ch = img.shape
+    except:
+        w, h = img.shape
+        ch = 1
+
+    if(gpu >= 0):
+        return xp.array(img, dtype=dtype).reshape((ch, w, h)) / norm
+    else:
+        return np.array(img, dtype=dtype).reshape((ch, w, h)) / norm
 
 
 def imgs2arr(imgs, norm=255, dtype=np.float32, gpu=-1):
@@ -470,6 +488,12 @@ def imgs2arr(imgs, norm=255, dtype=np.float32, gpu=-1):
         return xp.array(imgs, dtype=dtype).reshape((-1, ch, w, h)) / norm
     else:
         return np.array(imgs, dtype=dtype).reshape((-1, ch, w, h)) / norm
+
+
+def arr2img(arr, norm=255, dtype=np.uint8):
+    ch, size = arr.shape[0], arr.shape[1]
+    y = np.array(arr).reshape((size, size, ch)) * 255
+    return np.array(y, dtype=np.uint8)
 
 
 def arr2imgs(arr, norm=255, dtype=np.uint8):
