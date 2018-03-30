@@ -23,6 +23,25 @@ import Tools.getfunc as GET
 import Tools.func as F
 
 
+class ResizeImgDataset(chainer.dataset.DatasetMixin):
+    def __init__(self, dataset, rate, dtype=np.float32):
+        self._dataset = dataset
+        self._rate = rate
+        self._dtype = dtype
+        self._len = len(self._dataset)
+
+    def __len__(self):
+        # データセットの数を返します
+        return self._len
+
+    def get_example(self, i):
+        # データセットのインデックスを受け取って、データを返します
+        inputs = self._dataset[i]
+        x, y = inputs
+        y = IMG.arrNx(y, self._rate)
+        return x.astype(self._dtype), y.astype(self._dtype)
+
+
 def command():
     parser = argparse.ArgumentParser(description=help)
     parser.add_argument('-i', '--in_path', default='./result/',
@@ -90,8 +109,8 @@ def getImageData(folder, rate):
             pass
         elif('train_' in name)and('.npz' in ext)and(train_flg is False):
             np_arr = np.load(os.path.join(folder, l))
-            x = np.array(np_arr['x'], dtype=np.float32)
-            y = IMG.arrNx(np.array(np_arr['y'], dtype=np.float32), rate)
+            x = np.array(np_arr['x'], dtype=np.float16)
+            y = np.array(np_arr['y'], dtype=np.float16)
             print('{0}:\tx{1},\ty{2}'.format(l, x.shape, y.shape))
             train = tuple_dataset.TupleDataset(x, y)
             if(train._length > 0):
@@ -99,8 +118,8 @@ def getImageData(folder, rate):
 
         elif('test_' in name)and('.npz' in ext)and(test_flg is False):
             np_arr = np.load(os.path.join(folder, l))
-            x = np.array(np_arr['x'], dtype=np.float32)
-            y = IMG.arrNx(np.array(np_arr['y'], dtype=np.float32), rate)
+            x = np.array(np_arr['x'], dtype=np.float16)
+            y = np.array(np_arr['y'], dtype=np.float16)
             print('{0}:\tx{1},\ty{2}'.format(l, x.shape, y.shape))
             test = tuple_dataset.TupleDataset(x, y)
             if(test._length > 0):
@@ -117,10 +136,7 @@ def getImageData(folder, rate):
 def main(args):
 
     # 各種データをユニークな名前で保存するために時刻情報を取得する
-    now = datetime.today()
-    exec_time1 = int(now.strftime('%y%m%d'))
-    exec_time2 = int(now.strftime('%H%M%S'))
-    exec_time = np.base_repr(exec_time1 * exec_time2, 32).lower()
+    exec_time = GET.datetime32()
 
     # Set up a neural network to train
     # Classifier reports softmax cross entropy loss and accuracy at every
@@ -156,6 +172,8 @@ def main(args):
 
     # Load dataset
     train, test = getImageData(args.in_path, args.shuffle_rate)
+    train = ResizeImgDataset(train, args.shuffle_rate)
+    test = ResizeImgDataset(test, args.shuffle_rate)
     # predict.pyでモデルを決定する際に必要なので記憶しておく
     model_param = {i: getattr(args, i) for i in dir(args) if not '_' in i[0]}
     model_param['shape'] = train[0][0].shape
