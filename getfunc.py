@@ -16,7 +16,6 @@ import chainer.optimizers as O
 
 [sys.path.append(d) for d in ['./Tools/', '../Tools/'] if os.path.isdir(d)]
 from func import fileFuncLine
-from imgfunc import arrNx
 
 
 def datetime32():
@@ -168,11 +167,10 @@ def modelParam(path):
         layer, d['shuffle_rate'], af1, af2
 
 
-def imgData(folder, rate):
+def imgData(folder):
     """
     フォルダにあるファイルから学習用データとテスト用データを取得する
     [in]  folder: 探索するフォルダ
-    [in]  rate:   正解画像の倍率
     [out] train:  取得した学習用データ
     [out] test:   取得したテスト用データ
     """
@@ -195,23 +193,17 @@ def imgData(folder, rate):
             pass
         elif('train_' in name)and('.npz' in ext)and(train_flg is False):
             np_arr = np.load(os.path.join(folder, l))
-            print('{0}:\tx{1},\ty{2}'.format(
-                l, np_arr['x'].shape, np_arr['y'].shape)
-            )
-            x = np.array(np_arr['x'], dtype=np.float32)
-            y = arrNx(np.array(np_arr['y'], dtype=np.float32), rate)
+            x, y = np_arr['x'], np_arr['y']
             train = tuple_dataset.TupleDataset(x, y)
+            print('{0}:\tx{1}\ty{2}'.format(l, x.shape, y.shape))
             if(train._length > 0):
                 train_flg = True
 
         elif('test_' in name)and('.npz' in ext)and(test_flg is False):
             np_arr = np.load(os.path.join(folder, l))
-            print('{0}:\tx{1},\ty{2}'.format(
-                l, np_arr['x'].shape, np_arr['y'].shape)
-            )
-            x = np.array(np_arr['x'], dtype=np.float32)
-            y = arrNx(np.array(np_arr['y'], dtype=np.float32), rate)
+            x, y = np_arr['x'], np_arr['y']
             test = tuple_dataset.TupleDataset(x, y)
+            print('{0}:\tx{1}\ty{2}'.format(l, x.shape, y.shape))
             if(test._length > 0):
                 test_flg = True
 
