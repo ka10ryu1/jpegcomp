@@ -16,7 +16,6 @@ import chainer.optimizers as O
 
 [sys.path.append(d) for d in ['./Tools/', '../Tools/'] if os.path.isdir(d)]
 from func import fileFuncLine
-from imgfunc import arrNx
 
 
 def datetime32():
@@ -196,7 +195,7 @@ def imgData(folder):
             np_arr = np.load(os.path.join(folder, l))
             x, y = np_arr['x'], np_arr['y']
             train = tuple_dataset.TupleDataset(x, y)
-            print('{0}: x{1} y{2}'.format(l, x.shape, y.shape))
+            print('{0}:\tx{1}\ty{2}'.format(l, x.shape, y.shape))
             if(train._length > 0):
                 train_flg = True
 
@@ -204,7 +203,7 @@ def imgData(folder):
             np_arr = np.load(os.path.join(folder, l))
             x, y = np_arr['x'], np_arr['y']
             test = tuple_dataset.TupleDataset(x, y)
-            print('{0}: x{1} y{2}'.format(l, x.shape, y.shape))
+            print('{0}:\tx{1}\ty{2}'.format(l, x.shape, y.shape))
             if(test._length > 0):
                 test_flg = True
 
