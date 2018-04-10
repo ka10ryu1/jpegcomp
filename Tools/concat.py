@@ -12,6 +12,7 @@ import numpy as np
 
 [sys.path.append(d) for d in ['./Tools/', '../Tools/'] if os.path.isdir(d)]
 import func as F
+import imgfunc as IMG
 
 
 def command():
@@ -20,8 +21,8 @@ def command():
                         help='使用する画像のパス')
     parser.add_argument('--out_path', '-o', default='./result/',
                         help='生成物の保存先 [default: ./result/]')
-    parser.add_argument('--row', '-r', type=int, default=10,
-                        help='画像を連結する行 [default: 10]')
+    parser.add_argument('--row', '-r', type=int, default=-1,
+                        help='画像を連結する行（負数で自動計算） [default: -1]')
     parser.add_argument('--line_width', '-lw', type=int, default=2,
                         help='画像を連結する行 [default: 2]')
     parser.add_argument('--resize', '-rs', type=float, default=0.5,
@@ -29,48 +30,65 @@ def command():
     return parser.parse_args()
 
 
-def isImage(name):
-    """
-    入力されたパスが画像か判定する
-    [in]  name: 画像か判定したいパス
-    [out] 画像ならTrue
-    """
-
-    # cv2.imreadしてNoneが返ってきたら画像でないとする
-    if cv2.imread(name) is not None:
-        return True
+def make_divisor_list(num):
+    if num < 1:
+        return [0]
+    elif num == 1:
+        return [1]
     else:
-        print('[{0}] is not Image'.format(name))
-        print(F.fileFuncLine())
-        return False
+        divisor_list = [i for i in range(2, num // 2 + 1) if num % i == 0]
+        divisor_list.append(1)
+
+        return divisor_list
+
+
+def stackImgAndShape(imgs, row):
+    bk = np.zeros(imgs[0].shape, dtype=np.uint8)
+    imgs.append(bk)
+    imgs.append(bk)
+    imgs.append(bk)
+
+    if row < 1:
+        for i in range(3, 0, -1):
+            div_list = make_divisor_list(len(imgs[:-i]))
+            if(len(div_list) > 2):
+                div = div_list[len(div_list) // 2]
+                imgs = imgs[:-i]
+                break
+
+    else:
+        div = row
+
+    return np.array(imgs), np.arange(len(imgs)).reshape(-1, div)
+
+
+def makeBorder(img, top, bottom, left, right, flg, value=None):
+    if flg == cv2.BORDER_CONSTANT:
+        return cv2.copyMakeBorder(img, top, bottom, left, right, flg, value=value)
+    else:
+        return cv2.copyMakeBorder(img, top, bottom, left, right, flg)
 
 
 def main(args):
-    imgs = [cv2.imread(name) for name in args.jpeg]
+    # 画像を読み込む
+    imgs = [cv2.imread(name) for name in args.jpeg if IMG.isImgPath(name)]
+    # concatするためにすべての画像の高さを統一する
     h = np.max([img.shape[0] for img in imgs])
+    imgs = [IMG.resize(img, h / img.shape[0]) for img in imgs]
+    # concatするためにすべての画像の幅を統一する
     flg = cv2.BORDER_REFLECT_101
-    imgs = [
-        cv2.copyMakeBorder(img, 0, h - img.shape[0], 0, 0, flg)
-        for img in imgs
-    ]
-    #[print(img.shape) for img in imgs]
-
-    lw = args.line_width
+    w = np.max([img.shape[1] for img in imgs])
+    imgs = [makeBorder(img, 0, 0, 0, w - img.shape[1], flg) for img in imgs]
+    # 画像に黒縁を追加する
     flg = cv2.BORDER_CONSTANT
-    imgs = [
-        cv2.copyMakeBorder(img, 0, lw, 0, lw, flg, value=(0, 0, 0))
-        for img in imgs
-    ]
-
-    size = np.arange(len(imgs)).reshape(-1, args.row).shape
-    buf = [np.vstack(imgs[i * size[0]: (i + 1) * size[0]])
-           for i in range(size[1])]
-    img = np.hstack(buf)
-
-    resize = (int(img.shape[1] * args.resize),
-              int(img.shape[0] * args.resize))
-    img = cv2.resize(img, resize, cv2.INTER_NEAREST)
-
+    lw = args.line_width
+    imgs = [makeBorder(img, 0, lw, 0, lw, flg, (0, 0, 0)) for img in imgs]
+    # 縦横に連結するための画像リストと縦横情報を取得する
+    imgs, size = stackImgAndShape(imgs, args.row)
+    # 画像を連結してリサイズする
+    buf = [np.vstack(imgs[s]) for s in size]
+    img = IMG.resize(np.hstack(buf), args.resize)
+    # 連結された画像を保存する
     name = F.getFilePath(args.out_path, 'concat', '.jpg')
     print('save:', name)
     cv2.imwrite(name, img)
