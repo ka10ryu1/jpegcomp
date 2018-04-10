@@ -59,10 +59,11 @@ $ tree >& log.txt
 │   │   ├── Lenna.bmp       > テスト用画像
 │   │   ├── Mandrill.bmp    > テスト用画像
 │   │   ├── test_getfunc.py > getfuncのテスト用コード
-│   │   └── test_imgfunc.py > imgfuncのテスト用コード'
+│   │   └── test_imgfunc.py > imgfuncのテスト用コード
+│   ├── concat.py          > 複数の画像を任意の行列で結合する
 │   ├── dot2png.py         > dot言語で記述されたファイルをPNG形式に変換する
 │   ├── func.py            > 便利機能
-│   ├── getfunc.py         > 画像処理に関する便利機能
+│   ├── getfunc.py         > 各種パラメータ取得に関する便利機能
 │   ├── imgfunc.py         > 画像処理に関する便利機能
 │   ├── npz2jpg.py         > 作成したデータセット（.npz）の中身を画像として出力する
 │   ├── plot_diff.py       > logファイルの複数比較
@@ -334,9 +335,39 @@ $ ./predict_some_snapshot.py ./result/ ./FontData/The_Night_of_the_Milky_Way_Tra
 
 <img src="https://github.com/ka10ryu1/jpegcomp/blob/images/Image/snapshots.jpg" width="320px">
 
-### 画像の比較
+## ネットワーク層の確認
 
-`concat_3images.py`を利用することで、`predict.py`と同様の`concat-*.jpg`を生成できる。推論実行したくない時やその環境でない時に使用する。以下のように実行する。
+`train.py`実行時に`--only_check`フラグを入れるとネットワーク層の確認ができる。
+
+```console
+$ ./train.py --only_check
+```
+
+そうすると以下のようにブロック名、実行時間（累計）、ネットワーク層の数が表示される。ネットワーク層のパラメータを修正した時などに利用すると便利。
+
+```console
+:
+省略
+:
+train_32x32_010800.npz:	x(10800, 1, 32, 32)	y(10800, 1, 32, 32)
+test_32x32_001200.npz:	x(1200, 1, 32, 32)	y(1200, 1, 32, 32)
+ 0: DownSampleBlock	0.000 s	(100, 1, 32, 32)
+ 1: DownSampleBlock	0.008 s	(100, 2, 16, 16)
+ 2: DownSampleBlock	0.012 s	(100, 4, 8, 8)
+ 3: DownSampleBlock	0.015 s	(100, 8, 4, 4)
+ 4: DownSampleBlock	0.016 s	(100, 16, 2, 2)
+ 5: UpSampleBlock	0.018 s	(100, 32, 2, 2)
+ 6: UpSampleBlock	0.022 s	(100, 10, 4, 4)
+ 7: UpSampleBlock	0.026 s	(100, 6, 8, 8)
+ 8: UpSampleBlock	0.035 s	(100, 4, 16, 16)
+ 9: UpSampleBlock	0.059 s	(100, 2, 32, 32)
+Output 0.148 s: (100, 1, 64, 64)
+```
+
+
+## 画像の比較
+
+`concat_3_images.py`を利用することで、`predict.py`と同様の`concat-*.jpg`を生成できる。推論実行したくない時やその環境でない時に使用する。以下のように実行する。
 
 ```console
 $ ./concat_3_images.py ./FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG ./result/comp-00*
