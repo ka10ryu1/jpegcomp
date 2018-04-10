@@ -33,6 +33,45 @@ def getCh(ch):
         return cv2.IMREAD_UNCHANGED
 
 
+def blank(size, color, dtype=np.uint8):
+    """
+    単色画像を生成する
+    [in]  size: 生成する画像サイズ [h,w,ch]（chがない場合は1を設定）
+    [in]  color: 色（intでグレー、tupleでカラー）
+    [in]  dtype: データ型
+    [out] img:   生成した単色画像
+    """
+
+    # サイズに負数がある場合はエラー
+    if np.min(size) < 0:
+        print('[Error] size > 0: {0}'.format(size))
+        print(fileFuncLine())
+        exit()
+
+    # サイズに縦横しか含まれていない場合はチャンネル追加
+    if len(size) == 2:
+        size = (size[0], size[1], 1)
+
+    # 色がintの場合（0 < color < 255）
+    if type(color) is int:
+        img = np.zeros(size, dtype=dtype)
+        if color < 0:
+            color = 0
+        elif color > 255:
+            color = 255
+
+        img.fill(color)
+        return img
+
+    # チャンネルが3じゃない時は3にする
+    if size[2] != 3:
+        size = (size[0], size[1], 3)
+
+    img = np.zeros(size, dtype=dtype)
+    img[:, :, :] = color
+    return img
+
+
 def isImgPath(name):
     """
     入力されたパスが画像か判定する
@@ -128,7 +167,7 @@ def cutN(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
         return np.array(out_imgs)
 
 
-def splitSQ(img, size, flg=cv2.BORDER_REPLICATE):
+def splitSQ(img, size, flg=cv2.BORDER_REPLICATE, array=True):
     """
     入力された画像を正方形に分割する
     [in]  img:   入力画像
@@ -138,23 +177,40 @@ def splitSQ(img, size, flg=cv2.BORDER_REPLICATE):
     [out] split: 縦横の分割情報
     """
 
-    if size <= 1:
-        print('[Error] img.shape({0}), size({1})'.format(img.shape, size))
-        print(fileFuncLine())
-        exit()
+    def arrayChk(x, flg):
+        if flg:
+            return np.array(x)
+        else:
+            return x
 
-    # 画像を分割する際に端が切れてしまうのを防ぐために余白を追加する
-    img = cv2.copyMakeBorder(img, 0, size, 0, size, flg)
-    # 画像を分割しやすいように画像サイズを変更する
-    img = img[:(img.shape[0] // size * size), :(img.shape[1] // size * size)]
+    def square(img):
+        width = np.min(img.shape[:2])
+        return img[:width, :width]
+
+    h, w = img.shape[:2]
+    split = (h // size, w // size)
+
+    # sizeが負数だと分割しないでそのまま返す
+    if size <= 1:
+
+        return arrayChk([square(img)], array), (1, 1)
+
+    # sizeが入力画像よりも大きい場合は分割しないでそのまま返す
+    if split[0] == 0 or split[1] == 0:
+        return arrayChk([square(img)], array), (1, 1)
+
     # 縦横の分割数を計算する
-    split = (img.shape[0] // size, img.shape[1] // size)
+    if (h / size + w / size) > (h // size + w // size):
+        # 画像を分割する際に端が切れてしまうのを防ぐために余白を追加する
+        width = int(size * 0.2)
+        img = cv2.copyMakeBorder(img, 0, width, 0, width, flg)
+        # 画像を分割しやすいように画像サイズを変更する
+        img = img[:split[0] * size, :split[1] * size]
 
     # 画像を分割する
-    imgs_2d = [np.vsplit(i, split[0])
-               for i in np.hsplit(img, split[1])]
+    imgs_2d = [np.vsplit(i, split[0]) for i in np.hsplit(img, split[1])]
     imgs_1d = [x for l in imgs_2d for x in l]
-    return imgs_1d, split
+    return arrayChk(imgs_1d, array), split
 
 
 def splitSQN(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
@@ -178,7 +234,7 @@ def splitSQN(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
     out_imgs = []
     split = []
     for img in imgs:
-        i, s = splitSQ(img, size, flg)
+        i, s = splitSQ(img, size, flg, False)
         out_imgs.extend(i)
         split.extend(s)
 
@@ -327,6 +383,9 @@ def resize(img, rate, flg=cv2.INTER_NEAREST):
     [out] N倍にされた画像リスト
     """
 
+    if rate < 0:
+        return img
+
     size = (int(img.shape[1] * rate),
             int(img.shape[0] * rate))
     return cv2.resize(img, size, flg)
@@ -371,40 +430,52 @@ def size2x(imgs, flg=cv2.INTER_NEAREST):
     return [resize(i, 2, flg) for i in imgs]
 
 
-def paste(fg, bg, mask_flg=True, random_flg=True):
+def paste(fg, bg, rot=0, x=0, y=0, mask_flg=True, rand_rot_flg=True, rand_pos_flg=True):
     """
     背景に前景を重ね合せる
     [in]  fg:         重ね合せる背景
     [in]  bg:         重ね合せる前景
     [in]  mask_flg:   マスク処理を大きめにするフラグ
-    [in]  random_flg: 前景をランダムに配置するフラグ
+    [in]  rand_rot_flg: 前景をランダムに回転するフラグ
+    [in]  rand_pos_flg: 前景をランダムに配置するフラグ
     [out] 重ね合せた画像
     """
 
     # Load two images
     img1 = bg.copy()
-    if random_flg:
-        img2, _ = rotateR(fg, [-90, 90], 1.0)
+    if rand_rot_flg:
+        img2, rot = rotateR(fg, [-90, 90], 1.0)
     else:
         img2 = fg.copy()
 
     # I want to put logo on top-left corner, So I create a ROI
     w1, h1 = img1.shape[:2]
     w2, h2 = img2.shape[:2]
-    if random_flg:
+    if rand_pos_flg:
         x = np.random.randint(0, w1 - w2 + 1)
         y = np.random.randint(0, w1 - w2 + 1)
-    else:
-        x = 0
-        y = 0
 
     roi = img1[x:x + w2, y:y + h2]
 
+    def masked(img):
+        if len(img.shape) < 3:
+            return False
+        elif img.shape[2] != 4:
+            return False
+        else:
+            return True
+
     # Now create a mask of logo and create its inverse mask also
-    mask = img2[:, :, 3]
+    if not masked(img2):
+        mask = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+        ret, mask = cv2.threshold(
+            cv2.bitwise_not(mask), 10, 255, cv2.THRESH_BINARY
+        )
+    else:
+        mask = img2[:, :, 3]
+
     ret, mask_inv = cv2.threshold(
-        cv2.bitwise_not(mask),
-        200, 255, cv2.THRESH_BINARY
+        cv2.bitwise_not(mask), 200, 255, cv2.THRESH_BINARY
     )
 
     if mask_flg:
@@ -422,7 +493,7 @@ def paste(fg, bg, mask_flg=True, random_flg=True):
     # Put logo in ROI and modify the main image
     dst = cv2.add(img1_bg, img2_fg)
     img1[x:x + w2, y:y + h2] = dst
-    return img1
+    return img1, (rot, x, y)
 
 
 def arr2x(arr, flg=cv2.INTER_NEAREST):
@@ -457,15 +528,14 @@ def arrNx(arr, rate, flg=cv2.INTER_NEAREST):
 
 def img2arr(img, norm=255, dtype=np.float32, gpu=-1):
     try:
-        w, h, ch = img.shape
+        w, h, _ = img.shape
     except:
-        w, h = img.shape
-        ch = 1
+        w, h = img.shape[:2]
 
     if(gpu >= 0):
-        return xp.array(img, dtype=dtype).reshape((ch, w, h)) / norm
+        return xp.array(img, dtype=dtype).reshape((-1, w, h)) / norm
     else:
-        return np.array(img, dtype=dtype).reshape((ch, w, h)) / norm
+        return np.array(img, dtype=dtype).reshape((-1, w, h)) / norm
 
 
 def imgs2arr(imgs, norm=255, dtype=np.float32, gpu=-1):
@@ -491,7 +561,7 @@ def imgs2arr(imgs, norm=255, dtype=np.float32, gpu=-1):
 
 
 def arr2img(arr, norm=255, dtype=np.uint8):
-    ch, size = arr.shape[0], arr.shape[1]
+    ch, size = arr.shape[-3], arr.shape[-2]
     y = np.array(arr).reshape((size, size, ch)) * 255
     return np.array(y, dtype=np.uint8)
 

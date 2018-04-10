@@ -6,6 +6,7 @@ help = 'imgfuncのテスト用コード'
 
 import cv2
 import unittest
+import numpy as np
 
 import Tools.imgfunc as IMG
 
@@ -24,15 +25,28 @@ class TestImgFunc(unittest.TestCase):
         self.assertEqual(IMG.getCh(4), cv2.IMREAD_UNCHANGED)
         self.assertEqual(IMG.getCh(2.5), cv2.IMREAD_UNCHANGED)
 
-    def test_resize(self):
-        l = cv2.imread(lenna_path)
-        m = cv2.imread(mandrill_path)
-        imgs = IMG.size2x([l, m])
-        self.assertEqual(imgs[0].shape, (512, 512, 3))
-        self.assertEqual(imgs[1].shape, (512, 512, 3))
-        self.assertEqual(IMG.resize(l, 2).shape, (512, 512, 3))
-        self.assertEqual(IMG.resize(l, 1.5).shape, (384, 384, 3))
-        self.assertEqual(IMG.resize(l, 0.5).shape, (128, 128, 3))
+    def test_blank(self):
+        img = IMG.blank((128, 128, 3), 0)
+        self.assertEqual(img.shape, (128, 128, 3))
+        self.assertEqual(np.sum(img), 0)
+        with self.assertRaises(SystemExit):
+            img = IMG.blank((128, 128, -1), 0)
+
+        img = IMG.blank((128, 128, 3), -1)
+        self.assertEqual(img.shape, (128, 128, 3))
+        self.assertEqual(np.sum(img), 0)
+        img = IMG.blank((128, 128, 1), -1)
+        self.assertEqual(img.shape, (128, 128, 1))
+        self.assertEqual(np.sum(img), 0)
+        img = IMG.blank((128, 128), -1)
+        self.assertEqual(img.shape, (128, 128, 1))
+        self.assertEqual(np.sum(img), 0)
+        img = IMG.blank((128, 128, 3), (255, 255, 255))
+        self.assertEqual(img.shape, (128, 128, 3))
+        self.assertEqual(np.sum(img), 255 * 128 * 128 * 3)
+        img = IMG.blank((128, 128), (255, 255, 255))
+        self.assertEqual(img.shape, (128, 128, 3))
+        self.assertEqual(np.sum(img), 255 * 128 * 128 * 3)
 
     def test_isImgPath(self):
         self.assertTrue(IMG.isImgPath(lenna_path))
@@ -62,28 +76,37 @@ class TestImgFunc(unittest.TestCase):
         l = cv2.imread(lenna_path)
         m = cv2.imread(mandrill_path)
         imgs, split = IMG.splitSQN([l, m], 32)
-        self.assertEqual(imgs.shape, (162, 32, 32, 3))
-        self.assertEqual(split, (9, 9))
+        self.assertEqual(imgs.shape, (128, 32, 32, 3))
+        self.assertEqual(split, (8, 8))
 
         with self.assertRaises(SystemExit):
             imgs, split = IMG.splitSQN([l, m], 0)
 
         imgs, split = IMG.splitSQN([l, m], 32, 10)
-        self.assertEqual(imgs.shape, (160, 32, 32, 3))
-        self.assertEqual(split, (9, 9))
+        self.assertEqual(imgs.shape, (120, 32, 32, 3))
+        self.assertEqual(split, (8, 8))
 
         imgs, split = IMG.splitSQN([l, m], 32, 100)
         self.assertEqual(imgs.shape, (100, 32, 32, 3))
-        self.assertEqual(split, (9, 9))
+        self.assertEqual(split, (8, 8))
 
         with self.assertRaises(SystemExit):
             IMG.splitSQN([l, m], 32, 1000)
 
+        imgs, split = IMG.splitSQN([l, m], 1024)
+        self.assertEqual(imgs.shape, (2, 256, 256, 3))
+        self.assertEqual(split, (1, 1))
+
+        bk = IMG.blank((100, 120, 3), 255)
+        imgs, split = IMG.splitSQN([bk], 1024)
+        self.assertEqual(imgs.shape, (1, 100, 100, 3))
+        self.assertEqual(split, (1, 1))
+
         l = cv2.imread(lenna_path, IMG.getCh(1))
         m = cv2.imread(mandrill_path, IMG.getCh(1))
         imgs, split = IMG.splitSQN([l, m], 32)
-        self.assertEqual(imgs.shape, (162, 32, 32))
-        self.assertEqual(split, (9, 9))
+        self.assertEqual(imgs.shape, (128, 32, 32))
+        self.assertEqual(split, (8, 8))
 
     def test_rotateRN(self):
         l = cv2.imread(lenna_path)
@@ -101,6 +124,17 @@ class TestImgFunc(unittest.TestCase):
         self.assertEqual(IMG.flipN([l, m], 1).shape,  (4, 256, 256, 3))
         self.assertEqual(IMG.flipN([l, m], 2).shape,  (6, 256, 256, 3))
         self.assertEqual(IMG.flipN([l, m], 3).shape,  (8, 256, 256, 3))
+
+    def test_resize(self):
+        l = cv2.imread(lenna_path)
+        m = cv2.imread(mandrill_path)
+        imgs = IMG.size2x([l, m])
+        self.assertEqual(imgs[0].shape, (512, 512, 3))
+        self.assertEqual(imgs[1].shape, (512, 512, 3))
+        self.assertEqual(IMG.resize(l, -1).shape, (256, 256, 3))
+        self.assertEqual(IMG.resize(l, 2).shape, (512, 512, 3))
+        self.assertEqual(IMG.resize(l, 1.5).shape, (384, 384, 3))
+        self.assertEqual(IMG.resize(l, 0.5).shape, (128, 128, 3))
 
     def test_imgs2arr(self):
         l = cv2.imread(lenna_path)
