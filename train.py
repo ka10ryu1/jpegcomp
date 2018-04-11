@@ -83,7 +83,7 @@ def command():
 def main(args):
 
     # 各種データをユニークな名前で保存するために時刻情報を取得する
-    exec_time = GET.datetime32()
+    exec_time = GET.datetimeSHA()
 
     # Set up a neural network to train
     # Classifier reports softmax cross entropy loss and accuracy at every

@@ -30,6 +30,18 @@ def datetime32():
     return np.base_repr(exec_time1 * exec_time2, 32).lower()
 
 
+def datetimeSHA(secret='emacs', str_len=8):
+    import hmac
+
+    byte_1 = bytearray(secret, 'ASCII')
+    now = datetime.today()
+    exec_time1 = int(now.strftime('%y%m%d'))
+    exec_time2 = int(now.strftime('%H%M%S'))
+    byte_2 = bytearray(np.base_repr(exec_time1 * exec_time2, 32).lower(), 'ASCII')
+    myhash = hmac.new(byte_1, byte_2).hexdigest()
+    return myhash[:str_len]
+
+
 def lossfun(lossfun_str):
     """
     入力文字列から損失関数を推定する
