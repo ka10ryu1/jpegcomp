@@ -20,10 +20,10 @@
 
 # 動作環境
 
-- **Ubuntu** 16.04.3 LTS ($ cat /etc/issue)
+- **Ubuntu** 16.04.4 LTS ($ cat /etc/issue)
 - **Python** 3.5.2 ($ python3 -V)
-- **chainer** 3.2 ($ pip3 show chainer | grep Ver)
-- **numpy** 1.13.3 ($ pip3 show numpy | grep Ver)
+- **chainer** 4.0.0 ($ pip3 show chainer | grep Ver)
+- **numpy** 1.14.2 ($ pip3 show numpy | grep Ver)
 - **cupy** 2.2 ($ pip3 show cupy | grep Ver)
 - **opencv-python** 3.4.0.12 ($ pip3 show opencv-python | grep Ver)
 
@@ -278,7 +278,7 @@ Exit: Ctrl-c
 
 ### 構成
 
-jpegcompにあるデータセットは最小構成であるため、完全版データを作成するためにはd[FontDataAllリポジトリ](https://github.com/ka10ryu1/FontDataAll)を持ってくる必要がある。
+jpegcompにあるデータセットは最小構成であるため、完全版データを作成するためには[FontDataAllリポジトリ](https://github.com/ka10ryu1/FontDataAll)を持ってくる必要がある。
 以下ではFontDataAllとjpegcompを同じフォルダー内にcloneし、jpegcomp直下にいるものとする。
 
 ```console
@@ -370,7 +370,7 @@ Output 0.148 s: (100, 1, 64, 64)
 `concat_3_images.py`を利用することで、`predict.py`と同様の`concat-*.jpg`を生成できる。推論実行したくない時やその環境でない時に使用する。以下のように実行する。
 
 ```console
-$ ./concat_3_images.py ./FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG ./result/comp-00*
+$ ./Lib/concat_3_images.py ./FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG ./result/comp-00*
 ```
 
 以下のような画像が生成される。

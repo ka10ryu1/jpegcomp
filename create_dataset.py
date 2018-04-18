@@ -27,7 +27,7 @@ def command():
     parser.add_argument('--train_per_all', '-t', type=float, default=0.9,
                         help='画像数に対する学習用画像の割合 [default: 0.9]')
     parser.add_argument('-o', '--out_path', default='./result/',
-                        help='・ (default: ./result/)')
+                        help='データセットの保存先(default: ./result/)')
     return parser.parse_args()
 
 

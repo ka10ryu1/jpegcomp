@@ -142,6 +142,8 @@ def main(args):
         if args.gpu >= 0:
             chainer.cuda.get_device_from_id(args.gpu).use()
             model.to_gpu()
+        else:
+            model.to_intel64()
 
         # 学習モデルを入力画像ごとに実行する
         ed = encDecWrite(img, ch, args.quality)

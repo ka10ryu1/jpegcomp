@@ -112,6 +112,8 @@ def main(args):
         # Make a specified GPU current
         chainer.cuda.get_device_from_id(args.gpu_id).use()
         model.to_gpu()  # Copy the model to the GPU
+    else:
+        model.to_intel64()
 
     # Setup an optimizer
     optimizer = GET.optimizer(args.optimizer)
