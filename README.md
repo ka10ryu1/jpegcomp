@@ -24,7 +24,7 @@
 - **Python** 3.5.2 ($ python3 -V)
 - **chainer** 4.0.0 ($ pip3 show chainer | grep Ver)
 - **numpy** 1.14.2 ($ pip3 show numpy | grep Ver)
-- **cupy** 2.2 ($ pip3 show cupy | grep Ver)
+- **cupy** 4.0.0 ($ pip3 show cupy | grep Ver)
 - **opencv-python** 3.4.0.12 ($ pip3 show opencv-python | grep Ver)
 
 # ファイル構成
