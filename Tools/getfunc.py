@@ -108,7 +108,7 @@ def optimizer(opt_str):
     """
 
     if(opt_str.lower() == 'adam'):
-        opt = O.Adam()
+        opt = O.Adam(amsgrad=True)
     elif(opt_str.lower() == 'ada_d'):
         opt = O.AdaDelta()
     elif(opt_str.lower() == 'ada_g'):
@@ -126,7 +126,7 @@ def optimizer(opt_str):
     elif(opt_str.lower() == 'smorms'):
         opt = O.SMORMS3()
     else:
-        opt = O.Adam()
+        opt = O.Adam(amsgrad=True)
         print('\n[Warning] {0}\n\t{1}->{2}\n'.format(
             fileFuncLine(), opt_str, opt.__doc__.split('.')[0])
         )

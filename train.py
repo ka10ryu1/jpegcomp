@@ -110,14 +110,14 @@ def main(args):
 
     if args.gpu_id >= 0:
         # Make a specified GPU current
-        chainer.cuda.get_device_from_id(args.gpu_id).use()
+        chainer.backends.cuda.get_device_from_id(args.gpu_id).use()
         model.to_gpu()  # Copy the model to the GPU
+        chainer.global_config.autotune = True
     else:
         model.to_intel64()
 
     # Setup an optimizer
-    optimizer = GET.optimizer(args.optimizer)
-    optimizer.setup(model)
+    optimizer = GET.optimizer(args.optimizer).setup(model)
 
     # Load dataset
     train, test = GET.imgData(args.in_path)
