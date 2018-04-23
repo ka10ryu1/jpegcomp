@@ -190,7 +190,7 @@ def imgData(folder):
     # 探索するフォルダがなければ終了
     if not os.path.isdir(folder):
         print('[Error] folder not found:', folder)
-        print(F.fileFuncLine())
+        print(fileFuncLine())
         exit()
 
     # 学習用データとテスト用データを発見したらTrueにする

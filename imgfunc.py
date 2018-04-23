@@ -192,7 +192,6 @@ def splitSQ(img, size, flg=cv2.BORDER_REPLICATE, array=True):
 
     # sizeが負数だと分割しないでそのまま返す
     if size <= 1:
-
         return arrayChk([square(img)], array), (1, 1)
 
     # sizeが入力画像よりも大きい場合は分割しないでそのまま返す
@@ -254,7 +253,7 @@ def splitSQN(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
         return np.array(out_imgs), (split[0], split[1])
 
 
-def rotate(img, angle, scale):
+def rotate(img, angle, scale, border=(0, 0, 0)):
     """
     画像を回転（反転）させる
     [in]  img:   回転させる画像
@@ -265,10 +264,10 @@ def rotate(img, angle, scale):
 
     size = img.shape[:2]
     mat = cv2.getRotationMatrix2D((size[0] // 2, size[1] // 2), angle, scale)
-    return cv2.warpAffine(img, mat, size, flags=cv2.INTER_CUBIC)
+    return cv2.warpAffine(img, mat, size, flags=cv2.INTER_CUBIC, borderValue=border)
 
 
-def rotateR(img, level=[-10, 10], scale=1.2):
+def rotateR(img, level=[-10, 10], scale=1.2, border=(0, 0, 0)):
     """
     ランダムに画像を回転させる
     [in]  img:   回転させる画像
@@ -278,10 +277,10 @@ def rotateR(img, level=[-10, 10], scale=1.2):
     """
 
     angle = np.random.randint(level[0], level[1])
-    return rotate(img, angle, scale), angle
+    return rotate(img, angle, scale, border), angle
 
 
-def rotateRN(imgs, num, level=[-10, 10], scale=1.2):
+def rotateRN(imgs, num, level=[-10, 10], scale=1.2, border=(0, 0, 0)):
     """
     画像リストをランダムに画像を回転させる
     [in]  img:   回転させる画像
@@ -296,7 +295,7 @@ def rotateRN(imgs, num, level=[-10, 10], scale=1.2):
     out_angle = []
     for n in range(num):
         for img in imgs:
-            i, a = rotateR(img, level, scale)
+            i, a = rotateR(img, level, scale, border)
             out_imgs.append(i)
             out_angle.append(a)
 
@@ -433,9 +432,12 @@ def size2x(imgs, flg=cv2.INTER_NEAREST):
 def paste(fg, bg, rot=0, x=0, y=0, mask_flg=True, rand_rot_flg=True, rand_pos_flg=True):
     """
     背景に前景を重ね合せる
-    [in]  fg:         重ね合せる背景
-    [in]  bg:         重ね合せる前景
-    [in]  mask_flg:   マスク処理を大きめにするフラグ
+    [in]  fg:           重ね合せる前景
+    [in]  bg:           重ね合せる背景
+    [in]  rot:          重ね合わせ時の前景回転角
+    [in]  x:            重ね合わせ時の前景x位置
+    [in]  y:            重ね合わせ時の前景y位置
+    [in]  mask_flg:     マスク処理を大きめにするフラグ
     [in]  rand_rot_flg: 前景をランダムに回転するフラグ
     [in]  rand_pos_flg: 前景をランダムに配置するフラグ
     [out] 重ね合せた画像
@@ -445,8 +447,12 @@ def paste(fg, bg, rot=0, x=0, y=0, mask_flg=True, rand_rot_flg=True, rand_pos_fl
     img1 = bg.copy()
     if rand_rot_flg:
         img2, rot = rotateR(fg, [-90, 90], 1.0)
+
+    white = (255, 255, 255)
+    if rand_rot_flg:
+        img2, rot = rotateR(fg, [-90, 90], 1.0, white)
     else:
-        img2 = fg.copy()
+        img2 = rotate(fg, rot, 1.0, white)
 
     # I want to put logo on top-left corner, So I create a ROI
     w1, h1 = img1.shape[:2]
