@@ -79,6 +79,14 @@ def checkModelType(path):
 
 
 def getFilePath(folder, name, ext=''):
+    """
+    入力されたフォルダ名とファイル名と拡張子を連結する
+    [in]  folder: 入力フォルダ名
+    [in]  name:   入力ファイル名
+    [in]  ext:    拡張子
+    [out] 連結されたフルパスのファイル名
+    """
+
     if not os.path.isdir(folder):
         os.makedirs(folder)
 
@@ -86,6 +94,13 @@ def getFilePath(folder, name, ext=''):
 
 
 def sortTimeStamp(folder_list, ext):
+    """
+    入力されたフォルダ以下のあるext拡張子のファイルをタイムスタンプでソートする
+    [in]  folder_list: ファイルを探索するフォルダ
+    [in]  ext:         探索するファイルの拡張子
+    [out] タイムスタンプでソートされたファイルリスト
+    """
+
     path = []
     [path.extend(list(Path(f).glob('*'+ext))) for f in folder_list]
     return sorted([x.as_posix() for x in path], key=os.path.getmtime)
