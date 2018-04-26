@@ -20,7 +20,7 @@ from func import fileFuncLine
 
 def datetime32():
     """
-    時刻情報を元に衝突しにくい名前を自動で生成する
+    時刻情報を元に衝突しにくい名前を自動で生成する（base_repr使用版）
     [out] 生成された名前
     """
 
@@ -31,6 +31,10 @@ def datetime32():
 
 
 def datetimeSHA(secret='emacs', str_len=8):
+    """
+    時刻情報を元に衝突しにくい名前を自動で生成する（hmac使用版）
+    [out] 生成された名前
+    """
     import hmac
 
     byte_1 = bytearray(secret, 'ASCII')

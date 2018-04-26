@@ -68,6 +68,9 @@ class TestImgFunc(unittest.TestCase):
         l = cv2.imread(lenna_path)
         m = cv2.imread(mandrill_path)
         self.assertEqual(IMG.cutN([l, m], 64).shape, (2, 64, 64, 3))
+        lm16 = [l, l, l, l, m, m, m, m, l, l, l, l, m, m, m, m]
+        self.assertEqual(IMG.cutN(lm16, 64, 100).shape, (16, 64, 64, 3))
+        self.assertEqual(IMG.cutN(lm16, 64, 10).shape, (10, 64, 64, 3))
         self.assertEqual(IMG.cutN([l, m], 1).shape, (2, 256, 256, 3))
         self.assertEqual(IMG.cutN([l, m], 0).shape, (2, 256, 256, 3))
         self.assertEqual(IMG.cutN([l, m], -1).shape, (2, 256, 256, 3))
@@ -79,8 +82,9 @@ class TestImgFunc(unittest.TestCase):
         self.assertEqual(imgs.shape, (128, 32, 32, 3))
         self.assertEqual(split, (8, 8))
 
-        with self.assertRaises(SystemExit):
-            imgs, split = IMG.splitSQN([l, m], 0)
+        imgs, split = IMG.splitSQN([l, m], 0)
+        self.assertEqual(imgs.shape, (512, 2, 2))
+        self.assertEqual(split, (1, 1))
 
         imgs, split = IMG.splitSQN([l, m], 32, 10)
         self.assertEqual(imgs.shape, (120, 32, 32, 3))
@@ -90,10 +94,10 @@ class TestImgFunc(unittest.TestCase):
         self.assertEqual(imgs.shape, (100, 32, 32, 3))
         self.assertEqual(split, (8, 8))
 
-        with self.assertRaises(SystemExit):
-            IMG.splitSQN([l, m], 32, 1000)
+        imgs, split = IMG.splitSQN([l, m], 32, 1000)
+        self.assertEqual(imgs.shape, (128, 32, 32, 3))
+        self.assertEqual(split, (8, 8))
 
-        print(l.shape, m.shape)
         imgs, split = IMG.splitSQN([l, m], 1024)
         self.assertEqual(imgs.shape, (2, 256, 256, 3))
         self.assertEqual(split, (1, 1))

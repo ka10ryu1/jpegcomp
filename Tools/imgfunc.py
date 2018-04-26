@@ -33,32 +33,35 @@ def getCh(ch):
         return cv2.IMREAD_UNCHANGED
 
 
-def blank(size, color, dtype=np.uint8):
+def blank(size, color, dtype=np.uint8, min_val=0, max_val=255):
     """
     単色画像を生成する
     [in]  size: 生成する画像サイズ [h,w,ch]（chがない場合は1を設定）
     [in]  color: 色（intでグレー、tupleでカラー）
     [in]  dtype: データ型
+    [in]  min_val: 色の最小値
+    [in]  max_val: 色の最大値
     [out] img:   生成した単色画像
     """
 
     # サイズに負数がある場合はエラー
     if np.min(size) < 0:
-        print('[Error] size > 0: {0}'.format(size))
+        print('[Error] size < 0: {0}'.format(size))
         print(fileFuncLine())
-        exit()
+        exit(1)
 
     # サイズに縦横しか含まれていない場合はチャンネル追加
     if len(size) == 2:
         size = (size[0], size[1], 1)
 
-    # 色がintの場合（0 < color < 255）
+    # 色がintの場合はグレースケールとして塗りつぶす
+    # 0 < color < 255の範囲にない場合は丸める
     if type(color) is int:
         img = np.zeros(size, dtype=dtype)
-        if color < 0:
-            color = 0
-        elif color > 255:
-            color = 255
+        if color < min_val:
+            color = min_val
+        elif color > max_val:
+            color = max_val
 
         img.fill(color)
         return img
@@ -72,10 +75,11 @@ def blank(size, color, dtype=np.uint8):
     return img
 
 
-def isImgPath(name):
+def isImgPath(name, silent=False):
     """
     入力されたパスが画像か判定する
-    [in]  name: 画像か判定したいパス
+    [in]  name:   画像か判定したいパス
+    [in]  silent: cv2.imread失敗時にエラーを表示させない場合はTrue
     [out] 画像ならTrue
     """
 
@@ -86,77 +90,75 @@ def isImgPath(name):
     if cv2.imread(name) is not None:
         return True
     else:
-        print('[{0}] is not Image'.format(name))
-        print(fileFuncLine())
+        if not silent:
+            print('[{0}] is not Image'.format(name))
+            print(fileFuncLine())
+
         return False
 
 
-def encodeDecode(img, ch, quality=5):
+def encodeDecode(img, ch, quality=5, ext='.jpg'):
     """
     入力された画像を圧縮する
-    [in]  img:     入力画像
-    [in]  ch:      圧縮画像のチャンネル数
-    [in]  quality: 圧縮する品質 (1-100)
-    [out] 圧縮画像
+    ※詳細はencodeDecodeNとほぼ同じなので省略
     """
 
     encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
-    result, encimg = cv2.imencode('.jpg', img, encode_param)
+    result, encimg = cv2.imencode(ext, img, encode_param)
     if False == result:
         print(
-            '[Error] {0}\n\tcould not encode image!'.format(fileFuncLine())
+            '[Error] {0}\n\timage encode failed!'.format(fileFuncLine())
         )
-        exit()
+        exit(1)
 
     return cv2.imdecode(encimg, getCh(ch))
 
 
-def encodeDecodeN(imgs, ch, quality=5):
+def encodeDecodeN(imgs, ch, quality=5, ext='.jpg'):
     """
     入力された画像リストを圧縮する
     [in]  imgs:    入力画像リスト
     [in]  ch:      出力画像リストのチャンネル数
     [in]  quality: 圧縮する品質 (1-100)
-    [out] 出力画像リスト
+    [in]  ext:     圧縮する拡張子
+    [out] 圧縮画像リスト
     """
 
-    return [encodeDecode(img, ch, quality) for img in imgs]
+    return [encodeDecode(img, ch, quality, ext) for img in imgs]
 
 
-def cut(img, size):
+def cut(img, size=-1):
     """
     画像を中心から任意のサイズで切り取る
-    [in]  img:カットする画像
-    [in]  size:カットするサイズ（正方形）
-    [out] カットされた画像
+    ※詳細はcutNとほぼ同じなので省略
     """
 
+    # カットするサイズの半分を計算する
     if size <= 1:
-        return img
+        # サイズが1以下の場合、imgの短辺がカットするサイズになる
+        half = np.min(img.shape[:2])//2
+    else:
+        half = size // 2
 
+    # 画像の中心位置を計算
     ch, cw = img.shape[0] // 2, img.shape[1] // 2
-    return img[ch - size // 2:ch + size // 2, cw - size // 2:cw + size // 2]
+    return img[ch - half:ch + half, cw - half:cw + half]
 
 
-def cutN(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
+def cutN(imgs, size=-1, round_num=-1):
     """
     画像リストの画像を中心から任意のサイズで切り取る
-    [in]  img:カットする画像
-    [in]  size:カットするサイズ（正方形）
-    [out] カットされた画像
+    [in]  img:       カットする画像
+    [in]  size:      カットするサイズ（正方形）
+    [in]  round_num: 丸める数
+    [out] カットされた画像リスト
     """
-
-    if size <= 1:
-        return np.array(imgs)
 
     # 画像のカットを実行
     out_imgs = [cut(img, size) for img in imgs]
     # 切り捨てたい数よりも画像数が少ないと0枚になってしまうので注意
     if(round_num > len(out_imgs)):
-        print('[Error] round({0}) > split images({1})'.format(
-            round_num, len(out_imgs)))
-        print(fileFuncLine())
-        exit()
+        round_num = -1
 
     # バッチサイズの関係などで、画像の数を調整したい時はここで調整する
     # predict.pyなどで分割画像を復元したくなるので縦横の分割数も返す
@@ -167,41 +169,34 @@ def cutN(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
         return np.array(out_imgs)
 
 
-def splitSQ(img, size, flg=cv2.BORDER_REPLICATE, array=True):
+def splitSQ(img, size, flg=cv2.BORDER_REPLICATE, w_rate=0.2, array=True):
     """
     入力された画像を正方形に分割する
-    [in]  img:   入力画像
-    [in]  size:  正方形のサイズ [size x size]
-    [in]  flg:   境界線のフラグ
-    [out] imgs:  分割された正方形画像リスト
-    [out] split: 縦横の分割情報
+    ※詳細はsplitSQNとほぼ同じなので省略
     """
 
-    def arrayChk(x, flg):
-        if flg:
+    def arrayChk(x, to_arr):
+        # np.array (True)にするか、list (False)にするか選択する
+        if to_arr:
             return np.array(x)
         else:
             return x
 
-    def square(img):
-        width = np.min(img.shape[:2])
-        return img[:width, :width]
+    # sizeが負数だと分割しないでそのまま返す
+    if size <= 1:
+        return arrayChk(cutN(img), array), (1, 1)
 
     h, w = img.shape[:2]
     split = (h // size, w // size)
 
-    # sizeが負数だと分割しないでそのまま返す
-    if size <= 1:
-        return arrayChk([square(img)], array), (1, 1)
-
     # sizeが入力画像よりも大きい場合は分割しないでそのまま返す
     if split[0] == 0 or split[1] == 0:
-        return arrayChk([square(img)], array), (1, 1)
+        return arrayChk([cut(img)], array), (1, 1)
 
     # 縦横の分割数を計算する
     if (h / size + w / size) > (h // size + w // size):
         # 画像を分割する際に端が切れてしまうのを防ぐために余白を追加する
-        width = int(size * 0.2)
+        width = int(size * w_rate)
         img = cv2.copyMakeBorder(img, 0, width, 0, width, flg)
         # 画像を分割しやすいように画像サイズを変更する
         img = img[:split[0] * size, :split[1] * size]
@@ -224,12 +219,6 @@ def splitSQN(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
     [out] split:     縦横の分割情報
     """
 
-    if size <= 1:
-        print('[Error] imgs[0].shape({0}), size({1})'.format(
-            imgs[0].shape, size))
-        print(fileFuncLine())
-        exit()
-
     out_imgs = []
     split = []
     for img in imgs:
@@ -239,10 +228,7 @@ def splitSQN(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
 
     # 切り捨てたい数よりも画像数が少ないと0枚になってしまうので注意
     if(round_num > len(out_imgs)):
-        print('[Error] round({0}) > split images({1})'.format(
-            round_num, len(out_imgs)))
-        print(fileFuncLine())
-        exit()
+        round_num = -1
 
     # バッチサイズの関係などで、画像の数を調整したい時はここで調整する
     # predict.pyなどで分割画像を復元したくなるので縦横の分割数も返す
@@ -256,9 +242,10 @@ def splitSQN(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE):
 def rotate(img, angle, scale, border=(0, 0, 0)):
     """
     画像を回転（反転）させる
-    [in]  img:   回転させる画像
-    [in]  angle: 回転させる角度
-    [in]  scale: 拡大率
+    [in]  img:    回転させる画像
+    [in]  angle:  回転させる角度
+    [in]  scale:  拡大率
+    [in]  border: 回転時の画像情報がない場所を埋める色
     [out] 回転させた画像
     """
 
@@ -270,10 +257,7 @@ def rotate(img, angle, scale, border=(0, 0, 0)):
 def rotateR(img, level=[-10, 10], scale=1.2, border=(0, 0, 0)):
     """
     ランダムに画像を回転させる
-    [in]  img:   回転させる画像
-    [in]  level: 回転させる角度の範囲
-    [out] 回転させた画像
-    [out] 回転させた角度
+    ※詳細はrotateRNとほぼ同じなので省略
     """
 
     angle = np.random.randint(level[0], level[1])
@@ -287,6 +271,7 @@ def rotateRN(imgs, num, level=[-10, 10], scale=1.2, border=(0, 0, 0)):
     [in]  num:   繰り返し数
     [in]  level: 回転させる角度の範囲
     [in]  scale: 拡大率
+    [in]  border: 回転時の画像情報がない場所を埋める色
     [out] 回転させた画像リスト
     [out] 回転させた角度リスト
     """
@@ -305,27 +290,27 @@ def rotateRN(imgs, num, level=[-10, 10], scale=1.2, border=(0, 0, 0)):
 def flip(img, num=2):
     """
     画像を回転させてデータ数を水増しする
-    [in]  img:      入力画像
-    [in]  num:      水増しする数（最大4倍）
-    [out] out_imgs: 出力画像リスト
+    ※詳細はflipNとほぼ同じなので省略
     """
 
     if(num < 1):
         return [img]
 
+    horizontal = 0
+    vertical = 1
     # ベース
     out_imgs = [img.copy()]
     # 上下反転を追加
-    f = cv2.flip(img, 0)
+    f = cv2.flip(img, horizontal)
     out_imgs.append(f)
     if(num > 1):
         # 左右反転を追加
-        f = cv2.flip(img, 1)
+        f = cv2.flip(img, vertical)
         out_imgs.append(f)
 
     if(num > 2):
         # 上下左右反転を追加
-        f = cv2.flip(cv2.flip(img, 1), 0)
+        f = cv2.flip(cv2.flip(img, horizontal), vertical)
         out_imgs.append(f)
 
     return out_imgs
@@ -342,19 +327,21 @@ def flipN(imgs, num=2):
     if(num < 1):
         return np.array(imgs)
 
+    horizontal = 0
+    vertical = 1
     # ベース
     out_imgs = imgs.copy()
     # 上下反転を追加
-    f = [cv2.flip(i, 0) for i in imgs]
+    f = [cv2.flip(i, horizontal) for i in imgs]
     out_imgs.extend(f)
     if(num > 1):
         # 左右反転を追加
-        f = [cv2.flip(i, 1) for i in imgs]
+        f = [cv2.flip(i, vertical) for i in imgs]
         out_imgs.extend(f)
 
     if(num > 2):
         # 上下左右反転を追加
-        f = [cv2.flip(cv2.flip(i, 1), 0) for i in imgs]
+        f = [cv2.flip(cv2.flip(i, vertical), horizontal) for i in imgs]
         out_imgs.extend(f)
 
     return np.array(out_imgs)
@@ -426,7 +413,8 @@ def size2x(imgs, flg=cv2.INTER_NEAREST):
     [out] 2倍にされた画像リスト
     """
 
-    return [resize(i, 2, flg) for i in imgs]
+    rate = 2
+    return [resize(i, rate, flg) for i in imgs]
 
 
 def paste(fg, bg, rot=0, x=0, y=0, mask_flg=True, rand_rot_flg=True, rand_pos_flg=True):
@@ -441,18 +429,24 @@ def paste(fg, bg, rot=0, x=0, y=0, mask_flg=True, rand_rot_flg=True, rand_pos_fl
     [in]  rand_rot_flg: 前景をランダムに回転するフラグ
     [in]  rand_pos_flg: 前景をランダムに配置するフラグ
     [out] 重ね合せた画像
+    http://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_core/py_image_arithmetics/py_image_arithmetics.html#bitwise-operations
     """
+
+    # 画素の最大値
+    max_val = 255
 
     # Load two images
     img1 = bg.copy()
+    angle = [-90, 90]  # ランダム回転の範囲
+    scale = 1.0  # 画像の拡大率
+    white = (max_val, max_val, max_val)
     if rand_rot_flg:
-        img2, rot = rotateR(fg, [-90, 90], 1.0)
-
-    white = (255, 255, 255)
-    if rand_rot_flg:
-        img2, rot = rotateR(fg, [-90, 90], 1.0, white)
+        # ランダムに回転
+        img2, rot = rotateR(fg, angle, scale, white)
+        print('rot', rot)
     else:
-        img2 = rotate(fg, rot, 1.0, white)
+        # 任意の角度で回転
+        img2 = rotate(fg, rot, scale, white)
 
     # I want to put logo on top-left corner, So I create a ROI
     w1, h1 = img1.shape[:2]
@@ -473,15 +467,17 @@ def paste(fg, bg, rot=0, x=0, y=0, mask_flg=True, rand_rot_flg=True, rand_pos_fl
 
     # Now create a mask of logo and create its inverse mask also
     if not masked(img2):
+        thresh = 10
         mask = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
         ret, mask = cv2.threshold(
-            cv2.bitwise_not(mask), 10, 255, cv2.THRESH_BINARY
+            cv2.bitwise_not(mask), thresh, max_val, cv2.THRESH_BINARY
         )
     else:
         mask = img2[:, :, 3]
 
+    thresh = 200
     ret, mask_inv = cv2.threshold(
-        cv2.bitwise_not(mask), 200, 255, cv2.THRESH_BINARY
+        cv2.bitwise_not(mask), thresh, max_val, cv2.THRESH_BINARY
     )
 
     if mask_flg:
@@ -510,8 +506,7 @@ def arr2x(arr, flg=cv2.INTER_NEAREST):
     [out] 2倍にされた行列
     """
 
-    imgs = arr2imgs(arr)
-    return imgs2arr(size2x(imgs, flg))
+    return imgs2arr(size2x(arr2imgs(arr), flg))
 
 
 def arrNx(arr, rate, flg=cv2.INTER_NEAREST):
@@ -533,6 +528,11 @@ def arrNx(arr, rate, flg=cv2.INTER_NEAREST):
 
 
 def img2arr(img, norm=255, dtype=np.float32, gpu=-1):
+    """
+    入力画像をChainerで利用するために変換する
+    ※詳細はimgs2arrとほぼ同じなので省略
+    """
+
     try:
         w, h, _ = img.shape
     except:
@@ -567,14 +567,24 @@ def imgs2arr(imgs, norm=255, dtype=np.float32, gpu=-1):
 
 
 def arr2img(arr, norm=255, dtype=np.uint8):
-    ch, size = arr.shape[-3], arr.shape[-2]
-    y = np.array(arr).reshape((size, size, ch)) * 255
-    return np.array(y, dtype=np.uint8)
+    """
+    Chainerの出力をOpenCVで可視化するために変換する入力（単画像用）
+    ※詳細はarr2imgsとほぼ同じなので省略
+    """
+
+    try:
+        ch, h, w = arr.shape
+    except:
+        h, w = arr.shape
+        ch = 1
+
+    y = np.array(arr).reshape((h, w, ch)) * norm
+    return np.array(y, dtype=dtype)
 
 
 def arr2imgs(arr, norm=255, dtype=np.uint8):
     """
-    Chainerの出力をOpenCVで可視化するために変換する
+    Chainerの出力をOpenCVで可視化するために変換する（画像リスト用）
     [in]  arr:   Chainerから出力された行列
     [in]  norm:  正規化をもとに戻す数（255であれば、0-1を0-255に変換する）
     [in]  dtype: 変換するデータタイプ
@@ -586,7 +596,7 @@ def arr2imgs(arr, norm=255, dtype=np.uint8):
     except:
         print('[ERROR] input data is not img arr')
         print(fileFuncLine())
-        exit()
+        exit(1)
 
-    y = np.array(arr).reshape((-1, size, size, ch)) * 255
-    return np.array(y, dtype=np.uint8)
+    y = np.array(arr).reshape((-1, size, size, ch)) * norm
+    return np.array(y, dtype=dtype)
