@@ -49,10 +49,11 @@ def jsonRead(path):
 def subplot(sub, val, log, ylim, line, header):
     """
     subplotを自動化
-    [in] sub:  subplotオブジェクト
-    [in] val:  入力する値のリスト
-    [in] log:  入力するラベルのリスト
-    [in] ylim: auto_ylimを使用する場合はTrue
+    [in] sub:    subplotオブジェクト
+    [in] val:    入力する値のリスト
+    [in] log:    入力するラベルのリスト
+    [in] ylim:   auto_ylimを使用する場合はTrue
+    [in] header: ラベルのヘッダ
     """
 
     # グリッドを灰色の点線で描画する
