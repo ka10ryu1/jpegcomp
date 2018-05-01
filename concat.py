@@ -30,7 +30,13 @@ def command():
     return parser.parse_args()
 
 
-def make_divisor_list(num):
+def makeDivisorList(num):
+    """
+    入力された数の約数に1を加えたリストを返す
+    [in]  num:          約数を計算したい数
+    [out] divisor_list: numの約数に1を加えたリスト
+    """
+
     if num < 1:
         return [0]
     elif num == 1:
@@ -43,26 +49,54 @@ def make_divisor_list(num):
 
 
 def stackImgAndShape(imgs, row):
-    bk = np.zeros(imgs[0].shape, dtype=np.uint8)
-    imgs.append(bk)
-    imgs.append(bk)
-    imgs.append(bk)
+    """
+    画像を縦横に連結するための画像リストと縦横画像数情報を取得する
+    [in]  imgs: 連結したい入力画像リスト
+    [in]  row:
+    [out] 画像リスト
+    [out] 縦横画像数情報
+    """
 
-    if row < 1:
+    # row=0は強制的に1にする
+    if row == 0:
+        row = 1
+
+    # 入力画像リストがrowで割り切れない時用に
+    # 黒塗画像を用意するが、3枚の根拠はない
+    if row > 3 or 0 > row:
+        bk = np.zeros(imgs[0].shape, dtype=np.uint8)
+        imgs.append(bk)
+        imgs.append(bk)
+        imgs.append(bk)
+
+    # rowが負数の場合はrowを自動計算する
+    if 0 > row:
+        # 黒塗画像を0枚含んだ状態でdiv_listが3以上になればdivとimgsを決定
+        # div_listが十分でなかった場合、
+        # 黒塗画像を1枚含んだ状態でdiv_listが3以上になればdivとimgsを決定
+        # これを黒塗画像3枚まで続ける
         for i in range(3, 0, -1):
-            div_list = make_divisor_list(len(imgs[:-i]))
+            # 画像の数で約数を探す
+            div_list = makeDivisorList(len(imgs[:-i]))
             if(len(div_list) > 2):
-                div = div_list[len(div_list) // 2]
+                # rowは約数のリストの中心の値を取得する
+                # これにより正方形に近い連結画像が生成できる
+                row = div_list[len(div_list) // 2]
                 imgs = imgs[:-i]
                 break
 
     else:
-        div = row
+        img_len = len(imgs) // row * row
+        imgs = imgs[:img_len]
 
-    return np.array(imgs), np.arange(len(imgs)).reshape(-1, div)
+    return np.array(imgs), np.arange(len(imgs)).reshape(-1, row)
 
 
 def makeBorder(img, top, bottom, left, right, flg, value=None):
+    """
+    cv2.copyMakeBorder()のラッパー関数なので詳細は省く
+    """
+
     if flg == cv2.BORDER_CONSTANT:
         return cv2.copyMakeBorder(img, top, bottom, left, right, flg, value=value)
     else:

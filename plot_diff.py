@@ -46,13 +46,14 @@ def jsonRead(path):
     return d
 
 
-def subplot(sub, val, log, ylim, line):
+def subplot(sub, val, log, ylim, line, header):
     """
     subplotを自動化
-    [in] sub:  subplotオブジェクト
-    [in] val:  入力する値のリスト
-    [in] log:  入力するラベルのリスト
-    [in] ylim: auto_ylimを使用する場合はTrue
+    [in] sub:    subplotオブジェクト
+    [in] val:    入力する値のリスト
+    [in] log:    入力するラベルのリスト
+    [in] ylim:   auto_ylimを使用する場合はTrue
+    [in] header: ラベルのヘッダ
     """
 
     # グリッドを灰色の点線で描画する
@@ -69,7 +70,16 @@ def subplot(sub, val, log, ylim, line):
         print('ymin:{0:.4f}, ymax:{1:.4f}'.format(ymin, ymax))
 
     # プロット
-    [sub.plot(list(range(1, len(v)+1)), np.array(v), label=d, linestyle=line)
+    def getX(y):
+        return list(range(1, len(y)+1))
+
+    def getY(y):
+        return np.array(y)
+
+    def getLabel(header, body):
+        return '[' + header + '] ' + body
+
+    [sub.plot(getX(v), getY(v), label=getLabel(header, d), linestyle=line)
      for v, d in zip(val, log)]
 
 
@@ -120,9 +130,9 @@ def plot(args, loc, name, solid_line, dotted_line='', no_show=False):
     a = f.add_subplot(111)
     plt.xlabel('epoch')
     plt.ylabel(name.split('_')[-1])
-    subplot(a, sol, log_file, args.auto_ylim, '-')
+    subplot(a, sol, log_file, args.auto_ylim, '-', 'test ')
     plt.gca().set_prop_cycle(None)
-    subplot(a, dot, log_file, args.auto_ylim, ':')
+    subplot(a, dot, log_file, args.auto_ylim, ':', 'train')
 
     # グラフの保存と表示
     savePNG(plt, loc, name)
