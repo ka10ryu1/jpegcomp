@@ -36,7 +36,7 @@ class ChangeHandler(FileSystemEventHandler):
 
 def argsPrint(p, bar=30):
     """
-    argparseの parse_args() で生成されたオブジェクトを入力すると、
+    argparseのparse_args() で生成されたオブジェクトを入力すると、
     integersとaccumulateを自動で取得して表示する
     [in] p: parse_args()で生成されたオブジェクト
     [in] bar: 区切りのハイフンの数
@@ -52,6 +52,31 @@ def argsPrint(p, bar=30):
             print('{0}:\t{1}'.format(i, j))
 
     print('-' * bar)
+
+
+def args2dict(args):
+    """
+    argparseのparse_args() で生成されたオブジェクトを取得して辞書型に変換する
+    [in]  parse_args() で生成されたオブジェクト
+    [out] inの辞書型に変換した結果
+    """
+    return {i: getattr(args, i) for i in dir(args) if not '_' in i[0]}
+
+
+def dict2json(folder, name, mydict, indent=4, sort_keys=True):
+    """
+    辞書型のオブジェクトをjson形式で保存する
+    [in]  folder:    保存するフォルダ
+    [in]  name:      保存するファイル名
+    [in]  mydict:    保存したい辞書型のオブジェクト
+    [in]  indent:    jsonで保存する際のインデント用のスペースの数
+    [in]  sort_keys: jsonで保存する際の辞書をソートするフラグ
+    """
+
+    import json
+    path = getFilePath(folder, name, '.json')
+    with open(path, 'w') as f:
+        json.dump(mydict, f, indent=4, sort_keys=True)
 
 
 def checkModelType(path):

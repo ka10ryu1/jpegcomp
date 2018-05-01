@@ -136,7 +136,7 @@ def cut(img, size=-1):
     # カットするサイズの半分を計算する
     if size <= 1:
         # サイズが1以下の場合、imgの短辺がカットするサイズになる
-        half = np.min(img.shape[:2])//2
+        half = np.min(img.shape[:2]) // 2
     else:
         half = size // 2
 
@@ -169,7 +169,7 @@ def cutN(imgs, size=-1, round_num=-1):
         return np.array(out_imgs)
 
 
-def splitSQ(img, size, flg=cv2.BORDER_REPLICATE, w_rate=0.2, array=True):
+def splitSQ(img, size, flg=cv2.BORDER_REPLICATE, w_rate=0.5, array=True):
     """
     入力された画像を正方形に分割する
     ※詳細はsplitSQNとほぼ同じなので省略
@@ -199,6 +199,8 @@ def splitSQ(img, size, flg=cv2.BORDER_REPLICATE, w_rate=0.2, array=True):
         width = int(size * w_rate)
         img = cv2.copyMakeBorder(img, 0, width, 0, width, flg)
         # 画像を分割しやすいように画像サイズを変更する
+        h, w = img.shape[:2]
+        split = (h // size, w // size)
         img = img[:split[0] * size, :split[1] * size]
 
     # 画像を分割する
@@ -443,7 +445,6 @@ def paste(fg, bg, rot=0, x=0, y=0, mask_flg=True, rand_rot_flg=True, rand_pos_fl
     if rand_rot_flg:
         # ランダムに回転
         img2, rot = rotateR(fg, angle, scale, white)
-        print('rot', rot)
     else:
         # 任意の角度で回転
         img2 = rotate(fg, rot, scale, white)
