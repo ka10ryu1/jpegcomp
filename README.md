@@ -142,7 +142,7 @@ epoch       main/loss   validation/main/loss  elapsed_time
 
 resultフォルダ中に以下が生成されていればOK。先頭の文字列は日付と時間から算出された値であるため実行ごとに異なる。
 
-- `*.json`
+- `*_train.json`
 - `*.log`
 - `*.model`
 - `*_10.snapshot`

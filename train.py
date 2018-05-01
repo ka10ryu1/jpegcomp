@@ -61,8 +61,8 @@ def command():
                         help='オプティマイザ [default: adam, other: ada_d/ada_g/m_sgd/n_ag/rmsp/rmsp_g/sgd/smorms]')
     parser.add_argument('-lf', '--lossfun', default='mse',
                         help='損失関数 [default: mse, other: mae, ber, gauss_kl]')
-    parser.add_argument('-p', '--pruning', type=float, default=0.5,
-                        help='pruning率（snapshot使用時のみ効果あり） [default: 0.5]')
+    parser.add_argument('-p', '--pruning', type=float, default=0.33,
+                        help='pruning率（snapshot使用時のみ効果あり） [default: 0.33]')
     parser.add_argument('-b', '--batchsize', type=int, default=100,
                         help='ミニバッチサイズ [default: 100]')
     parser.add_argument('-e', '--epoch', type=int, default=10,
@@ -83,7 +83,6 @@ def command():
 
 
 def main(args):
-
     # 各種データをユニークな名前で保存するために時刻情報を取得する
     exec_time = GET.datetimeSHA()
 
@@ -109,14 +108,6 @@ def main(args):
     # Accuracyは今回使用しないのでFalseにする
     # もしも使用したいのであれば、自分でAccuracyを評価する関数を作成する必要あり？
     model.compute_accuracy = False
-
-    if args.gpu_id >= 0:
-        # Make a specified GPU current
-        chainer.backends.cuda.get_device_from_id(args.gpu_id).use()
-        model.to_gpu()  # Copy the model to the GPU
-        chainer.global_config.autotune = True
-    else:
-        model.to_intel64()
 
     # Setup an optimizer
     optimizer = GET.optimizer(args.optimizer).setup(model)
@@ -194,8 +185,17 @@ def main(args):
         chainer.serializers.load_npz(args.resume, trainer)
         # Set pruning
         # http://tosaka2.hatenablog.com/entry/2017/11/17/194051
-        masks = pruning.create_model_mask(model, args.pruning)
+        masks = pruning.create_model_mask(model, args.pruning, args.gpu_id)
         trainer.extend(pruning.pruned(model, masks))
+
+    # Make a specified GPU current
+    if args.gpu_id >= 0:
+        chainer.backends.cuda.get_device_from_id(args.gpu_id).use()
+        # Copy the model to the GPU
+        model.to_gpu()
+        chainer.global_config.autotune = True
+    else:
+        model.to_intel64()
 
     # predict.pyでモデルのパラメータを読み込むjson形式で保存する
     if args.only_check is False:
@@ -206,7 +206,7 @@ def main(args):
 
     # 最後にモデルを保存する
     # スナップショットを使ってもいいが、
-    # スナップショットはファイルサイズが大きいので
+    # スナップショットはファイルサイズが大きい
     chainer.serializers.save_npz(
         F.getFilePath(args.out_path, exec_time, '.model'),
         model
