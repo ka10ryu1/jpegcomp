@@ -98,7 +98,6 @@ class TestImgFunc(unittest.TestCase):
         self.assertEqual(imgs.shape, (128, 32, 32, 3))
         self.assertEqual(split, (8, 8))
 
-        print(l.shape, m.shape)
         imgs, split = IMG.splitSQN([l, m], 1024)
         self.assertEqual(imgs.shape, (2, 256, 256, 3))
         self.assertEqual(split, (1, 1))

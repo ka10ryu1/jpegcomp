@@ -4,6 +4,8 @@
 help = 'モデルの枝刈をする'
 #
 
+import numpy
+
 import chainer
 import chainer.links as L
 from chainer import training
@@ -31,13 +33,17 @@ def create_layer_mask(weights, pruning_rate, xp=chainer.cuda.cupy):
 '''
 
 
-def create_model_mask(model, pruning_rate):
+def create_model_mask(model, pruning_rate, gpu_id):
     masks = {}
+    xp = numpy
+    if gpu_id >= 0:
+        xp = chainer.cuda.cupy
+
     for name, link in model.namedlinks():
         # specify pruned layer
         if type(link) not in (L.Convolution2D, L.Linear):
             continue
-        mask = create_layer_mask(link.W, pruning_rate)
+        mask = create_layer_mask(link.W, pruning_rate, xp)
         masks[name] = mask
     return masks
 
