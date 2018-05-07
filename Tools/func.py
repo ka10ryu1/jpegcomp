@@ -115,7 +115,9 @@ def getFilePath(folder, name, ext=''):
     if not os.path.isdir(folder):
         os.makedirs(folder)
 
-    return os.path.join(folder, name + ext)
+    path = os.path.join(folder, name + ext)
+    print('get file path:', path)
+    return path
 
 
 def sortTimeStamp(folder_list, ext):

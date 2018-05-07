@@ -18,6 +18,15 @@ import chainer.optimizers as O
 from func import fileFuncLine
 
 
+def randomStr(choice_len):
+    import random
+    import string
+
+    # return random.choices(string.ascii_letters, k=choice_len) # < Python 3.6+
+    return ''.join([random.choice(string.ascii_letters)
+                    for _ in range(choice_len)])  # < Python 3.5
+
+
 def datetime32():
     """
     時刻情報を元に衝突しにくい名前を自動で生成する（base_repr使用版）
