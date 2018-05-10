@@ -67,7 +67,8 @@ $ tree >& log.txt
 │   ├── imgfunc.py         > 画像処理に関する便利機能
 │   ├── npz2jpg.py         > 作成したデータセット（.npz）の中身を画像として出力する
 │   ├── plot_diff.py       > logファイルの複数比較
-│   └── png_monitoring.py  > 任意のフォルダの監視
+│   ├── png_monitoring.py  > 任意のフォルダの監視
+│   └── pruning.py         > モデルの枝刈をする
 ├── auto_train.sh
 ├── clean_all.sh
 ├── create_dataset.py        > 画像を読み込んでデータセットを作成する
@@ -108,32 +109,29 @@ only_check:	False
 optimizer:	adam
 out_path:	./result/
 plot:	True
+pruning:	0.33
 resume:
 shuffle_rate:	2
 unit:	2
 ------------------------------
-Activation func: relu
-Activation func: sigmoid
 [Network info] JC_DDUU
   Unit:	2
   Out:	1
   Drop out:	0.0
-Act Func:	relu, sigmoid
-Loss func: mean_squared_error
-Optimizer: Adam optimizer
-train_32x32_010800.npz:	x(10800, 1, 32, 32),	y(10800, 1, 32, 32)
-test_32x32_001200.npz:	x(1200, 1, 32, 32),	y(1200, 1, 32, 32)
+  Act Func:	relu, sigmoid
+train_32x32_010800.npz:	x(10800, 1, 32, 32)	y(10800, 1, 32, 32)
+test_32x32_001200.npz:	x(1200, 1, 32, 32)	y(1200, 1, 32, 32)
 epoch       main/loss   validation/main/loss  elapsed_time
-1           0.169036    0.13139               25.8497
-2           0.122518    0.098375              53.0986
-3           0.101484    0.0843139             79.0314
-4           0.0862844   0.0765259             106.593
-5           0.0748267   0.0708797             132.969
-6           0.0656074   0.060168              159.378
-7           0.0579955   0.0562111             186.852
-8           0.0516015   0.0475406             213.704
-9           0.0461395   0.041615              241.675
-10          0.0415356   0.0376565             268.658
+1           0.178574    0.118308              21.8139
+2           0.122758    0.106808              42.2861
+3           0.100306    0.0958555             63.4293
+4           0.0860537   0.0730734             83.896
+5           0.0748337   0.067583              104.49
+6           0.0656855   0.0533111             125.249
+7           0.0582015   0.0502309             146.267
+8           0.0518079   0.0466047             167.007
+9           0.0465706   0.0416385             187.949
+10          0.0422393   0.0357869             208.614
 ```
 
 `not import cupy`はcupyをインストールしていない場合に表示される
@@ -142,11 +140,11 @@ epoch       main/loss   validation/main/loss  elapsed_time
 
 resultフォルダ中に以下が生成されていればOK。先頭の文字列は日付と時間から算出された値であるため実行ごとに異なる。
 
-- `*_train.json`
 - `*.log`
 - `*.model`
 - `*_10.snapshot`
 - `*_graph.dot`
+- `*_train.json`
 - `loss.png`
 
 ## 2. 学習で作成されたモデルを使用する
@@ -154,7 +152,7 @@ resultフォルダ中に以下が生成されていればOK。先頭の文字列
 ### 実行
 
 ```console
-$  ./predict.py ./result/*.model ./result/*.json ./FontData/The_Night*
+$  $ ./predict.py result/*model result/*json FontData/The_Night*
 ```
 
 ### 端末の確認
@@ -163,28 +161,24 @@ $  ./predict.py ./result/*.model ./result/*.json ./FontData/The_Night*
 not import cupy
 not import cupy
 ------------------------------
-batch:	100
+batch:	20
 gpu:	-1
 jpeg[2]:
 	FontData/The_Night_of_the_Milky_Way_Train_ch2.PNG
 	FontData/The_Nighthawk_Star_op.PNG
-model:	result/k7l5q0e.model
+model:	result/1d88bd71.model
 out_path:	./result/
-param:	result/k7l5q0e.json
+param:	result/1d88bd71_train.json
 quality:	5
 ------------------------------
-model param: result/k7l5q0e.json
-Activation func: relu
-Activation func: sigmoid
 [Network info] JC_DDUU
   Unit:	2
   Out:	1
   Drop out:	0.0
-Act Func:	relu, sigmoid
-model read: result/k7l5q0e.model
-exec time: 0.52[s]
+  Act Func:	relu, sigmoid
+exec time: 0.54[s]
 save: ./result/comp-001.jpg
-exec time: 0.35[s]
+exec time: 0.44[s]
 save: ./result/comp-011.jpg
 ```
 
