@@ -112,7 +112,7 @@ class JC_DDUU(Chain):
         self.timer = 0
 
         print('[Network info]', self.__class__.__name__)
-        print('  Unit:\t{0}\n  Out:\t{1}\n  Drop out:\t{2}\nAct Func:\t{3}, {4}'.format(
+        print('  Unit:\t{0}\n  Out:\t{1}\n  Drop out:\t{2}\n  Act Func:\t{3}, {4}'.format(
             n_unit, n_out, dropout, actfun1.__name__, actfun2.__name__)
         )
 
