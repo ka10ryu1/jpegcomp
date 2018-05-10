@@ -4,6 +4,11 @@
 help = '複数のsnapshotoとひとつのモデルパラメータを利用してsnapshotの推移を可視化する'
 #
 
+import logging
+# basicConfig()は、 debug()やinfo()を最初に呼び出す"前"に呼び出すこと
+logging.basicConfig(format='%(message)s')
+logging.getLogger('Tools').setLevel(level=logging.INFO)
+
 import os
 import cv2
 import argparse
@@ -38,7 +43,9 @@ def command():
                         help='GPU ID [default -1]')
     parser.add_argument('--out_path', '-o', default='./result/',
                         help='生成物の保存先[default: ./result/]')
-    return parser.parse_args()
+    args = parser.parse_args()
+    F.argsPrint(args)
+    return args
 
 
 def getSnapshotAndParam(folder):
@@ -162,6 +169,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    args = command()
-    F.argsPrint(args)
-    main(args)
+    main(command())

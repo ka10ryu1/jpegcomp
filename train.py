@@ -4,6 +4,12 @@
 help = '学習メイン部'
 #
 
+
+import logging
+# basicConfig()は、 debug()やinfo()を最初に呼び出す"前"に呼び出すこと
+logging.basicConfig(format='%(message)s')
+logging.getLogger('Tools').setLevel(level=logging.INFO)
+
 import argparse
 import numpy as np
 
@@ -62,7 +68,7 @@ def command():
     parser.add_argument('-lf', '--lossfun', default='mse',
                         help='損失関数 [default: mse, other: mae, ber, gauss_kl]')
     parser.add_argument('-p', '--pruning', type=float, default=0.33,
-                        help='pruning率（snapshot使用時のみ効果あり） [default: 0.33]')
+                        help='pruning率（snapshot使用時のみ効果あり） [default: 0.5]')
     parser.add_argument('-b', '--batchsize', type=int, default=100,
                         help='ミニバッチサイズ [default: 100]')
     parser.add_argument('-e', '--epoch', type=int, default=10,
@@ -79,7 +85,9 @@ def command():
                         help='学習過程をPNG形式で出力しない場合に使用する')
     parser.add_argument('--only_check', action='store_true',
                         help='オプション引数が正しく設定されているかチェックする')
-    return parser.parse_args()
+    args = parser.parse_args()
+    F.argsPrint(args)
+    return args
 
 
 def main(args):
@@ -182,7 +190,7 @@ def main(args):
 
     # Resume from a snapshot
     if args.resume:
-        chainer.serializers.load_npz(args.resume, trainer)
+        chainer.serializers.load_npz(F.checkModelType(args.resume), trainer)
         # Set pruning
         # http://tosaka2.hatenablog.com/entry/2017/11/17/194051
         masks = pruning.create_model_mask(model, args.pruning, args.gpu_id)
@@ -214,6 +222,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    args = command()
-    F.argsPrint(args)
-    main(args)
+    main(command())

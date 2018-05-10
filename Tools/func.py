@@ -8,6 +8,8 @@ import os
 import inspect
 from pathlib import Path
 from watchdog.events import FileSystemEventHandler
+from logging import getLogger
+logger = getLogger(__name__)
 
 
 class ChangeHandler(FileSystemEventHandler):
@@ -91,14 +93,14 @@ def checkModelType(path):
     name, ext = os.path.splitext(os.path.basename(path))
     load_path = ''
     if(ext == '.model'):
-        print('model read:', path)
+        logger.debug('model read: {}'.format(path))
     elif(ext == '.snapshot'):
-        print('snapshot read', path)
+        logger.debug('snapshot read: {}'.format(path))
         load_path = 'updater/model:main/'
     else:
-        print('model read error')
-        print(fileFuncLine())
-        exit()
+        logger.error('model read error: {}'.format(path))
+        logger.error(fileFuncLine())
+        exit(1)
 
     return load_path
 
@@ -116,7 +118,7 @@ def getFilePath(folder, name, ext=''):
         os.makedirs(folder)
 
     path = os.path.join(folder, name + ext)
-    print('get file path:', path)
+    logger.debug('get file path: {}'.format(path))
     return path
 
 
@@ -144,4 +146,4 @@ def fileFuncLine():
         inspect.currentframe().f_back.f_code.co_filename
     )
     lineno = inspect.currentframe().f_back.f_lineno
-    return '>>> {0}, {1}(), {2}[line] <<<\n'.format(filename, funcname, lineno)
+    return '>>> {0}, {1}(), {2}[line] <<<'.format(filename, funcname, lineno)

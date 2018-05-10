@@ -4,6 +4,11 @@
 help = '画像を読み込んでデータセットを作成する'
 #
 
+import logging
+# basicConfig()は、 debug()やinfo()を最初に呼び出す"前"に呼び出すこと
+logging.basicConfig(format='%(message)s')
+logging.getLogger('Tools').setLevel(level=logging.DEBUG)
+
 import cv2
 import argparse
 import numpy as np
@@ -28,7 +33,9 @@ def command():
                         help='画像数に対する学習用画像の割合 [default: 0.9]')
     parser.add_argument('-o', '--out_path', default='./result/',
                         help='データセットの保存先(default: ./result/)')
-    return parser.parse_args()
+    args = parser.parse_args()
+    F.argsPrint(args)
+    return args
 
 
 def saveNPZ(x, y, name, folder, size):
@@ -52,7 +59,11 @@ def main(args):
     ch = IMG.getCh(args.channel)
     # OpenCV形式で画像をリストで読み込む
     print('read images...')
-    imgs = [cv2.imread(name, ch) for name in args.jpeg]
+    imgs = [cv2.imread(name, ch) for name in args.jpeg if IMG.isImgPath(name)]
+    if len(imgs) == 0:
+        print('image get error')
+        exit(1)
+
     # 画像を圧縮して分割する（学習の入力データに相当）
     print('split images...')
     x, _ = IMG.splitSQN(
@@ -85,6 +96,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    args = command()
-    F.argsPrint(args)
-    main(args)
+    main(command())
