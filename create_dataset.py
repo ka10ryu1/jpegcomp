@@ -6,8 +6,9 @@ help = '画像を読み込んでデータセットを作成する'
 
 import logging
 # basicConfig()は、 debug()やinfo()を最初に呼び出す"前"に呼び出すこと
+level = logging.INFO
 logging.basicConfig(format='%(message)s')
-logging.getLogger('Tools').setLevel(level=logging.DEBUG)
+logging.getLogger('Tools').setLevel(level=level)
 
 import cv2
 import argparse
