@@ -120,7 +120,12 @@ def main(args):
     # スナップショットとモデルパラメータのパスを取得する
     snapshot_path, param = getSnapshotAndParam(args.snapshot_and_json)
     # jsonファイルから学習モデルのパラメータを取得する
-    net, unit, ch, size, layer, sr, af1, af2 = GET.modelParam(param)
+    p = ['network', 'unit', 'shape', 'layer_num',
+         'shuffle_rate', 'actfun1', 'actfun2']
+    net, unit, shape, layer, sr, af1, af2 = GET.jsonData(param, p)
+    af1 = GET.actfun(af1)
+    af2 = GET.actfun(af2)
+    ch, size = shape[:2]
     # 推論実行するために画像を読み込んで結合する
     img = getImage(args.jpeg, ch, size, args.img_num, args.random_seed)
     # 学習モデルを生成する
@@ -156,7 +161,8 @@ def main(args):
         ed = encDecWrite(img, ch, args.quality)
         with chainer.using_config('train', False):
             out_imgs.append(
-                predict(model, IMG.splitSQ(ed, size), args.batch, ed.shape, sr, args.gpu)
+                predict(model, IMG.splitSQ(ed, size),
+                        args.batch, ed.shape, sr, args.gpu)
             )
 
     # 推論実行した各画像を結合してサイズを調整する
