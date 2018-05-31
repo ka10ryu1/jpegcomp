@@ -151,6 +151,29 @@ def optimizer(opt_str):
     return opt
 
 
+def jsonData(path, data):
+    logger.debug('json read: {}'.format(path))
+    try:
+        with open(path, 'r') as f:
+            j_dict = json.load(f)
+
+    except:
+        import traceback
+        traceback.print_exc()
+        logger.error(fileFuncLine())
+        exit(1)
+
+    param = [j_dict[d] for d in data if d in j_dict]
+    logger.debug('param[{}]: {}'.format(len(data), data))
+    logger.debug('param[{}]: {}'.format(len(param), param))
+    if len(param) == 0:
+        logger.error('json read miss: {}'.format(data))
+    elif len(param) == 1:
+        return param[0]
+    else:
+        return param
+
+
 def modelParam(path):
     """
     jsonで記述されたモデルパラメータ情報を読み込む
@@ -186,13 +209,34 @@ def modelParam(path):
     else:
         layer = 0
 
-    af1 = actfun(d['actfun1'])
-    af2 = actfun(d['actfun2'])
-    ch = d['shape'][0]
-    size = d['shape'][1]
+    try:
+        af1 = actfun(d['actfun1'])
+    except:
+        af1 = None
+
+    try:
+        af2 = actfun(d['actfun2'])
+    except:
+        af2 = None
+
+    try:
+        ch = d['shape'][0]
+    except:
+        ch = 0
+
+    try:
+        size = d['shape'][1]
+    except:
+        size = 0
+
+    try:
+        sr = d['shuffle_rate']
+    except:
+        sr = 0
+
     return \
         net, d['unit'], ch, size, \
-        layer, d['shuffle_rate'], af1, af2
+        layer, sr, af1, af2
 
 
 def imgData(folder):

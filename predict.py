@@ -8,6 +8,7 @@ import logging
 # basicConfig()は、 debug()やinfo()を最初に呼び出す"前"に呼び出すこと
 logging.basicConfig(format='%(message)s')
 logging.getLogger('Tools').setLevel(level=logging.INFO)
+# logging.getLogger('Tools').setLevel(level=logging.DEBUG)
 
 import cv2
 import time
@@ -102,7 +103,12 @@ def predict(model, data, batch, org_shape, rate, gpu):
 
 def main(args):
     # jsonファイルから学習モデルのパラメータを取得する
-    net, unit, ch, size, layer, sr, af1, af2 = GET.modelParam(args.param)
+    p = ['network', 'unit', 'shape', 'layer_num',
+         'shuffle_rate', 'actfun1', 'actfun2']
+    net, unit, shape, layer, sr, af1, af2 = GET.jsonData(args.param, p)
+    af1 = GET.actfun(af1)
+    af2 = GET.actfun(af2)
+    ch, size = shape[:2]
     # 学習モデルを生成する
     if net == 0:
         from Lib.network import JC_DDUU as JC
@@ -141,7 +147,8 @@ def main(args):
         # 学習モデルを入力画像ごとに実行する
         for i, ei in enumerate(ed_imgs):
             img = predict(
-                model, IMG.splitSQ(ei, size), args.batch, ei.shape, sr, args.gpu
+                model, IMG.splitSQ(ei, size),
+                args.batch, ei.shape, sr, args.gpu
             )
             # 生成結果を保存する
             name = F.getFilePath(
@@ -155,7 +162,9 @@ def main(args):
     c3i = [concat3Images([i, j, k], 50, 333, ch, 1)
            for i, j, k in zip(org_imgs, ed_imgs, imgs)]
     for i, img in enumerate(c3i):
-        path = F.getFilePath(args.out_path, 'concat-' + str(i * 10).zfill(3), '.jpg')
+        path = F.getFilePath(
+            args.out_path, 'concat-' + str(i * 10).zfill(3), '.jpg'
+        )
         cv2.imwrite(path, img)
         cv2.imshow(path, img)
         cv2.waitKey()

@@ -558,7 +558,7 @@ def paste(fg, bg, rot=0, x=0, y=0, mask_flg=True, rand_rot_flg=True, rand_pos_fl
     # Put logo in ROI and modify the main image
     dst = cv2.add(img1_bg, img2_fg)
     img1[x:x + w2, y:y + h2] = dst
-    logger('\timg1.shape: {}'.format(img1.shape))
+    logger.debug('\timg1.shape: {}'.format(img1.shape))
     return img1, (rot, x, y)
 
 
