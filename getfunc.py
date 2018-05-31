@@ -16,6 +16,8 @@ import chainer.optimizers as O
 
 [sys.path.append(d) for d in ['./Tools/', '../Tools/'] if os.path.isdir(d)]
 from func import fileFuncLine
+from logging import getLogger
+logger = getLogger(__name__)
 
 
 def randomStr(choice_len):
@@ -36,6 +38,8 @@ def datetime32():
     now = datetime.today()
     exec_time1 = int(now.strftime('%y%m%d'))
     exec_time2 = int(now.strftime('%H%M%S'))
+    logger.debug('time1: {}'.format(exec_time1))
+    logger.debug('time2: {}'.format(exec_time2))
     return np.base_repr(exec_time1 * exec_time2, 32).lower()
 
 
@@ -54,6 +58,9 @@ def datetimeSHA(secret='emacs', str_len=8):
     byte_2 = bytearray(np.base_repr(
         exec_time1 * exec_time2, 32).lower(), 'ASCII')
     myhash = hmac.new(byte_1, byte_2).hexdigest()
+    logger.debug('time1: {}'.format(exec_time1))
+    logger.debug('time2: {}'.format(exec_time2))
+    logger.debug('secret: {}'.format(secret))
     return myhash[:str_len]
 
 
@@ -72,11 +79,9 @@ def lossfun(lossfun_str):
         lossfun = F.gaussian_kl_divergence
     else:
         lossfun = F.mean_squared_error
-        print('\n[Warning] {0}\n\t{1}->{2}\n'.format(
-            fileFuncLine(), lossfun_str, lossfun.__name__)
-        )
+        logger.warning('{0}->{1}'.format(lossfun_str, lossfun.__name__))
 
-    print('Loss func:', lossfun.__name__)
+    logger.debug('Loss func: {}'.format(lossfun.__name__))
     return lossfun
 
 
@@ -109,11 +114,9 @@ def actfun(actfun_str):
         actfun = F_None
     else:
         actfun = F.relu
-        print('\n[Warning] {0}\n\t{1}->{2}\n'.format(
-            fileFuncLine(), actfun_str, actfun.__name__)
-        )
+        logger.warning('{}->{}'.format(actfun_str, actfun.__name__))
 
-    print('Activation func:', actfun.__name__)
+    logger.debug('Activation func: {}'.format(actfun.__name__))
     return actfun
 
 
@@ -142,12 +145,31 @@ def optimizer(opt_str):
         opt = O.SMORMS3()
     else:
         opt = O.Adam(amsgrad=True)
-        print('\n[Warning] {0}\n\t{1}->{2}\n'.format(
-            fileFuncLine(), opt_str, opt.__doc__.split('.')[0])
-        )
+        logger.warning('{}->{}'.format(opt_str, opt.__doc__.split('.')[0]))
 
-    print('Optimizer:', opt.__doc__.split('.')[0])
+    logger.debug('Optimizer: {}'.format(opt.__doc__.split('.')[0]))
     return opt
+
+
+def jsonData(path, data):
+    logger.debug('json read: {}'.format(path))
+    try:
+        with open(path, 'r') as f:
+            j_dict = json.load(f)
+
+    except:
+        import traceback
+        traceback.print_exc()
+        logger.error(fileFuncLine())
+        exit(1)
+
+    param = [j_dict[d] for d in data if d in j_dict]
+    if len(param) == 0:
+        logger.error('json read miss: {}'.format(data))
+    elif len(param) == 1:
+        return param[0]
+    else:
+        return param
 
 
 def modelParam(path):
@@ -164,7 +186,7 @@ def modelParam(path):
     [out] af2:               活性化関数(2)
     """
 
-    print('model param:', path)
+    logger.debug('model param: {}'.format(path))
     try:
         with open(path, 'r') as f:
             d = json.load(f)
@@ -172,8 +194,8 @@ def modelParam(path):
     except:
         import traceback
         traceback.print_exc()
-        print(fileFuncLine())
-        exit()
+        logger.error(fileFuncLine())
+        exit(1)
 
     if 'network' in d:
         net = d['network']
@@ -185,13 +207,34 @@ def modelParam(path):
     else:
         layer = 0
 
-    af1 = actfun(d['actfun1'])
-    af2 = actfun(d['actfun2'])
-    ch = d['shape'][0]
-    size = d['shape'][1]
+    try:
+        af1 = actfun(d['actfun1'])
+    except:
+        af1 = None
+
+    try:
+        af2 = actfun(d['actfun2'])
+    except:
+        af2 = None
+
+    try:
+        ch = d['shape'][0]
+    except:
+        ch = 0
+
+    try:
+        size = d['shape'][1]
+    except:
+        size = 0
+
+    try:
+        sr = d['shuffle_rate']
+    except:
+        sr = 0
+
     return \
         net, d['unit'], ch, size, \
-        layer, d['shuffle_rate'], af1, af2
+        layer, sr, af1, af2
 
 
 def imgData(folder):
@@ -204,8 +247,8 @@ def imgData(folder):
 
     # 探索するフォルダがなければ終了
     if not os.path.isdir(folder):
-        print('[Error] folder not found:', folder)
-        print(fileFuncLine())
+        logger.error('folder not found: {}'.format(folder))
+        logger.error(fileFuncLine())
         exit()
 
     # 学習用データとテスト用データを発見したらTrueにする
@@ -222,7 +265,7 @@ def imgData(folder):
             np_arr = np.load(os.path.join(folder, l))
             x, y = np_arr['x'], np_arr['y']
             train = tuple_dataset.TupleDataset(x, y)
-            print('{0}:\tx{1}\ty{2}'.format(l, x.shape, y.shape))
+            logger.info('{0}:\tx{1}\ty{2}'.format(l, x.shape, y.shape))
             if(train._length > 0):
                 train_flg = True
 
@@ -230,7 +273,7 @@ def imgData(folder):
             np_arr = np.load(os.path.join(folder, l))
             x, y = np_arr['x'], np_arr['y']
             test = tuple_dataset.TupleDataset(x, y)
-            print('{0}:\tx{1}\ty{2}'.format(l, x.shape, y.shape))
+            logger.info('{0}:\tx{1}\ty{2}'.format(l, x.shape, y.shape))
             if(test._length > 0):
                 test_flg = True
 
@@ -238,5 +281,6 @@ def imgData(folder):
     if(train_flg is True)and(test_flg is True):
         return train, test
     else:
-        print('[Error] dataset not found in this folder:', folder)
+        logger.error('dataset not found in this folder: {}'.format(folder))
+        logger.error(fileFuncLine())
         exit()

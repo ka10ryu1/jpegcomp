@@ -8,11 +8,13 @@ import os
 import sys
 import cv2
 import numpy as np
+from logging import getLogger
+logger = getLogger(__name__)
 
 try:
     import cupy as xp
 except ImportError:
-    print('not import cupy')
+    logger.warning('not import cupy')
 
 [sys.path.append(d) for d in ['./Tools/', '../Tools/'] if os.path.isdir(d)]
 from func import fileFuncLine
@@ -25,6 +27,7 @@ def getCh(ch):
     [out] OpenCVの形式
     """
 
+    logger.debug('getCh({})'.format(ch))
     if(ch == 1):
         return cv2.IMREAD_GRAYSCALE
     elif(ch == 3):
@@ -44,14 +47,18 @@ def blank(size, color, dtype=np.uint8, min_val=0, max_val=255):
     [out] img:   生成した単色画像
     """
 
+    logger.debug('blank({},{},{},{},{})'.format(
+        size, color, dtype.__name__, min_val, max_val
+    ))
     # サイズに負数がある場合はエラー
     if np.min(size) < 0:
-        print('[Error] size < 0: {0}'.format(size))
-        print(fileFuncLine())
+        logger.error('\tsize < 0: {}'.format(size))
+        logger.error(fileFuncLine())
         exit(1)
 
     # サイズに縦横しか含まれていない場合はチャンネル追加
     if len(size) == 2:
+        logger.debug('\tsize len = 2: {}'.format(size))
         size = (size[0], size[1], 1)
 
     # 色がintの場合はグレースケールとして塗りつぶす
@@ -63,11 +70,13 @@ def blank(size, color, dtype=np.uint8, min_val=0, max_val=255):
         elif color > max_val:
             color = max_val
 
+        logger.debug('\t0 < color < 255: {}', color)
         img.fill(color)
         return img
 
     # チャンネルが3じゃない時は3にする
     if size[2] != 3:
+        logger.debug('\tsize len != 3: {}'.format(size))
         size = (size[0], size[1], 3)
 
     img = np.zeros(size, dtype=dtype)
@@ -83,6 +92,7 @@ def isImgPath(name, silent=False):
     [out] 画像ならTrue
     """
 
+    logger.debug('isImgPath({},{})'.format(name, silent))
     if not type(name) is str:
         return False
 
@@ -91,8 +101,8 @@ def isImgPath(name, silent=False):
         return True
     else:
         if not silent:
-            print('[{0}] is not Image'.format(name))
-            print(fileFuncLine())
+            logger.error('image not found: {}'.format(name))
+            logger.error(fileFuncLine())
 
         return False
 
@@ -103,12 +113,12 @@ def encodeDecode(img, ch, quality=5, ext='.jpg'):
     ※詳細はencodeDecodeNとほぼ同じなので省略
     """
 
+    logger.debug('encodeDecode({},{},{},{})'.format(img.shape, ch, quality, ext))
     encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
     result, encimg = cv2.imencode(ext, img, encode_param)
     if False == result:
-        print(
-            '[Error] {0}\n\timage encode failed!'.format(fileFuncLine())
-        )
+        logger.error('image encode failed!')
+        logger.error(fileFuncLine())
         exit(1)
 
     return cv2.imdecode(encimg, getCh(ch))
@@ -123,7 +133,7 @@ def encodeDecodeN(imgs, ch, quality=5, ext='.jpg'):
     [in]  ext:     圧縮する拡張子
     [out] 圧縮画像リスト
     """
-
+    logger.debug('encodeDecodeN(N={})'.format(len(imgs)))
     return [encodeDecode(img, ch, quality, ext) for img in imgs]
 
 
@@ -133,10 +143,12 @@ def cut(img, size=-1):
     ※詳細はcutNとほぼ同じなので省略
     """
 
+    logger.debug('cut({},{})'.format(img.shape, size))
     # カットするサイズの半分を計算する
     if size <= 1:
         # サイズが1以下の場合、imgの短辺がカットするサイズになる
         half = np.min(img.shape[:2]) // 2
+        logger.debug('\tsize <= 1')
     else:
         half = size // 2
 
@@ -154,15 +166,18 @@ def cutN(imgs, size=-1, round_num=-1):
     [out] カットされた画像リスト
     """
 
+    logger.debug('cutN(N={})'.format(len(imgs)))
     # 画像のカットを実行
     out_imgs = [cut(img, size) for img in imgs]
     # 切り捨てたい数よりも画像数が少ないと0枚になってしまうので注意
     if(round_num > len(out_imgs)):
+        logger.debug('\tround_num > len(out_imgs)')
         round_num = -1
 
     # バッチサイズの関係などで、画像の数を調整したい時はここで調整する
     # predict.pyなどで分割画像を復元したくなるので縦横の分割数も返す
     if(round_num > 0):
+        logger.debug('\tround_num > 0')
         round_len = len(out_imgs) // round_num * round_num
         return np.array(out_imgs[:round_len])
     else:
@@ -175,7 +190,12 @@ def splitSQ(img, size, flg=cv2.BORDER_REPLICATE, w_rate=0.2, array=True):
     ※詳細はsplitSQNとほぼ同じなので省略
     """
 
+    logger.debug('splitSQ({},{},{},{},{})'.format(
+        img.shape, size, flg, w_rate, array)
+    )
+
     def arrayChk(x, to_arr):
+        logger.debug('arrayChk({},{})'.format(len(x), to_arr))
         # np.array (True)にするか、list (False)にするか選択する
         if to_arr:
             return np.array(x)
@@ -184,6 +204,7 @@ def splitSQ(img, size, flg=cv2.BORDER_REPLICATE, w_rate=0.2, array=True):
 
     # sizeが負数だと分割しないでそのまま返す
     if size <= 1:
+        logger.debug('\tsize <= 1')
         return arrayChk(cutN(img), array), (1, 1)
 
     h, w = img.shape[:2]
@@ -191,6 +212,7 @@ def splitSQ(img, size, flg=cv2.BORDER_REPLICATE, w_rate=0.2, array=True):
 
     # sizeが入力画像よりも大きい場合は分割しないでそのまま返す
     if split[0] == 0 or split[1] == 0:
+        logger.debug('\tsplit[0] == 0 or split[1] == 0')
         return arrayChk([cut(img)], array), (1, 1)
 
     # 縦横の分割数を計算する
@@ -206,6 +228,7 @@ def splitSQ(img, size, flg=cv2.BORDER_REPLICATE, w_rate=0.2, array=True):
     # 画像を分割する
     imgs_2d = [np.vsplit(i, split[0]) for i in np.hsplit(img, split[1])]
     imgs_1d = [x for l in imgs_2d for x in l]
+    logger.debug('\tsplit: {}'.format(split))
     return arrayChk(imgs_1d, array), split
 
 
@@ -221,6 +244,7 @@ def splitSQN(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE, w_rate=0.2):
     [out] split:     縦横の分割情報
     """
 
+    logger.debug('splitSQN(N={})'.format(len(imgs)))
     out_imgs = []
     split = []
     for img in imgs:
@@ -230,11 +254,13 @@ def splitSQN(imgs, size, round_num=-1, flg=cv2.BORDER_REPLICATE, w_rate=0.2):
 
     # 切り捨てたい数よりも画像数が少ないと0枚になってしまうので注意
     if(round_num > len(out_imgs)):
+        logger.debug('\tround_num > len(out_imgs)')
         round_num = -1
 
     # バッチサイズの関係などで、画像の数を調整したい時はここで調整する
     # predict.pyなどで分割画像を復元したくなるので縦横の分割数も返す
     if(round_num > 0):
+        logger.debug('\tround_num > 0')
         round_len = len(out_imgs) // round_num * round_num
         return np.array(out_imgs[:round_len]), (split[0], split[1])
     else:
@@ -251,6 +277,9 @@ def rotate(img, angle, scale, border=(0, 0, 0)):
     [out] 回転させた画像
     """
 
+    logger.debug('rotate({},{},{},{})'.format(
+        img.shape, angle, scale, border)
+    )
     size = (img.shape[1], img.shape[0])
     mat = cv2.getRotationMatrix2D((size[0] // 2, size[1] // 2), angle, scale)
     return cv2.warpAffine(img, mat, size, flags=cv2.INTER_CUBIC, borderValue=border)
@@ -262,7 +291,11 @@ def rotateR(img, level=[-10, 10], scale=1.2, border=(0, 0, 0)):
     ※詳細はrotateRNとほぼ同じなので省略
     """
 
+    logger.debug('rotateR({},{},{},{})'.format(
+        img.shape, level, scale, border)
+    )
     angle = np.random.randint(level[0], level[1])
+    logger.debug('\tangle: {}'.format(angle))
     return rotate(img, angle, scale, border), angle
 
 
@@ -278,6 +311,7 @@ def rotateRN(imgs, num, level=[-10, 10], scale=1.2, border=(0, 0, 0)):
     [out] 回転させた角度リスト
     """
 
+    logger.debug('rotateRN(N={},{})'.format(len(imgs), num))
     out_imgs = []
     out_angle = []
     for n in range(num):
@@ -295,7 +329,9 @@ def flip(img, num=2):
     ※詳細はflipNとほぼ同じなので省略
     """
 
-    if(num < 1):
+    logger.debug('flip({},{})'.format(img.shape, num))
+    if num < 1:
+        logger.debug('\tnum < 1')
         return [img]
 
     horizontal = 0
@@ -305,12 +341,14 @@ def flip(img, num=2):
     # 上下反転を追加
     f = cv2.flip(img, horizontal)
     out_imgs.append(f)
-    if(num > 1):
+    if num > 1:
+        logger.debug('\tnum > 1')
         # 左右反転を追加
         f = cv2.flip(img, vertical)
         out_imgs.append(f)
 
-    if(num > 2):
+    if num > 2:
+        logger.debug('\tnum > 2')
         # 上下左右反転を追加
         f = cv2.flip(cv2.flip(img, horizontal), vertical)
         out_imgs.append(f)
@@ -326,7 +364,9 @@ def flipN(imgs, num=2):
     [out] out_imgs: 出力画像リスト
     """
 
-    if(num < 1):
+    logger.debug('flipN(N={},{})'.format(len(imgs), num))
+    if num < 1:
+        logger.debug('\tnum < 1')
         return np.array(imgs)
 
     horizontal = 0
@@ -336,12 +376,14 @@ def flipN(imgs, num=2):
     # 上下反転を追加
     f = [cv2.flip(i, horizontal) for i in imgs]
     out_imgs.extend(f)
-    if(num > 1):
+    if num > 1:
+        logger.debug('\tnum > 1')
         # 左右反転を追加
         f = [cv2.flip(i, vertical) for i in imgs]
         out_imgs.extend(f)
 
-    if(num > 2):
+    if num > 2:
+        logger.debug('\tnum > 2')
         # 上下左右反転を追加
         f = [cv2.flip(cv2.flip(i, vertical), horizontal) for i in imgs]
         out_imgs.extend(f)
@@ -357,6 +399,7 @@ def whiteCheckN(imgs, val=245):
     [out] ほとんど白い画像を除去した画像リスト
     """
 
+    logger.debug('whiteCheckN(N={},{})'.format(len(imgs), val))
     return np.array(
         [i for i in imgs if(val > np.sum(i) // (i.shape[0] * i.shape[1]))]
     )
@@ -372,10 +415,16 @@ def resize(img, rate, flg=cv2.INTER_NEAREST):
     """
 
     if rate < 0:
+        logger.debug('resize({},{},{})'.format(
+            img.shape, rate, flg
+        ))
         return img
 
     size = (int(img.shape[1] * rate),
             int(img.shape[0] * rate))
+    logger.debug('resize({},{},{})->{}'.format(
+        img.shape, rate, flg, size
+    ))
     return cv2.resize(img, size, flg)
 
 
@@ -388,10 +437,13 @@ def resizeP(img, pixel, flg=cv2.INTER_NEAREST):
     [out] サイズを変更した画像リスト
     """
 
+    logger.debug('resizeP({},{},{})'.format(img.shape, pixel, flg))
     r_img = resize(img, pixel / np.min(img.shape[:2]), flg)
+    logger.debug('\tr_img: {}'.format(r_img.shape))
     b_img = cv2.copyMakeBorder(
         r_img, 0, 2, 0, 2, cv2.BORDER_CONSTANT, value=(0, 0, 0)
     )
+    logger.debug('\tb_img: {}'.format(b_img.shape))
     return b_img[:pixel, :pixel]
 
 
@@ -404,6 +456,7 @@ def resizeN(imgs, rate, flg=cv2.INTER_NEAREST):
     [out] N倍にされた画像リスト
     """
 
+    logger.debug('resizeN(N={})'.format(len(imgs)))
     return np.array([resize(img, rate, flg) for img in imgs])
 
 
@@ -415,6 +468,7 @@ def size2x(imgs, flg=cv2.INTER_NEAREST):
     [out] 2倍にされた画像リスト
     """
 
+    logger.debug('size2x(N={},{})'.format(len(imgs), flg))
     rate = 2
     return [resize(i, rate, flg) for i in imgs]
 
@@ -434,6 +488,10 @@ def paste(fg, bg, rot=0, x=0, y=0, mask_flg=True, rand_rot_flg=True, rand_pos_fl
     http://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_core/py_image_arithmetics/py_image_arithmetics.html#bitwise-operations
     """
 
+    logger.debug('paste({},{},{},{},{},{},{},{})'.format(
+        fg.shape, bg.shape, rot, x, y, mask_flg, rand_rot_flg, rand_pos_flg
+    ))
+
     # 画素の最大値
     max_val = 255
 
@@ -442,6 +500,7 @@ def paste(fg, bg, rot=0, x=0, y=0, mask_flg=True, rand_rot_flg=True, rand_pos_fl
     white = (max_val, max_val, max_val)
     angle = [-90, 90]  # ランダム回転の範囲
     scale = 1.0  # 画像の拡大率
+    logger.debug('\trand_rot_flg: {}'.format(rand_rot_flg))
     if rand_rot_flg:
         # ランダムに回転
         img2, rot = rotateR(fg, angle, scale, white)
@@ -452,13 +511,16 @@ def paste(fg, bg, rot=0, x=0, y=0, mask_flg=True, rand_rot_flg=True, rand_pos_fl
     # I want to put logo on top-left corner, So I create a ROI
     w1, h1 = img1.shape[:2]
     w2, h2 = img2.shape[:2]
+    logger.debug('\trand_pos_flg: {}'.format(rand_pos_flg))
     if rand_pos_flg:
         x = np.random.randint(0, w1 - w2 + 1)
         y = np.random.randint(0, w1 - w2 + 1)
 
     roi = img1[x:x + w2, y:y + h2]
+    logger.debug('\trot:{}, pos:({},{}), shape:{}'.format(rot, x, y, roi.shape))
 
     def masked(img):
+        logger.debug('masked({})'.format(img.shape))
         if len(img.shape) < 3:
             return False
         elif img.shape[2] != 4:
@@ -496,6 +558,7 @@ def paste(fg, bg, rot=0, x=0, y=0, mask_flg=True, rand_rot_flg=True, rand_pos_fl
     # Put logo in ROI and modify the main image
     dst = cv2.add(img1_bg, img2_fg)
     img1[x:x + w2, y:y + h2] = dst
+    logger.debug('\timg1.shape: {}'.format(img1.shape))
     return img1, (rot, x, y)
 
 
@@ -507,6 +570,7 @@ def arr2x(arr, flg=cv2.INTER_NEAREST):
     [out] 2倍にされた行列
     """
 
+    logger.debug('arr2x({},{})'.format(arr.shape, flg))
     return imgs2arr(size2x(arr2imgs(arr), flg))
 
 
@@ -519,6 +583,7 @@ def arrNx(arr, rate, flg=cv2.INTER_NEAREST):
     [out] N倍にされた行列
     """
 
+    #logger.debug('arrNx({},{},{})'.format(arr.shape, rate, flg))
     if(len(arr.shape) == 3):
         img = arr2img(arr)
         return img2arr(resize(img, rate, flg))
@@ -534,6 +599,9 @@ def img2arr(img, norm=255, dtype=np.float32, gpu=-1):
     ※詳細はimgs2arrとほぼ同じなので省略
     """
 
+    # logger.debug('img2arr({},{},{},{})'.format(
+    # img.shape, norm, dtype.__name__, gpu
+    # ))
     try:
         w, h, _ = img.shape
     except:
@@ -555,6 +623,9 @@ def imgs2arr(imgs, norm=255, dtype=np.float32, gpu=-1):
     [out] 生成された行列
     """
 
+    # logger.debug('imgs2arr(N={},{},{},{})'.format(
+    #     len(imgs), norm, dtype.__name__, gpu
+    # ))
     try:
         w, h, ch = imgs[0].shape
     except:
@@ -580,6 +651,9 @@ def arr2img(arr, norm=255, dtype=np.uint8):
         ch = 1
 
     y = np.array(arr).reshape((h, w, ch)) * norm
+    # logger.debug('arr2img({},{},{})->{}'.format(
+    #     arr.shape, norm, dtype.__name__, y.shape
+    # ))
     return np.array(y, dtype=dtype)
 
 
@@ -595,9 +669,12 @@ def arr2imgs(arr, norm=255, dtype=np.uint8):
     try:
         ch, size = arr.shape[1], arr.shape[2]
     except:
-        print('[ERROR] input data is not img arr')
-        print(fileFuncLine())
+        logger.error('input data is not img arr')
+        logger.error(fileFuncLine())
         exit(1)
 
     y = np.array(arr).reshape((-1, size, size, ch)) * norm
+    # logger.debug('arr2imgs({},{},{})->{}'.format(
+    #     arr.shape, norm, dtype.__name__, y.shape
+    # ))
     return np.array(y, dtype=dtype)
