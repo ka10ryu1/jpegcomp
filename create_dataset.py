@@ -26,6 +26,8 @@ def command():
                         help='画像のチャンネル数 [default: 1 channel]')
     parser.add_argument('--img_size', '-s', type=int, default=32,
                         help='生成される画像サイズ [default: 32 pixel]')
+    parser.add_argument('--flip_num', '-f', type=int, default=2,
+                        help='画像の反転回数 [default: 2]')
     parser.add_argument('--round', '-r', type=int, default=1000,
                         help='切り捨てる数 [default: 1000]')
     parser.add_argument('--quality', '-q', type=int, default=5,
@@ -68,11 +70,12 @@ def main(args):
     # 画像を圧縮して分割する（学習の入力データに相当）
     print('split images...')
     x, _ = IMG.splitSQN(
-        IMG.flipN(IMG.encodeDecodeN(imgs, ch, args.quality)),
+        IMG.flipN(IMG.encodeDecodeN(imgs, ch, args.quality), args.flip_num),
         args.img_size, args.round
     )
     # 画像を分割する（正解データに相当）
-    y, _ = IMG.splitSQN(IMG.flipN(imgs), args.img_size, args.round)
+    y, _ = IMG.splitSQN(IMG.flipN(imgs, args.flip_num),
+                        args.img_size, args.round)
 
     # 画像の並び順をシャッフルするための配列を作成する
     # compとrawの対応を崩さないようにシャッフルしなければならない

@@ -58,15 +58,18 @@ def command():
     parser.add_argument('-ln', '--layer_num', type=int, default=2, metavar='INT',
                         help='ネットワーク層の数 [default: 2]')
     parser.add_argument('-a1', '--actfun1', default='relu',
-                        choices=('relu', 'elu', 'c_relu', 'l_relu', 'sigmoid', 'h_sigmoid', 'tanh', 's_plus'),
+                        choices=('relu', 'elu', 'c_relu', 'l_relu',
+                                 'sigmoid', 'h_sigmoid', 'tanh', 's_plus'),
                         help='活性化関数(1) [default: relu]')
     parser.add_argument('-a2', '--actfun2', default='sigmoid',
-                        choices=('sigmoid', 'relu', 'elu', 'c_relu', 'l_relu', 'h_sigmoid', 'tanh', 's_plus'),
+                        choices=('sigmoid', 'relu', 'elu', 'c_relu',
+                                 'l_relu', 'h_sigmoid', 'tanh', 's_plus'),
                         help='活性化関数(2) [default: sigmoid]')
-    parser.add_argument('-d', '--dropout', type=float, default=0.0, metavar='FLOAT',
-                        help='ドロップアウト率（0〜0.9、0で不使用）[default: 0.0]')
+    parser.add_argument('-d', '--dropout', type=float, default=0.2, metavar='FLOAT',
+                        help='ドロップアウト率（0〜0.9、0で不使用）[default: 0.2]')
     parser.add_argument('-opt', '--optimizer', default='adam',
-                        choices=('adam', 'ada_d', 'ada_g', 'm_sgd', 'n_ag', 'rmsp', 'rmsp_g', 'sgd', 'smorms'),
+                        choices=('adam', 'ada_d', 'ada_g', 'm_sgd',
+                                 'n_ag', 'rmsp', 'rmsp_g', 'sgd', 'smorms'),
                         help='オプティマイザ [default: adam]')
     parser.add_argument('-lf', '--lossfun', default='mse',
                         choices=('mse', 'mae', 'ber', 'gauss_kl'),
