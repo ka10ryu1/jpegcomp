@@ -84,27 +84,31 @@ def blank(size, color, dtype=np.uint8, min_val=0, max_val=255):
     return img
 
 
-def isImgPath(name, silent=False):
+def isImgPath(path, silent=False):
     """
     入力されたパスが画像か判定する
-    [in]  name:   画像か判定したいパス
+    [in]  path:   画像か判定したいパス
     [in]  silent: cv2.imread失敗時にエラーを表示させない場合はTrue
     [out] 画像ならTrue
     """
 
-    logger.debug('isImgPath({},{})'.format(name, silent))
-    if not type(name) is str:
+    logger.debug('isImgPath({},{})'.format(path, silent))
+
+    if not type(path) is str:
         return False
 
-    # cv2.imreadしてNoneが返ってきたら画像でないとする
-    if cv2.imread(name) is not None:
-        return True
+    import imghdr
+    if not os.path.isfile(path):
+        logger.error('image not found: {}'.format(path))
+        logger.error(fileFuncLine())
+        return False
+
+    if imghdr.what(path) is None:
+        logger.error('image not found: {}'.format(path))
+        logger.error(fileFuncLine())
+        return False
     else:
-        if not silent:
-            logger.error('image not found: {}'.format(name))
-            logger.error(fileFuncLine())
-
-        return False
+        return True
 
 
 def encodeDecode(img, ch, quality=5, ext='.jpg'):
@@ -113,7 +117,8 @@ def encodeDecode(img, ch, quality=5, ext='.jpg'):
     ※詳細はencodeDecodeNとほぼ同じなので省略
     """
 
-    logger.debug('encodeDecode({},{},{},{})'.format(img.shape, ch, quality, ext))
+    logger.debug('encodeDecode({},{},{},{})'.format(
+        img.shape, ch, quality, ext))
     encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), quality]
     result, encimg = cv2.imencode(ext, img, encode_param)
     if False == result:
@@ -517,7 +522,8 @@ def paste(fg, bg, rot=0, x=0, y=0, mask_flg=True, rand_rot_flg=True, rand_pos_fl
         y = np.random.randint(0, w1 - w2 + 1)
 
     roi = img1[x:x + w2, y:y + h2]
-    logger.debug('\trot:{}, pos:({},{}), shape:{}'.format(rot, x, y, roi.shape))
+    logger.debug('\trot:{}, pos:({},{}), shape:{}'.format(
+        rot, x, y, roi.shape))
 
     def masked(img):
         logger.debug('masked({})'.format(img.shape))

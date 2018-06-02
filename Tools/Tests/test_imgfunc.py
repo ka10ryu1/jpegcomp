@@ -4,14 +4,20 @@
 help = 'imgfuncのテスト用コード'
 #
 
+import logging
+# basicConfig()は、 debug()やinfo()を最初に呼び出す"前"に呼び出すこと
+logging.basicConfig(format='%(message)s')
+level = logging.INFO
+logging.getLogger('Tools').setLevel(level=level)
+
 import cv2
 import unittest
 import numpy as np
 
-import Tools.imgfunc as IMG
+import imgfunc as IMG
 
-lenna_path = './Tools/Tests/Lenna.bmp'
-mandrill_path = './Tools/Tests/Mandrill.bmp'
+lenna_path = './Tests/Lenna.bmp'
+mandrill_path = './Tests/Mandrill.bmp'
 
 
 class TestImgFunc(unittest.TestCase):
