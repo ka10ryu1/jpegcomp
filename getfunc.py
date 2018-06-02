@@ -164,6 +164,8 @@ def jsonData(path, data):
         exit(1)
 
     param = [j_dict[d] for d in data if d in j_dict]
+    logger.debug('param[{}]: {}'.format(len(data), data))
+    logger.debug('param[{}]: {}'.format(len(param), param))
     if len(param) == 0:
         logger.error('json read miss: {}'.format(data))
     elif len(param) == 1:
@@ -243,6 +245,7 @@ def imgData(folder):
     [in]  folder: 探索するフォルダ
     [out] train:  取得した学習用データ
     [out] test:   取得したテスト用データ
+    [out] ch:     取得したデータのチャンネル数
     """
 
     # 探索するフォルダがなければ終了
@@ -254,6 +257,7 @@ def imgData(folder):
     # 学習用データとテスト用データを発見したらTrueにする
     train_flg = False
     test_flg = False
+    ch = 3
     # フォルダ内のファイルを探索していき、
     # 1. ファイル名の頭がtrain_なら学習用データとして読み込む
     # 2. ファイル名の頭がtest_ならテスト用データとして読み込む
@@ -266,6 +270,7 @@ def imgData(folder):
             x, y = np_arr['x'], np_arr['y']
             train = tuple_dataset.TupleDataset(x, y)
             logger.info('{0}:\tx{1}\ty{2}'.format(l, x.shape, y.shape))
+            ch = x[0].shape[0]
             if(train._length > 0):
                 train_flg = True
 
@@ -279,7 +284,7 @@ def imgData(folder):
 
     # 学習用データとテスト用データの両方が見つかった場合にのみ次のステップへ進める
     if(train_flg is True)and(test_flg is True):
-        return train, test
+        return train, test, ch
     else:
         logger.error('dataset not found in this folder: {}'.format(folder))
         logger.error(fileFuncLine())
