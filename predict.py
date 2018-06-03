@@ -133,8 +133,8 @@ def main(args):
     if args.gpu >= 0:
         chainer.cuda.get_device_from_id(args.gpu).use()
         model.to_gpu()
-    else:
-        model.to_intel64()
+    # else:
+    #     model.to_intel64()
 
     # 高圧縮画像の生成
     ch_flg = IMG.getCh(ch)

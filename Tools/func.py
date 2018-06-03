@@ -102,6 +102,7 @@ def checkModelType(path):
         logger.error(fileFuncLine())
         exit(1)
 
+    logger.debug(load_path)
     return load_path
 
 

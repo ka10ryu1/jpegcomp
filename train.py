@@ -7,8 +7,9 @@ help = '学習メイン部'
 
 import logging
 # basicConfig()は、 debug()やinfo()を最初に呼び出す"前"に呼び出すこと
+level = logging.INFO
 logging.basicConfig(format='%(message)s')
-logging.getLogger('Tools').setLevel(level=logging.INFO)
+logging.getLogger('Tools').setLevel(level=level)
 
 import argparse
 import numpy as np
@@ -128,7 +129,7 @@ def main(args):
     optimizer = GET.optimizer(args.optimizer).setup(model)
 
     # Load dataset
-    train, test = GET.imgData(args.in_path)
+    train, test, _ = GET.imgData(args.in_path)
     train = ResizeImgDataset(train, args.shuffle_rate)
     test = ResizeImgDataset(test, args.shuffle_rate)
     # predict.pyでモデルを決定する際に必要なので記憶しておく
@@ -197,7 +198,7 @@ def main(args):
 
     # Resume from a snapshot
     if args.resume:
-        chainer.serializers.load_npz(F.checkModelType(args.resume), trainer)
+        chainer.serializers.load_npz(args.resume, trainer)
         # Set pruning
         # http://tosaka2.hatenablog.com/entry/2017/11/17/194051
         masks = pruning.create_model_mask(model, args.pruning, args.gpu_id)
