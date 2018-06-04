@@ -81,6 +81,14 @@ FontDataはチュートリアル用のデータセットとテスト用の画像
 
 # チュートリアル
 
+## 0. 学習済みモデルを利用する
+
+以下を実行すれば学習済みモデルを利用できるが、CPUだと数分かかるので`-g GPU_ID`推奨。
+
+```console
+$ ./predict.py Model/*model Model/*json FontData/The_Night*
+```
+
 ## 1. 学習する
 
 ### 実行
