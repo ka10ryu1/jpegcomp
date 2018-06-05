@@ -27,7 +27,7 @@ def command():
     parser.add_argument('--img_size', '-s', type=int, default=32,
                         help='生成される画像サイズ [default: 32 pixel]')
     parser.add_argument('--flip_num', '-f', type=int, default=2,
-                        help='画像の反転回数 [default: 2]')
+                        help='画像の反転回数 [default: 2, max: 3]')
     parser.add_argument('--round', '-r', type=int, default=1000,
                         help='切り捨てる数 [default: 1000]')
     parser.add_argument('--quality', '-q', type=int, default=5,
